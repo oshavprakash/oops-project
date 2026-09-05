@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warden Login</title>
+</head>
+
+<body>
+
+<div class="login-card">
+
+  <h1>Warden Login</h1>
+  <p class="subtitle">Sign in with your warden credentials</p>
+
+  <!-- Error message is hidden initially -->
+  <div id="errorMsg" style="display:none;">
+    Invalid email or password. Please try again.
+  </div>
+
+  <!-- Login Form -->
+  <form id="loginForm" onsubmit="return handleLogin(event)">
+
+    <div class="form-group">
+      <label for="wardenEmail">Warden Email</label>
+      <input
+        type="email"
+        id="wardenEmail"
+        name="wardenEmail"
+        placeholder="warden@example.com"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="wardenPassword">Password</label>
+      <input
+        type="password"
+        id="wardenPassword"
+        name="wardenPassword"
+        placeholder="Enter your password"
+        required
+      >
+    </div>
+
+    <div class="options-row">
+      <a href="#" onclick="return showForgotPassword()">
+        Forgot password?
+      </a>
+    </div>
+
+    <button type="submit">
+      Log In
+    </button>
+
+  </form>
+
+  <!-- Forgot Password Form -->
+  <form
+    id="forgotForm"
+    style="display:none;"
+    onsubmit="return handleForgotPassword(event)"
+  >
+
+    <p class="subtitle">
+      Enter your warden email to receive a password reset link.
+    </p>
+
+    <div class="form-group">
+      <label for="resetEmail">Warden Email</label>
+
+      <input
+        type="email"
+        id="resetEmail"
+        name="resetEmail"
+        placeholder="warden@example.com"
+        required
+      >
+    </div>
+
+    <button type="submit">
+      Send Reset Link
+    </button>
+
+    <p>
+      <a href="#" onclick="return showLoginForm()">
+        Back to login
+      </a>
+    </p>
+
+  </form>
+
+  <p id="loginFooter">
+    Authorized warden personnel only.
+  </p>
+
+</div>
+
+<script>
+
+function handleLogin(e) {
+
+  e.preventDefault();
+
+  const email = document.getElementById("wardenEmail").value;
+  const password = document.getElementById("wardenPassword").value;
+
+  const errorMsg = document.getElementById("errorMsg");
+
+  // Example login credentials
+  if (email === "warden@example.com" && password === "123456") {
+
+    errorMsg.style.display = "none";
+
+    alert("Login successful!");
+
+    // To open dashboard after login:
+    // window.location.href = "dashboard.html";
+
+  } else {
+
+    errorMsg.style.display = "block";
+
+  }
+
+  return false;
+}
+
+
+function handleForgotPassword(e) {
+
+  e.preventDefault();
+
+  const resetEmail = document.getElementById("resetEmail").value;
+
+  alert("If this email is registered, a reset link has been sent.");
+
+  showLoginForm();
+
+  return false;
+}
+
+
+function showForgotPassword() {
+
+  document.getElementById("loginForm").style.display = "none";
+
+  document.getElementById("forgotForm").style.display = "block";
+
+  document.getElementById("loginFooter").style.display = "none";
+
+  document.getElementById("errorMsg").style.display = "none";
+
+  return false;
+}
+
+
+function showLoginForm() {
+
+  document.getElementById("forgotForm").style.display = "none";
+
+  document.getElementById("loginForm").style.display = "block";
+
+  document.getElementById("loginFooter").style.display = "block";
+
+  document.getElementById("errorMsg").style.display = "none";
+
+  return false;
+}
+
+</script>
+
+</body>
+</html>
