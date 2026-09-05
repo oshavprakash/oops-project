@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5edf4;
+            font-family: Arial, sans-serif;
+        }
+
+        .register-container {
+            width: 474px;
+            min-height: 557px;
+            padding: 36px 35px;
+            background: #ffffff;
+            border-radius: 11px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        h2 {
+            margin: 22px 0 26px;
+            text-align: center;
+            font-size: 36px;
+            color: #382044;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: #111;
+        }
+
+        input {
+            width: 100%;
+            height: 45px;
+            padding: 0 13px;
+            margin-bottom: 17px;
+            border: 1px solid #777;
+            border-radius: 0;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #c994b5;
+        }
+
+        input::placeholder {
+            color: #777;
+        }
+
+        button {
+            width: 100%;
+            height: 43px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 6px;
+            background-color: #c994b5;
+            color: #000;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #bd83a7;
+        }
+
+        .login-text {
+            margin-top: 23px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .login-text a {
+            display: block;
+            margin-top: 10px;
+            color: #734061;
+            text-decoration: none;
+        }
+
+        .login-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 550px) {
+            .register-container {
+                width: calc(100% - 30px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-container">
+
+        <h2>Register</h2>
+
+        <form>
+
+            <label for="username">Username:</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter Username"
+                required
+            >
+
+            <label for="email">Email ID:</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter Email ID"
+                required
+            >
+
+            <label for="password">Password:</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter Password"
+                required
+            >
+
+            <label for="confirm_password">Confirm Password:</label>
+            <input
+                type="password"
+                id="confirm_password"
+                name="confirm_password"
+                placeholder="Confirm Password"
+                required
+            >
+
+            <button type="submit">Register</button>
+
+        </form>
+
+        <p class="login-text">
+            Already have an account?
+            <a href="student.html">Login</a>
+        </p>
+
+    </div>
+
+</body>
+</html>
