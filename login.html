@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Login</title>
+
+    <style>
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav ul li a:hover {
+            color: #DB7095;
+            background-color: rgb(223, 191, 220);
+            transform: translateY(-3px);
+            border: solid 5px rgb(105, 63, 89, 0.9);
+            box-shadow: 0 5px 10px rgba(79, 42, 65, 0.5);
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: rgb(67, 41, 57);
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        nav {
+            background-color: rgb(201, 153, 183);
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(120, 64, 91, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial;
+            background-color: rgb(245, 235, 242);
+        }
+
+        .login-box {
+            width: 350px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(79, 42, 65, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: rgb(67, 41, 57);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: rgb(201, 153, 183);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .options a {
+            color: rgb(105, 63, 89);
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="login-box">
+
+        <h1>Student Login</h1>
+
+        <form>
+
+            <label>Student ID:</label>
+            <input type="text" placeholder="Enter Student ID">
+
+            <label>Password:</label>
+            <input type="password" id="studentPassword" placeholder="Enter Password">
+
+            <div class="options">
+
+                <label>
+                    <input type="checkbox">
+                    Remember Me
+                </label>
+
+                <a href="#">Forgot Password?</a>
+
+            </div>
+
+            <label>
+                <input type="checkbox" onclick="showPassword()">
+                Show Password
+            </label>
+
+            <button type="submit">Login</button>
+
+        </form>
+
+    </div>
+
+    <script>
+
+        function showPassword() {
+
+            let passwordinput = document.getElementById("studentPassword");
+
+            if (passwordinput.type == "password") {
+                passwordinput.type = "text";
+            }
+            else {
+                passwordinput.type = "password";
+            }
+
+        }
+
+    </script>
+</body>
+</html>
