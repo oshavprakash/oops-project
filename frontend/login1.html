@@ -57,12 +57,12 @@
 
 <body>
     <div class="login-box">
-        <h1>Login</h1>
+        <h1>Student Login</h1>
         <form onsubmit="login(event)">
-            <label>Student ID:</label>
+            <label>Student ID / Username:</label>
             <input type="text"
                    id="studentId"
-                   placeholder="Enter Student ID"
+                   placeholder="Enter Username or ID"
                    required>
             
             <label>Password:</label>
@@ -118,45 +118,31 @@
 
         function login(event) {
             event.preventDefault();
-            let id = document.getElementById("studentId").value.trim().toLowerCase();
-            let password = document.getElementById("studentPassword").value;
+            let inputId = document.getElementById("studentId").value.trim();
+            let inputPassword = document.getElementById("studentPassword").value;
 
-            // Password validation rules from your original code
-            if (password.length < 7) {
-                alert("Password must be at least 8 characters long.");
+            // Fetch registered users from localStorage
+            let users = JSON.parse(localStorage.getItem("hostelUsers")) || [];
+
+            // Find if a matching user exists
+            let matchedUser = users.find(u => (u.username === inputId || u.email === inputId) && u.password === inputPassword);
+
+            if (!matchedUser) {
+                alert("Invalid credentials or user not registered. Please register first!");
                 return;
             }
-            if (!/[A-Z]/.test(password)) {
-                alert("Password must contain an uppercase letter.");
-                return;
-            }
-            if (!/[a-z]/.test(password)) {
-                alert("Password must contain a lowercase letter.");
-                return;
-            }
-            if (!/[0-9]/.test(password)) {
-                alert("Password must contain a number.");
-                return;
-            }
-            if (!/[!@#$%^&*]/.test(password)) {
-                alert("Password must contain a special character.");
-                return;
-            }
+
+            // Save the verified student's name for the dashboard greeting
+            localStorage.setItem("studentName", matchedUser.username);
 
             if (document.getElementById("remember").checked) {
-                localStorage.setItem("studentId", id);
+                localStorage.setItem("studentId", inputId);
             } else {
                 localStorage.removeItem("studentId");
             }
 
-            // Automatic redirection based on what is typed into the ID box
-            if (id === "admin") {
-                window.location.href = "admin.html";
-            } else if (id === "warden") {
-                window.location.href = "warden.html";
-            } else {
-                window.location.href = "student.html";
-            }
+            // Route securely to the student dashboard
+            window.location.href = "student.html";
         }
 
         function forgotPassword() {

@@ -1,172 +1,312 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Student Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Hostel Management System</title>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            background-color: rgb(245, 235, 242);
-        }
-        .login-box {
-            width: 350px;
-            margin: 100px auto;
-            padding: 30px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(79, 42, 65, 0.2);
-        }
-        h1 {
-            text-align: center;
-            color: rgb(67, 41, 57);
-        }
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 15px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 15px;
-            background-color: rgb(201, 153, 183);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .options a {
-            color: rgb(105, 63, 89);
-        }
-        .register {
-            text-align: center;
-            margin-top: 20px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #f8eff6; display: flex; min-height: 100vh; }
 
-        .register a {
-            color: rgb(105, 63, 89);
-            text-decoration: none;
-        }
+        /* Sidebar */
+        .sidebar { width: 280px; background-color: #261123; color: white; display: flex; flex-direction: column; justify-content: space-between; padding: 25px 20px; }
+        .sidebar-top { display: flex; flex-direction: column; gap: 25px; }
+        .brand { display: flex; align-items: center; gap: 12px; font-size: 1.2rem; font-weight: bold; }
+        .brand-logo { background-color: #c894b7; color: #261123; padding: 6px 10px; border-radius: 6px; }
+        .student-greeting { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #c894b7; }
+        .student-greeting span { font-size: 0.75rem; text-transform: uppercase; color: #c894b7; display: block; margin-bottom: 4px; }
+        .student-greeting h3 { font-size: 1.1rem; font-weight: normal; }
+        
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccc; text-decoration: none; border-radius: 6px; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background-color: #c894b7; color: #261123; font-weight: bold; }
+        
+        .sign-out { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #ff9999; text-decoration: none; border: 1px solid rgba(255, 153, 153, 0.2); border-radius: 6px; cursor: pointer; }
+        .sign-out:hover { background-color: rgba(255, 153, 153, 0.1); }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 40px; background-color: #f8eff6; overflow-y: auto; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title h2 { font-size: 0.85rem; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .page-title h1 { font-size: 2rem; color: #3d1738; }
+
+        /* Sections & Cards */
+        .content-section { display: none; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(70, 30, 60, 0.05); }
+        .content-section.active { display: block; }
+
+        .overview-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .overview-card, .overview-box, .card-box { background: #fff; border: 1px solid #ead6e4; border-radius: 10px; box-shadow: 0 2px 8px rgba(70, 30, 60, 0.03); }
+        .overview-card { padding: 20px; }
+        .overview-card h4 { font-size: 0.85rem; color: #666; text-transform: uppercase; margin-bottom: 8px; }
+        .card-main-val { font-size: 1.8rem; font-weight: bold; color: #3d1738; margin-bottom: 4px; }
+        .card-sub-val { font-size: 0.85rem; color: #777; }
+
+        .section-heading { font-size: 0.85rem; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: bold; }
+        .overview-box { padding: 0 20px; margin-bottom: 30px; }
+        
+        .list-row { padding: 18px 0; border-bottom: 1px solid #f2e6f0; display: flex; justify-content: space-between; align-items: center; }
+        .list-row:last-child { border-bottom: none; }
+        .list-row-content h5 { font-size: 1rem; color: #3d1738; margin-bottom: 4px; }
+        .list-row-content p { font-size: 0.85rem; color: #777; }
+
+        /* Badges & Tables */
+        .badge { font-size: 0.7rem; font-weight: bold; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; }
+        .badge.progress { background: #fff3cd; color: #856404; }
+        .badge.open { background: #f8d7da; color: #721c24; }
+        .badge.resolved, .badge.paid, .badge.claimed { background: #d4edda; color: #155724; }
+        .badge.due, .badge.lost { background: #f8d7da; color: #721c24; }
+        .badge.found { background: #d1ecf1; color: #0c5460; }
+        .badge.event { background: #e2d1f0; color: #3d1738; }
+
+        .custom-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        .custom-table th, .custom-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f2e6f0; font-size: 0.9rem; }
+        .custom-table th { color: #777; text-transform: uppercase; font-size: 0.75rem; background-color: #fcf8fa; }
+        .custom-table td { color: #3d1738; }
+
+        .action-btn { background-color: #3d1738; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background-color: #5a2653; }
+
+        /* Reusable Helper Classes */
+        .card-box { padding: 20px; margin-bottom: 15px; background: #fcf8fa; }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; }
+        .flex-gap { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+
+        @media(max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; } }
     </style>
 </head>
-
 <body>
-    <div class="login-box">
-        <h1>Student Login</h1>
-        <form onsubmit="login(event)">
-            <label>Student ID:</label>
-            <input type="text"
-                   id="studentId"
-                   placeholder="Enter Student ID"
-                   required>
-            
-            <label>Password:</label>
-            
-            <input type="password"
-                   id="studentPassword"
-                   placeholder="Enter Password"
-                   required>
-            <div class="options">
 
-                <label>
-                    <input type="checkbox" id="remember">
-                    Remember Me
-                </label>
-
-                <a href="#" onclick="forgotPassword()">
-                    Forgot Password?
-                </a>
-
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <div class="brand">
+                <div class="brand-logo">H</div> HostelConnect
             </div>
-            <br>
-
-            <label>
-                <input type="checkbox" onclick="showPassword()">
-                Show Password
-            </label>
-
-            <button type="submit">
-                Login
-            </button>
-            <div class="register">
-                <p>New User?</p>
-                <a href="register.html">Register here!</a>
+            <div class="student-greeting">
+                <span>Student</span>
+                <h3 id="studentNameDisplay">Namaste, User</h3>
             </div>
-        </form>
-
+            <div class="nav-links">
+                <a class="nav-link active" onclick="switchTab(event, 'overview')">🏠 Overview</a>
+                <a class="nav-link" onclick="switchTab(event, 'room')">🛏️ Room & Application</a>
+                <a class="nav-link" onclick="switchTab(event, 'fees')">💳 Fee Payment</a>
+                <a class="nav-link" onclick="switchTab(event, 'complaints')">📢 Complaints</a>
+                <a class="nav-link" onclick="switchTab(event, 'mess')">🍽️ Mess & Preferences</a>
+                <a class="nav-link" onclick="switchTab(event, 'lostfound')">🔍 Lost & Found</a>
+                <a class="nav-link" onclick="switchTab(event, 'events')">⭐ Events</a>
+                <a class="nav-link" onclick="switchTab(event, 'roommate')">👥 Roommate Matching</a>
+            </div>
+        </div>
+        <div><a onclick="signOut()" class="sign-out">← Sign out</a></div>
     </div>
+
+    <!-- Main Content Container -->
+    <div class="main-content">
+        <div class="header-row">
+            <div class="page-title">
+                <h2 id="breadcrumb">Student Dashboard</h2>
+                <h1 id="mainHeading">Overview</h1>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overview" class="content-section active">
+            <div class="overview-stats-grid">
+                <div class="overview-card">
+                    <h4>Room</h4>
+                    <div class="card-main-val">C-305</div>
+                    <div class="card-sub-val">C Block · 2-sharing</div>
+                </div>
+                <div class="overview-card">
+                    <h4>Fee status</h4>
+                    <div class="card-main-val" style="color: #b33939;">Due</div>
+                    <div class="card-sub-val">Mess Fee — Aug 2026</div>
+                </div>
+                <div class="overview-card">
+                    <h4>Open complaints</h4>
+                    <div class="card-main-val">2</div>
+                    <div class="card-sub-val">across hostel</div>
+                </div>
+                <div class="overview-card">
+                    <h4>Upcoming events</h4>
+                    <div class="card-main-val">3</div>
+                    <div class="card-sub-val">this month</div>
+                </div>
+            </div>
+
+            <div class="section-heading">RECENT COMPLAINTS</div>
+            <div class="overview-box">
+                <div class="list-row">
+                    <div class="list-row-content"><h5>Leaking bathroom tap</h5><p>C-305 · 2026-08-01</p></div>
+                    <div><span class="badge progress">PROGRESS</span></div>
+                </div>
+                <div class="list-row">
+                    <div class="list-row-content"><h5>Wi-Fi not working in room</h5><p>A-104 · 2026-08-03</p></div>
+                    <div><span class="badge open">OPEN</span></div>
+                </div>
+                <div class="list-row">
+                    <div class="list-row-content"><h5>Broken cupboard hinge</h5><p>A-110 · 2026-07-20</p></div>
+                    <div><span class="badge resolved">RESOLVED</span></div>
+                </div>
+            </div>
+
+            <div class="section-heading">THIS WEEK'S MESS MENU</div>
+            <div class="overview-box">
+                <div class="list-row"><div class="list-row-content"><h5>Monday</h5><p>Chapati, Dal, Mixed Veg, Rice, Curd</p></div></div>
+                <div class="list-row"><div class="list-row-content"><h5>Tuesday</h5><p>Idli, Sambar, Chutney, Egg Curry</p></div></div>
+                <div class="list-row"><div class="list-row-content"><h5>Wednesday</h5><p>Pulao, Raita, Paneer Curry, Papad</p></div></div>
+            </div>
+        </div>
+
+        <!-- Room Section -->
+        <div id="room" class="content-section">
+            <h2>Room & Application Status</h2>
+            <p style="margin-top: 10px; color: #555;">Current Room: <strong>C-305</strong></p>
+        </div>
+
+        <!-- Fee Payment Section -->
+        <div id="fees" class="content-section">
+            <div class="flex-row" style="margin-bottom: 25px;">
+                <div>
+                    <h2>Fee Dues & Payment Gateway</h2>
+                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Manage and settle your semester fees and mess bills securely.</p>
+                </div>
+                <div><span class="badge due" style="font-size: 0.9rem; padding: 8px 15px;">Total Due: ₹4,500</span></div>
+            </div>
+
+            <div class="section-heading">PENDING DUES</div>
+            <div class="card-box flex-row" style="margin-bottom: 30px;">
+                <div>
+                    <h4 style="color: #3d1738; margin-bottom: 4px;">August 2026 Mess Fee</h4>
+                    <p style="font-size: 0.85rem; color: #777;">Due Date: 10th August 2026</p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #b33939; margin-bottom: 8px;">₹4,500</div>
+                    <button class="action-btn" onclick="alert('Redirecting to Secure Payment Gateway...')">Pay Now</button>
+                </div>
+            </div>
+
+            <div class="section-heading">PAYMENT HISTORY</div>
+            <table class="custom-table">
+                <thead>
+                    <tr><th>Receipt ID</th><th>Description</th><th>Amount</th><th>Payment Date</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>#REC-2026-001</td><td>Semester 1 Hostel Rent & Maintenance</td><td>₹35,000</td><td>2026-07-15</td><td><span class="badge paid">PAID</span></td></tr>
+                    <tr><td>#REC-2026-002</td><td>July 2026 Mess Fee</td><td>₹4,500</td><td>2026-07-02</td><td><span class="badge paid">PAID</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Complaints Section -->
+        <div id="complaints" class="content-section">
+            <h2>Lodge or View Complaints</h2>
+            <p style="margin-top: 10px; color: #555;">You have 2 active open complaints.</p>
+        </div>
+
+        <!-- Mess Section -->
+        <div id="mess" class="content-section">
+            <h2>Mess Schedule & Preferences</h2>
+            <p style="margin-top: 10px; color: #555;">Check this week's full mess menu items.</p>
+        </div>
+
+        <!-- Lost & Found Section -->
+        <div id="lostfound" class="content-section">
+            <div class="flex-row" style="margin-bottom: 25px;">
+                <div>
+                    <h2>Hostel Lost & Found Directory</h2>
+                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Report misplaced belongings or check items found around the campus.</p>
+                </div>
+                <div><button class="action-btn" onclick="alert('Open Report Item Modal Form')">+ Report Item</button></div>
+            </div>
+
+            <div class="section-heading">RECENT ITEMS LISTED</div>
+            <table class="custom-table">
+                <thead>
+                    <tr><th>Item Name</th><th>Location</th><th>Date Reported</th><th>Type</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Scientific Calculator</strong><div style="font-size: 0.8rem; color: #777;">Casio fx-991ES Plus</div></td>
+                        <td>Reading Room, Block B</td><td>2026-10-02</td>
+                        <td><span class="badge lost">LOST</span></td><td><span class="badge lost">SEARCHING</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Silver Water Bottle</strong><div style="font-size: 0.8rem; color: #777;">Milton 1L flask</div></td>
+                        <td>Mess Hall Area</td><td>2026-09-28</td>
+                        <td><span class="badge found">FOUND</span></td><td><span class="badge claimed">CLAIMED</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Events Section -->
+        <div id="events" class="content-section">
+            <div class="flex-row" style="margin-bottom: 25px;">
+                <div>
+                    <h2>Hostel Events & Activities</h2>
+                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Browse upcoming cultural events, sports tournaments, and announced meetings.</p>
+                </div>
+                <div><span class="badge event" style="font-size: 0.9rem; padding: 8px 15px;">3 Events This Month</span></div>
+            </div>
+
+            <div class="section-heading">ANNOUNCED EVENTS</div>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                <div class="card-box">
+                    <div class="flex-gap"><span class="badge event">CULTURAL</span><h4 style="color: #3d1738; font-size: 1.1rem;">Annual Hostel Freshers' Night</h4></div>
+                    <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">📅 Date: 15th October 2026 | ⏰ Time: 6:00 PM onwards</p>
+                    <p style="font-size: 0.85rem; color: #555;">📍 Venue: Main Auditorium & Open Air Theatre</p>
+                </div>
+
+                <div class="card-box">
+                    <div class="flex-gap"><span class="badge event">SPORTS</span><h4 style="color: #3d1738; font-size: 1.1rem;">Inter-Block Badminton Championship</h4></div>
+                    <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">📅 Date: 22nd October 2026 | ⏰ Time: 4:30 PM</p>
+                    <p style="font-size: 0.85rem; color: #555;">📍 Venue: Hostel Indoor Sports Complex</p>
+                </div>
+
+                <div class="card-box">
+                    <div class="flex-gap"><span class="badge event">MEETING</span><h4 style="color: #3d1738; font-size: 1.1rem;">Monthly Warden & Student Council Meet</h4></div>
+                    <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">📅 Date: 28th October 2026 | ⏰ Time: 7:00 PM</p>
+                    <p style="font-size: 0.85rem; color: #555;">📍 Venue: Block A Common Hall</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roommate Section -->
+        <div id="roommate" class="content-section">
+            <h2>Roommate Matching Preferences</h2>
+            <p style="margin-top: 10px; color: #555;">Find compatible roommates based on study habits and sleep schedules.</p>
+        </div>
+    </div>
+
     <script>
-
-        function showPassword() {
-
-            let passwordInput =
-                document.getElementById("studentPassword");
-
-            if (passwordInput.type == "password") {
-
-                passwordInput.type = "text";
-
-            }
-            else {
-
-                passwordInput.type = "password";
-
-            }
-
-        }
         window.onload = function() {
-            let savedId =
-                localStorage.getItem("studentId");
-
-            if (savedId != null) {
-                document.getElementById("studentId").value = savedId;
-                document.getElementById("remember").checked = true;
+            let storedName = localStorage.getItem("studentName");
+            if (!storedName) {
+                alert("Access Denied! Please log in first.");
+                window.location.href = "login1.html";
+                return;
             }
+            let formattedName = storedName.charAt(0).toUpperCase() + storedName.slice(1);
+            document.getElementById("studentNameDisplay").innerText = "Namaste, " + formattedName;
         };
 
-        function login(event) {
-            event.preventDefault();
-            let id =
-                document.getElementById("studentId").value;
-            let password =
-                document.getElementById("studentPassword").value;
-            if (password.length < 7) {
-                alert("Password must be at least 8 characters long.");
-                return;
-            }
-            if (!/[A-Z]/.test(password)) {
-                alert("Password must contain an uppercase letter.");
-                return;
-            }
-            if (!/[a-z]/.test(password)) {
-                alert("Password must contain a lowercase letter.");
-                return;
-            }
-            if (!/[0-9]/.test(password)) {
-                alert("Password must contain a number.");
-                return;
-            }
-            if (!/[!@#$%^&*]/.test(password)) {
-                alert("Password must contain a special character.");
-                return;
-            }
-            if (document.getElementById("remember").checked) {
-                localStorage.setItem("studentId", id);
-            }
-            else {
-                localStorage.removeItem("studentId");
-            }
-            alert("Login successful!");
+        function signOut() {
+            localStorage.removeItem("studentName");
+            window.location.href = "login1.html";
         }
-        function forgotPassword() {
-            alert("Please contact your administrator to reset your password.");
+
+        function switchTab(event, tabId) {
+            event.preventDefault();
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            let titleText = event.currentTarget.innerText.replace(/[\u{1F000}-\u{1F6FF}]/gu, '').trim();
+            document.getElementById('mainHeading').innerText = titleText;
         }
     </script>
 </body>
-</html
+</html>
