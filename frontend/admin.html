@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HostelConnect - Admin</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8f0f7;
+            color: #222;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 315px;
+            height: 100vh;
+            background: #241020;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 28px 22px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 35px;
+        }
+
+        .logo-box {
+            display: inline-block;
+            background: #c895bd;
+            color: #241020;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+
+        .admin-box {
+            background: #321d2f;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c895bd;
+            margin-bottom: 30px;
+        }
+
+        .admin-box small {
+            color: #c895bd;
+        }
+
+        .admin-box div {
+            font-size: 18px;
+            margin-top: 5px;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu li {
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .menu li:hover {
+            background: #392338;
+        }
+
+        .menu li.active {
+            background: #c895bd;
+            color: #241020;
+            font-weight: bold;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 315px;
+            padding: 45px;
+        }
+
+        .heading-small {
+            color: #777;
+            letter-spacing: 2px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        h1 {
+            color: #38133c;
+            margin-top: 5px;
+            font-size: 36px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* CARDS */
+        .card-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #ddd;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #38133c;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #9c4d91;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #ead7e7;
+            color: #38133c;
+        }
+
+        /* BUTTON */
+        button {
+            background: #9c4d91;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #71366a;
+        }
+
+        .notice {
+            background: white;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 7px #ddd;
+        }
+
+        @media(max-width: 800px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main {
+                margin-left: 220px;
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+    <div class="logo">
+        <span class="logo-box">H</span>
+        HostelConnect
+    </div>
+
+    <div class="admin-box">
+        <small>ADMIN</small>
+        <div>Administrator</div>
+    </div>
+
+    <ul class="menu">
+
+        <li class="active" onclick="showPage('users', this)">👥 Users & Hostel Data</li>
+        <li onclick="showPage('fees', this)">💳 Fee Monitor</li>
+        <li onclick="showPage('reports', this)">📊 Reports</li>
+        <li onclick="showPage('announcements', this)">📢 Announcements & Ops</li>
+
+    </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+    <!-- USERS PAGE -->
+    <div id="users" class="page active">
+
+        <div class="heading-small">ADMIN DASHBOARD</div>
+        <h1>Users & Hostel Data</h1>
+
+        <div class="card-container">
+
+            <div class="card">
+                <h2>Total Students</h2>
+                <div class="number">144</div>
+            </div>
+
+            <div class="card">
+                <h2>Rooms</h2>
+                <div class="number">80</div>
+            </div>
+
+            <div class="card">
+                <h2>Occupied Rooms</h2>
+                <div class="number">72</div>
+            </div>
+
+        </div>
+
+        <table>
+            <tr>
+                <th>Student</th>
+                <th>Department</th>
+                <th>Room</th>
+                <th>Status</th>
+            </tr>
+
+            <tr>
+                <td>Nandita Manu</td>
+                <td>CSE</td>
+                <td>A-204</td>
+                <td>Active</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- FEE PAGE -->
+    <div id="fees" class="page">
+
+        <div class="heading-small">ADMIN DASHBOARD</div>
+        <h1>Fee Monitor</h1>
+
+        <div class="card-container">
+
+            <div class="card">
+                <h2>Total Collected</h2>
+                <div class="number">₹9,200</div>
+            </div>
+
+            <div class="card">
+                <h2>Pending</h2>
+                <div class="number">₹9,200</div>
+            </div>
+
+            <div class="card">
+                <h2>Paid Students</h2>
+                <div class="number">144</div>
+            </div>
+
+        </div>
+
+        <table>
+            <tr>
+                <th>Student</th>
+                <th>Room</th>
+                <th>Amount</th>
+                <th>Status</th>
+            </tr>
+
+            <tr>
+                <td>Nandita Manu</td>
+                <td>A-204</td>
+                <td>₹9,200</td>
+                <td>Paid</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- REPORTS PAGE -->
+    <div id="reports" class="page">
+
+        <div class="heading-small">ADMIN DASHBOARD</div>
+        <h1>Reports</h1>
+
+        <div class="card-container">
+
+            <div class="card">
+                <h2>Occupancy</h2>
+                <div class="number">90%</div>
+                <p>Current hostel occupancy</p>
+            </div>
+
+            <div class="card">
+                <h2>Complaints</h2>
+                <div class="number">12</div>
+                <p>Open complaints</p>
+            </div>
+
+            <div class="card">
+                <h2>Maintenance</h2>
+                <div class="number">7</div>
+                <p>Pending requests</p>
+            </div>
+
+        </div>
+
+        <div class="notice">
+            <h2>Monthly Hostel Report</h2>
+            <p>Student occupancy, fee collection and complaint statistics can be viewed here.</p>
+            <button>View Report</button>
+        </div>
+
+        <div class="notice">
+            <h2>Download Reports</h2>
+            <p>Generate reports for hostel administration and record keeping.</p>
+            <button>Generate Report</button>
+        </div>
+
+    </div>
+
+
+    <!-- ANNOUNCEMENTS PAGE -->
+    <div id="announcements" class="page">
+
+        <div class="heading-small">ADMIN DASHBOARD</div>
+        <h1>Announcements & Ops</h1>
+
+        <div class="notice">
+            <h2>📢 Hostel Maintenance</h2>
+            <p>Water supply maintenance is scheduled for Saturday from 10 AM to 1 PM.</p>
+        </div>
+
+        <div class="notice">
+            <h2>📢 Mess Update</h2>
+            <p>The weekly mess menu has been updated.</p>
+        </div>
+
+        <div class="notice">
+            <h2>📢 Hostel Event</h2>
+            <p>Hostel cultural event will be conducted on Friday evening.</p>
+        </div>
+
+        <br>
+
+        <button onclick="alert('Announcement form opened!')">
+            + New Announcement
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+<script>
+
+    function showPage(pageName, menuItem) {
+
+        // Hide all pages
+        let pages = document.querySelectorAll(".page");
+
+        pages.forEach(function(page) {
+            page.classList.remove("active");
+        });
+
+        // Show selected page
+        document.getElementById(pageName).classList.add("active");
+
+        // Remove active from all menu items
+        let menuItems = document.querySelectorAll(".menu li");
+
+        menuItems.forEach(function(item) {
+            item.classList.remove("active");
+        });
+
+        // Highlight clicked menu item
+        menuItem.classList.add("active");
+    }
+
+</script>
+
+</body>
+</html>
