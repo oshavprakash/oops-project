@@ -1,0 +1,764 @@
+<html>
+
+<head>
+    <title>Homepage
+    </title>
+    <style>
+
+
+/* =========================================
+   HOSTELCONNECT — POSH BURGUNDY THEME
+   =========================================
+
+   #542F3F  → Rich Burgundy
+   #86566B  → Mauve
+   #C9A34E  → Antique Gold
+   #C8A6AE  → Dusty Rose
+   #F5EEE7  → Warm Ivory
+   #493D3D  → Deep Taupe
+*/
+
+
+/* ---------- BASIC RESET ---------- */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    background-color: #F5EEE7;
+    color: #493D3D;
+
+    line-height: 1.7;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/* =========================================
+   NAVIGATION BAR
+   ========================================= */
+
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    background-color: #542F3F;
+
+    padding: 14px 0;
+
+    box-shadow:
+        0 4px 18px rgba(84, 47, 63, 0.20);
+}
+
+nav ul {
+    list-style: none;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 5px;
+
+    margin: 0;
+    padding: 0 40px;
+}
+
+nav ul li a {
+    position: relative;
+
+    display: block;
+
+    padding: 9px 18px;
+
+    color: #F5EEE7;
+
+    font-size: 0.96rem;
+    font-weight: 600;
+
+    border-radius: 6px;
+
+    transition:
+        color 0.3s ease,
+        background-color 0.3s ease,
+        transform 0.3s ease;
+}
+
+
+/* Gold underline */
+
+nav ul li a::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: 3px;
+
+    width: 0;
+    height: 2px;
+
+    background-color: #C9A34E;
+
+    transform: translateX(-50%);
+
+    transition: width 0.3s ease;
+}
+
+nav ul li a:hover {
+    color: #FFFFFF;
+
+    background-color: #86566B;
+
+    transform: translateY(-2px);
+}
+
+nav ul li a:hover::after {
+    width: 55%;
+}
+
+
+/* Login button */
+
+nav ul li a[href="login1.html"] {
+    background-color: #C9A34E;
+
+    color: #542F3F;
+
+    font-weight: 700;
+
+    margin-left: 8px;
+
+    box-shadow:
+        0 4px 12px rgba(201, 163, 78, 0.20);
+}
+
+nav ul li a[href="login1.html"]::after {
+    display: none;
+}
+
+nav ul li a[href="login1.html"]:hover {
+    background-color: #F5EEE7;
+
+    color: #542F3F;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 7px 18px rgba(201, 163, 78, 0.30);
+}
+
+
+/* =========================================
+   HERO SECTION
+   ========================================= */
+
+body > header {
+    position: relative;
+
+    text-align: center;
+
+    padding: 95px 25px 90px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #F5EEE7 0%,
+            #EAD9DC 48%,
+            #F5EEE7 100%
+        );
+
+    overflow: hidden;
+}
+
+
+/* Decorative circles */
+
+body > header::before {
+    content: "";
+
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    border-radius: 50%;
+
+    background-color: rgba(134, 86, 107, 0.10);
+
+    top: -100px;
+    left: -80px;
+}
+
+body > header::after {
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    border-radius: 50%;
+
+    background-color: rgba(201, 163, 78, 0.10);
+
+    right: -120px;
+    bottom: -150px;
+}
+
+
+/* Keep text above decorations */
+
+body > header h1,
+body > header h2,
+body > header p {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* Main title */
+
+body > header h1 {
+    margin: 0;
+
+    color: #542F3F;
+
+    font-size: clamp(2.7rem, 6vw, 4.5rem);
+
+    font-weight: 800;
+
+    letter-spacing: -1px;
+}
+
+
+/* Gold line */
+
+body > header h1::after {
+    content: "";
+
+    display: block;
+
+    width: 70px;
+    height: 3px;
+
+    margin: 16px auto 20px;
+
+    background-color: #C9A34E;
+
+    border-radius: 5px;
+}
+
+
+body > header h2 {
+    margin: 0 0 18px;
+
+    color: #86566B;
+
+    font-size: 1.4rem;
+
+    font-weight: 600;
+}
+
+
+body > header p {
+    max-width: 750px;
+
+    margin: 12px auto;
+
+    color: #493D3D;
+
+    font-size: 1.05rem;
+}
+
+
+/* =========================================
+   MAIN CONTENT
+   ========================================= */
+
+main {
+    max-width: 1150px;
+
+    margin: auto;
+
+    padding: 60px 25px;
+}
+
+
+/* =========================================
+   SECTIONS
+   ========================================= */
+
+main section {
+    position: relative;
+
+    background-color: #FFFDF9;
+
+    padding: 38px;
+
+    margin-bottom: 38px;
+
+    border-radius: 16px;
+
+    border: 1px solid rgba(134, 86, 107, 0.15);
+
+    box-shadow:
+        0 8px 25px rgba(84, 47, 63, 0.08);
+
+    scroll-margin-top: 90px;
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+
+main section:hover {
+    transform: translateY(-4px);
+
+    border-color: rgba(201, 163, 78, 0.45);
+
+    box-shadow:
+        0 15px 35px rgba(84, 47, 63, 0.13);
+}
+
+
+/* Section headings */
+
+main section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+
+    color: #542F3F;
+
+    font-size: 1.9rem;
+
+    font-weight: 750;
+}
+
+
+main section h2::after {
+    content: "";
+
+    display: block;
+
+    width: 42px;
+    height: 3px;
+
+    margin-top: 9px;
+
+    background-color: #C9A34E;
+
+    border-radius: 5px;
+
+    transition: width 0.35s ease;
+}
+
+
+main section:hover h2::after {
+    width: 75px;
+}
+
+
+main section p {
+    color: #66585A;
+}
+
+
+/* =========================================
+   ABOUT
+   ========================================= */
+
+main section#about {
+    border-top: 4px solid #86566B;
+}
+
+
+/* =========================================
+   FEATURES
+   ========================================= */
+
+main section#features ul {
+    list-style: none;
+
+    padding: 0;
+    margin: 0;
+}
+
+
+main section#features ul li {
+    position: relative;
+
+    padding: 16px 20px;
+
+    margin-bottom: 13px;
+
+    background-color: #F5EEE7;
+
+    border-radius: 10px;
+
+    border-left: 4px solid #86566B;
+
+    color: #493D3D;
+
+    transition:
+        transform 0.3s ease,
+        background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+
+main section#features ul li:hover {
+    background-color: #86566B;
+
+    color: #FFFFFF;
+
+    border-left-color: #C9A34E;
+
+    transform: translateX(7px);
+
+    box-shadow:
+        0 8px 18px rgba(84, 47, 63, 0.16);
+}
+
+
+/* =========================================
+   CONTACT
+   ========================================= */
+
+main section#contact {
+    border-top: 4px solid #C9A34E;
+}
+
+
+main section#contact ul {
+    list-style: none;
+
+    padding: 0;
+}
+
+
+main section#contact ul li {
+    padding: 9px 0;
+
+    color: #66585A;
+
+    border-bottom: 1px solid #E5D6D8;
+}
+
+
+main section#contact ul li:last-child {
+    border-bottom: none;
+}
+
+
+/* =========================================
+   FORM
+   ========================================= */
+
+form {
+    max-width: 700px;
+
+    margin: 25px auto 0;
+}
+
+
+form div {
+    margin-bottom: 20px;
+}
+
+
+label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #542F3F;
+
+    font-weight: 650;
+}
+
+
+input,
+textarea {
+    width: 100%;
+
+    padding: 13px 15px;
+
+    border: 1px solid #D8C7CA;
+
+    border-radius: 9px;
+
+    background-color: #FFFDF9;
+
+    color: #493D3D;
+
+    font-family: inherit;
+
+    font-size: 1rem;
+
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        background-color 0.3s ease;
+}
+
+
+input:hover,
+textarea:hover {
+    border-color: #86566B;
+}
+
+
+input:focus,
+textarea:focus {
+    outline: none;
+
+    border-color: #86566B;
+
+    background-color: #FFFFFF;
+
+    box-shadow:
+        0 0 0 3px rgba(134, 86, 107, 0.15);
+}
+
+
+textarea {
+    min-height: 140px;
+
+    resize: vertical;
+}
+
+
+/* =========================================
+   SUBMIT BUTTON
+   ========================================= */
+
+button {
+    border: none;
+
+    padding: 13px 30px;
+
+    border-radius: 8px;
+
+    background-color: #542F3F;
+
+    color: #F5EEE7;
+
+    font-family: inherit;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+
+button:hover {
+    background-color: #C9A34E;
+
+    color: #542F3F;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 8px 18px rgba(201, 163, 78, 0.28);
+}
+
+
+button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================
+   GENERAL LINKS
+   ========================================= */
+
+a {
+    transition: all 0.3s ease;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    nav ul {
+        justify-content: center;
+
+        padding: 0 10px;
+
+        gap: 3px;
+    }
+
+    nav ul li a {
+        padding: 8px 11px;
+
+        font-size: 0.86rem;
+    }
+
+    nav ul li a[href="login1.html"] {
+        margin-left: 3px;
+    }
+
+    body > header {
+        padding: 65px 20px;
+    }
+
+    body > header h1 {
+        font-size: 2.7rem;
+    }
+
+    body > header h2 {
+        font-size: 1.2rem;
+    }
+
+    body > header p {
+        font-size: 0.95rem;
+    }
+
+    main {
+        padding: 35px 15px;
+    }
+
+    main section {
+        padding: 25px 18px;
+    }
+
+    main section h2 {
+        font-size: 1.55rem;
+    }
+}
+
+
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #C9A34E;
+
+    outline-offset: 3px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+ 
+                
+
+
+</style>    
+</head>
+
+<body>
+
+
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a class="login-link" href="login1.html">Login</a></li>
+
+        </ul>
+    </nav>
+    <header>
+        <b>
+            <h1>HostelConnect</h1>
+        </b>
+        <h2>Welcome to HostelConnect!</h2>
+        
+    </header>
+    <main>
+        <section id="about">
+            <h2>About Hostel</h2>
+            <p>Our student hostel provides the perfect blend of affordable living, academic convenience, and a vibrant community. Designed specifically for university students, we offer comfortably furnished shared and private rooms, dedicated quiet study lounges, and fully equipped communal spaces where you can cook, relax, and connect with peers. Located just minutes from campus, we ensure a safe and secure environment with 24/7 security, high-speed Wi-Fi, and a supportive atmosphere that helps you succeed academically while making lifelong friends.</p>
+            <p>HostelConnect is a web-based application designed to simplify and digitize college hostel management. It provides a common platform for students, wardens, and administrators to access and manage hostel-related services efficiently.
+               By reducing paperwork and manual processes, HostelConnect helps improve communication, transparency, and organization while providing students with a convenient way to manage their hostel activities. 
+            </p>
+        </section>
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li>Room Allocation: Streamlined process for assigning rooms to students.</li>
+                <li>Fee Payments: Easy and secure online payment of hostel fees.</li>
+                <li>Complaints: Submit and track complaints related to hostel facilities.</li>
+                <li>Mess Updates: Stay informed about mess menus, timings, and announcements.</li>
+                <li>Events: Get updates on hostel events and activities.</li>
+                <li>Inventory Management: Keep track of hostel inventory and resources.</li>
+                <li>Lost & Found: Report and locate lost items within the hostel.</li>
+                <li>Hostel Registration & Room Allocation – Apply for hostel accommodation, submit details and documents, and view room allocation.</li>
+                <li>Fee Management – Manage hostel fees, make online payments, and access digital receipts and payment history.</li>
+                <li>Complaint Management – Submit maintenance or disciplinary complaints and track their status.</li>
+                <li>Mess Management – View daily and weekly menus and specify food preferences or dietary requirements.</li>
+                <li>Lost & Found – Report lost belongings or post details of found items to help recover them.</li>
+                <li>Events & Announcements – Stay updated with hostel meetings, celebrations, programs, announcements, and maintenance schedules.</li>
+                <li>Inventory Management – Monitor hostel assets, their condition, maintenance requirements, and replacement records.</li>
+                <li>Roommate Preferences – Specify preferences such as study habits, sleeping schedules, cleanliness, and department for suitable roommate matching.</li>
+                <li>Secure Role-Based Access – Provides separate access and dashboards for students, wardens, and administrators.</li>
+            </ul>
+        </section>
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>If you have any questions or feedback, feel free to reach out to us:</p>
+            <ul>
+                <li>Email: info@hostelconnect.com</li>
+                <li>Phone: +91 1234567890</li>
+                <li>Address: Near Model Engineering College, Thrikkakara, Kochi, Kerala</li>
+            </ul>
+        </section>
+        <section>
+            <form>
+                <div>
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your name...">
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email...">
+                </div>
+                <div>
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" required placeholder="Enter your message..."></textarea>
+                </div>
+                <div>
+                    <button type="submit">Submit</button>
+
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+
+</html>
+</html>
