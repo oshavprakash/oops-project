@@ -121,6 +121,12 @@
             let inputId = document.getElementById("studentId").value.trim();
             let inputPassword = document.getElementById("studentPassword").value;
 
+            // Warden login
+            if (inputId === "warden123" && inputPassword === "Warden@123") {
+                window.location.href = "warden.html";
+                return;
+            }
+
             // Fetch registered users from localStorage
             let users = JSON.parse(localStorage.getItem("hostelUsers")) || [];
 

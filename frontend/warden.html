@@ -1,326 +1,1761 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Warden Login</title>
+    <title>HostelConnect - Warden Dashboard</title>
+    <style>
 
-<style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #f8eff6; display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar { width: 280px; height: 100vh; position: fixed; left: 0; top: 0; background-color: #261123; color: white; display: flex; flex-direction: column; justify-content: space-between; padding: 25px 20px; }
+        .sidebar-top { display: flex; flex-direction: column; gap: 25px; }
+        .brand { display: flex; align-items: center; gap: 12px; font-size: 1.2rem; font-weight: bold; }
+        .brand-logo { background-color: #c894b7; color: #261123; padding: 6px 10px; border-radius: 6px; }
+        .student-greeting { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #c894b7; }
+        .student-greeting span { font-size: 0.75rem; text-transform: uppercase; color: #c894b7; display: block; margin-bottom: 4px; }
+        .student-greeting h3 { font-size: 1.1rem; font-weight: normal; }
+        
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccc; text-decoration: none; border-radius: 6px; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background-color: #c894b7; color: #261123; font-weight: bold; }
+        
+        .sign-out { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #ff9999; text-decoration: none; border: 1px solid rgba(255, 153, 153, 0.2); border-radius: 6px; cursor: pointer; }
+        .sign-out:hover { background-color: rgba(255, 153, 153, 0.1); }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 40px; background-color: #f8eff6; overflow-y: auto; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title h2 { font-size: 0.85rem; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .page-title h1 { font-size: 2rem; color: #3d1738; }
+
+        /* Sections & Cards */
+        .content-section { display: none; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(70, 30, 60, 0.05); }
+        .content-section.active { display: block; }
+
+        .overview-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .overview-card, .overview-box, .card-box { background: #fff; border: 1px solid #ead6e4; border-radius: 10px; box-shadow: 0 2px 8px rgba(70, 30, 60, 0.03); }
+        .overview-card { padding: 20px; }
+        .overview-card h4 { font-size: 0.85rem; color: #666; text-transform: uppercase; margin-bottom: 8px; }
+        .card-main-val { font-size: 1.8rem; font-weight: bold; color: #3d1738; margin-bottom: 4px; }
+        .card-sub-val { font-size: 0.85rem; color: #777; }
+
+        .section-heading { font-size: 0.85rem; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: bold; }
+        .overview-box { padding: 0 20px; margin-bottom: 30px; }
+        
+        .list-row { padding: 18px 0; border-bottom: 1px solid #f2e6f0; display: flex; justify-content: space-between; align-items: center; }
+        .list-row:last-child { border-bottom: none; }
+        .list-row-content h5 { font-size: 1rem; color: #3d1738; margin-bottom: 4px; }
+        .list-row-content p { font-size: 0.85rem; color: #777; }
+
+        /* Badges & Tables */
+        .badge { font-size: 0.7rem; font-weight: bold; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; }
+        .badge.progress { background: #fff3cd; color: #856404; }
+        .badge.open { background: #f8d7da; color: #721c24; }
+        .badge.resolved, .badge.paid, .badge.claimed { background: #d4edda; color: #155724; }
+        .badge.due, .badge.lost { background: #f8d7da; color: #721c24; }
+        .badge.found { background: #d1ecf1; color: #0c5460; }
+        .badge.event { background: #e2d1f0; color: #3d1738; }
+
+        .custom-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        .custom-table th, .custom-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f2e6f0; font-size: 0.9rem; }
+        .custom-table th { color: #777; text-transform: uppercase; font-size: 0.75rem; background-color: #fcf8fa; }
+        .custom-table td { color: #3d1738; }
+
+        .action-btn { background-color: #3d1738; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background-color: #5a2653; }
+
+        /* Reusable Helper Classes */
+        .card-box { padding: 20px; margin-bottom: 15px; background: #fcf8fa; }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; }
+        .flex-gap { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+
+        @media(max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; } }
+        
+
+
+#roommate {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#roommate h2 {
+    color: #542F3F;
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.roommate-intro {
+    color: #66585A;
+    font-size: 15px;
+    margin-bottom: 28px;
+}
+
+.roommate-profile {
+    background: #F5EEE7;
+    border: 1px solid #E1D1D3;
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 35px;
+    box-shadow: 0 8px 25px rgba(84, 47, 63, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.roommate-profile::before {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #DCC2C9;
+    top: -55px;
+    right: -35px;
+    opacity: 0.45;
+}
+
+.roommate-profile h3 {
+    color: #542F3F;
+    font-size: 20px;
+    margin-bottom: 7px;
+    position: relative;
+}
+
+.roommate-profile p {
+    color: #66585A;
+    font-size: 14px;
+    margin-bottom: 18px;
+    position: relative;
+}
+
+#prefInput {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 15px 17px;
+    border: 1px solid #D6C1C6;
+    border-radius: 12px;
+    background: #FFFDF9;
+    color: #493D3D;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    outline: none;
+    transition: 0.25s ease;
+    position: relative;
+    box-sizing: border-box;
+}
+
+#prefInput::placeholder {
+    color: #9B8B8F;
+}
+
+#prefInput:focus {
+    border-color: #987185;
+    box-shadow: 0 0 0 3px rgba(152, 113, 133, 0.12);
+}
+
+.roommate-profile button {
+    margin-top: 15px;
+    padding: 11px 25px;
+    border: none;
+    border-radius: 9px;
+    background: #542F3F;
+    color: #F5EEE7;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.roommate-profile button:hover {
+    background: #C9A34E;
+    color: #542F3F;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(201, 163, 78, 0.25);
+}
+
+#preferenceStatus {
+    color: #987185;
+    font-size: 13px;
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+.roommate-results {
+    margin-top: 10px;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E3D7D4;
+}
+
+.results-header h3 {
+    color: #542F3F;
+    font-size: 21px;
+    margin-bottom: 4px;
+}
+
+.results-header p {
+    color: #987185;
+    font-size: 13px;
+    margin: 0;
+}
+
+.student-card {
+    background: #FFFDF9;
+    border: 1px solid #E3D7D4;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 16px rgba(84, 47, 63, 0.06);
+    transition: 0.25s ease;
+}
+
+.student-card:hover {
+    transform: translateY(-3px);
+    border-color: #C9A34E;
+    box-shadow: 0 9px 22px rgba(84, 47, 63, 0.11);
+}
+
+.student-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.student-name {
+    color: #542F3F;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.match-label {
+    color: #987185;
+    font-size: 12px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.match-score {
+    min-width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #F4E2D1;
+    border: 2px solid #C9A34E;
+    color: #542F3F;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.student-preferences {
+    margin-top: 15px;
+    padding: 13px 15px;
+    background: #F5EEE7;
+    border-radius: 9px;
+    color: #66585A;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.student-preferences strong {
+    color: #542F3F;
+}
+
+@media (max-width: 600px) {
+    #roommate h2 {
+        font-size: 25px;
     }
 
-    body {
-        background-color: #f8eff6;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .roommate-profile {
+        padding: 20px;
     }
 
-    .login-card {
-        width: 615px;
-        min-height: 700px;
-        background-color: white;
-        border-radius: 15px;
-        padding: 75px 45px 40px;
-        box-shadow: 0 8px 25px rgba(70, 30, 60, 0.15);
+    .student-card {
+        padding: 16px;
     }
 
-    h1 {
-        text-align: center;
-        font-size: 50px;
-        color: #3d1738;
-        margin-bottom: 45px;
-        font-weight: 700;
+    .match-score {
+        min-width: 48px;
+        height: 48px;
+        font-size: 13px;
+    }
+}
+#mess {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#mess h2 {
+    color: #542F3F;
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.mess-intro {
+    color: #66585A;
+    font-size: 15px;
+    margin-bottom: 28px;
+}
+
+.mess-preferences,
+.mess-menu {
+    background: #FFFDF9;
+    border: 1px solid #E3D7D4;
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 7px 22px rgba(84, 47, 63, 0.07);
+}
+
+.mess-preference-header,
+.mess-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.mess-preference-header h3,
+.mess-menu-header h3 {
+    color: #542F3F;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.mess-preference-header p,
+.mess-menu-header p {
+    color: #987185;
+    font-size: 13px;
+    margin: 0;
+}
+
+.preference-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 17px;
+}
+
+.preference-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.preference-item label {
+    color: #542F3F;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.preference-item input,
+.preference-item select,
+#mealFilter {
+    padding: 11px 13px;
+    border: 1px solid #D6C1C6;
+    border-radius: 9px;
+    background: #F5EEE7;
+    color: #493D3D;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: 0.25s ease;
+}
+
+.preference-item input:focus,
+.preference-item select:focus,
+#mealFilter:focus {
+    border-color: #987185;
+    box-shadow: 0 0 0 3px rgba(152, 113, 133, 0.12);
+}
+
+.save-food-preferences {
+    margin-top: 20px;
+    padding: 11px 23px;
+    border: none;
+    border-radius: 9px;
+    background: #542F3F;
+    color: #F5EEE7;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.save-food-preferences:hover {
+    background: #C9A34E;
+    color: #542F3F;
+    transform: translateY(-2px);
+}
+
+#foodPreferenceStatus {
+    color: #987185;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.mess-menu {
+    background: #F5EEE7;
+}
+
+.mess-menu-header {
+    border-bottom: 1px solid #E1D1D3;
+    padding-bottom: 15px;
+}
+
+.mess-meal {
+    background: #FFFDF9;
+    border: 1px solid #E3D7D4;
+    border-radius: 13px;
+    padding: 18px;
+    margin-top: 14px;
+    transition: 0.25s ease;
+}
+
+.mess-meal:hover {
+    border-color: #C9A34E;
+    transform: translateY(-2px);
+}
+
+.meal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.meal-name {
+    color: #542F3F;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.meal-time {
+    color: #987185;
+    font-size: 12px;
+}
+
+.meal-food {
+    color: #66585A;
+    font-size: 14px;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.meal-warning {
+    margin-top: 12px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #F4E2D1;
+    color: #542F3F;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.meal-match {
+    margin-top: 12px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #E9DDD2;
+    color: #6B4D58;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .preference-grid {
+        grid-template-columns: 1fr;
     }
 
-    .subtitle {
-        text-align: center;
-        color: #555;
-        font-size: 17px;
-        margin-bottom: 25px;
+    .mess-preferences,
+    .mess-menu {
+        padding: 19px;
     }
 
-    .form-group {
-        margin-bottom: 25px;
+    .mess-menu-header {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
-    label {
-        display: block;
-        font-size: 22px;
-        margin-bottom: 12px;
-        color: #111;
-    }
-
-    input[type="email"],
-    input[type="password"] {
+    #mealFilter {
         width: 100%;
-        height: 59px;
-        padding: 0 17px;
-        font-size: 19px;
-        border: 1px solid #777;
-        border-radius: 3px;
-        outline: none;
+    }
+}
+
+#complaints {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#complaints h2 {
+    color: #542F3F;
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.complaint-intro {
+    color: #66585A;
+    font-size: 15px;
+    margin-bottom: 28px;
+}
+
+.complaint-form,
+.my-complaints {
+    background: #FFFDF9;
+    border: 1px solid #E3D7D4;
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 7px 22px rgba(84, 47, 63, 0.07);
+}
+
+.complaint-form h3,
+.complaints-header h3 {
+    color: #542F3F;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 17px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 17px;
+}
+
+.form-row .form-group {
+    margin-top: 0;
+}
+
+.form-group label {
+    color: #542F3F;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+#complaintFilter {
+    padding: 12px 13px;
+    border: 1px solid #D6C1C6;
+    border-radius: 9px;
+    background: #F5EEE7;
+    color: #493D3D;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: 0.25s ease;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+#complaintFilter:focus {
+    border-color: #987185;
+    box-shadow: 0 0 0 3px rgba(152, 113, 133, 0.12);
+}
+
+.complaint-form button {
+    margin-top: 20px;
+    padding: 11px 25px;
+    border: none;
+    border-radius: 9px;
+    background: #542F3F;
+    color: #F5EEE7;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.complaint-form button:hover {
+    background: #C9A34E;
+    color: #542F3F;
+    transform: translateY(-2px);
+}
+
+#complaintMessage {
+    color: #987185;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.complaints-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #E3D7D4;
+}
+
+.complaints-header p {
+    color: #987185;
+    font-size: 13px;
+    margin: 4px 0 0;
+}
+
+#complaintsContainer {
+    margin-top: 18px;
+}
+
+.complaint-card {
+    background: #F5EEE7;
+    border: 1px solid #E3D7D4;
+    border-radius: 13px;
+    padding: 18px;
+    margin-bottom: 13px;
+    transition: 0.25s ease;
+}
+
+.complaint-card:hover {
+    border-color: #C9A34E;
+    transform: translateY(-2px);
+}
+
+.complaint-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.complaint-type {
+    color: #542F3F;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.complaint-room {
+    color: #987185;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.complaint-description {
+    color: #66585A;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 13px;
+}
+
+.complaint-date {
+    color: #9B8B8F;
+    font-size: 11px;
+    margin-top: 12px;
+}
+
+.complaint-status {
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-pending {
+    background: #F4E2D1;
+    color: #80642D;
+}
+
+.status-progress {
+    background: #E9D5DC;
+    color: #6B4354;
+}
+
+.status-resolved {
+    background: #E4DED5;
+    color: #53604E;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
     }
 
-    input[type="email"]:focus,
-    input[type="password"]:focus {
-        border: 2px solid #70405f;
+    .complaint-form,
+    .my-complaints {
+        padding: 19px;
     }
 
-    input::placeholder {
-        color: #777;
+    .complaints-header {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
-    .options-row {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-top: 5px;
-        margin-bottom: 35px;
-    }
-
-    .options-row a {
-        color: #70405f;
-        font-size: 20px;
-        text-decoration: underline;
-    }
-
-    .login-btn {
+    #complaintFilter {
         width: 100%;
-        height: 53px;
-        background-color: #c894b7;
-        color: #111;
-        border: none;
-        border-radius: 6px;
-        font-size: 20px;
-        cursor: pointer;
     }
+}
 
-    .login-btn:hover {
-        background-color: #b982a8;
-    }
+        /* Warden layout using the Student dashboard styling */
 
-    .footer-note {
-        text-align: center;
-        margin-top: 30px;
-        font-size: 17px;
-        color: #555;
-    }
-
-    .footer-note a {
-        color: #70405f;
-        text-decoration: underline;
-    }
-
-    .error-msg {
-        background-color: #f8d7da;
-        color: #842029;
-        border: 1px solid #f5c2c7;
-        padding: 12px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-
-    /* Forgot password page */
-    #forgotForm .subtitle {
-        line-height: 1.5;
-        margin-bottom: 25px;
-    }
-
-    /* Responsive design */
-    @media (max-width: 700px) {
-        .login-card {
-            width: 90%;
-            min-height: auto;
-            padding: 50px 30px 35px;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0;
         }
 
-        h1 {
-            font-size: 38px;
-            margin-bottom: 35px;
+        .logo::before {
+            content: "H";
+            background-color: #c894b7;
+            color: #261123;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
 
-        label {
-            font-size: 19px;
+        .warden-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-left: 4px solid #c894b7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 0;
         }
 
-        input[type="email"],
-        input[type="password"] {
-            height: 55px;
-            font-size: 17px;
+        .warden-title {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: normal;
+            color: #c894b7;
+            display: block;
+            margin-bottom: 4px;
         }
-    }
-</style>
 
+
+        .warden-id {
+            color: #ccc;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu li {
+            margin-bottom: 0;
+        }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #ccc;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .menu a:hover,
+        .menu .active {
+            background-color: #c894b7;
+            color: #261123;
+            font-weight: bold;
+        }
+
+        .signout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: #ff9999;
+            text-decoration: none;
+            border: 1px solid rgba(255, 153, 153, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            position: static;
+            width: auto;
+            text-align: left;
+        }
+
+        .signout:hover {
+            background-color: rgba(255, 153, 153, 0.1);
+        }
+
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            background-color: #f8eff6;
+            overflow-y: auto;
+        }
+
+        .dashboard-label {
+            font-size: 0.85rem;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .main h1 {
+            font-size: 2rem;
+            color: #3d1738;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #ead6e4;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(70, 30, 60, 0.03);
+            padding: 20px;
+            width: auto;
+        }
+
+        .card h3 {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3d1738;
+        }
+
+        .section {
+            background: white;
+            margin-top: 0;
+            margin-bottom: 30px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(70, 30, 60, 0.05);
+        }
+
+        .section h2 {
+            font-size: 0.85rem;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .section p {
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #f2e6f0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            color: #777;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            background-color: #fcf8fa;
+        }
+
+        td {
+            color: #3d1738;
+        }
+
+        button {
+            background-color: #3d1738;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #5a2653;
+        }
+
+        button:disabled {
+            background: #d1d5db;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        form {
+            display: grid;
+            gap: 15px;
+        }
+
+        input, textarea {
+            padding: 12px 13px;
+            border: 1px solid #D6C1C6;
+            border-radius: 9px;
+            background: #F5EEE7;
+            color: #493D3D;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: 0.25s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #987185;
+            box-shadow: 0 0 0 3px rgba(152, 113, 133, 0.12);
+        }
+
+        textarea {
+            min-height: 120px;
+            height: auto;
+            resize: vertical;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .room {
+            background: #fcf8fa;
+            border: 1px solid #ead6e4;
+            padding: 20px;
+            border-radius: 10px;
+            width: auto;
+            box-shadow: 0 2px 8px rgba(70, 30, 60, 0.03);
+        }
+
+        .room h3 {
+            color: #3d1738;
+            margin-top: 0;
+        }
+
+        .available {
+            color: #155724;
+        }
+
+        .full {
+            color: #721c24;
+        }
+
+        #message {
+            color: #987185;
+            font-size: 13px;
+            font-weight: normal;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+
+            .sidebar-top {
+                gap: 20px;
+            }
+
+            .signout {
+                margin-top: 25px;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .section {
+                padding: 19px;
+            }
+
+            .main h1 {
+                font-size: 1.6rem;
+            }
+
+            .room-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .menu-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .day {
+                width: auto;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
 
-<div class="login-card">
-
-    <h1>Warden Login</h1>
-
-    <p class="subtitle">Sign in with your warden credentials</p>
-
-    <div id="errorMsg" class="error-msg" style="display:none;">
-        Invalid email or password. Please try again.
-    </div>
-
-    <form id="loginForm" onsubmit="return handleLogin(event)">
-
-        <div class="form-group">
-            <label for="wardenEmail">Warden Email</label>
-            <input
-                type="email"
-                id="wardenEmail"
-                name="wardenEmail"
-                placeholder="warden@example.com"
-                required
-            >
-        </div>
-
-        <div class="form-group">
-            <label for="wardenPassword">Password</label>
-            <input
-                type="password"
-                id="wardenPassword"
-                name="wardenPassword"
-                placeholder="Enter your password"
-                required
-            >
-        </div>
-
-        <div class="options-row">
-            <a href="#" onclick="return showForgotPassword()">
-                Forgot password?
-            </a>
-        </div>
-
-        <button type="submit" class="login-btn">
-            Log In
-        </button>
-
-    </form>
-
-    <!-- Forgot Password Form -->
-    <form
-        id="forgotForm"
-        style="display:none;"
-        onsubmit="return handleForgotPassword(event)"
-    >
-
-        <p class="subtitle">
-            Enter your warden email to receive a password reset link.
-        </p>
-
-        <div class="form-group">
-            <label for="resetEmail">Warden Email</label>
-
-            <input
-                type="email"
-                id="resetEmail"
-                name="resetEmail"
-                placeholder="warden@example.com"
-                required
-            >
-        </div>
-
-        <button type="submit" class="login-btn">
-            Send Reset Link
-        </button>
-
-        <p class="footer-note">
-            <a href="#" onclick="return showLoginForm()">
-                Back to login
-            </a>
-        </p>
-
-    </form>
-
-    <p class="footer-note" id="loginFooter">
-        Authorized warden personnel only.
-    </p>
-
+<div class="sidebar">
+<div class="logo">HostelConnect</div>
+<div class="warden-box">
+<div class="warden-title">WARDEN</div>
+</div>
+<ul class="menu">
+<li><a class="active" data-section="overview" href="#overview" onclick="showSection('overview'); return false;">🏠 Overview</a></li>
+<li><a data-section="rooms" href="#rooms" onclick="showSection('rooms'); return false;">🔑 Applications &amp; Rooms</a></li>
+<li><a data-section="complaints" href="#complaints" onclick="showSection('complaints'); return false;">🚩 Complaints</a></li>
+<li><a data-section="mess" href="#mess" onclick="showSection('mess'); return false;">🍽️ Mess Details</a></li>
+<li><a href="#">📦 Inventory &amp; Records</a></li>
+<li><a href="#">📢 Announcements</a></li>
+</ul>
+<div class="signout">Sign out</div>
 </div>
 
+<div class="main">
+    <div id="overview" class="warden-section">
+        
+<div class="dashboard-label">WARDEN DASHBOARD</div>
+<h1>Overview</h1>
+<div class="cards">
+<div class="card">
+<h3>Pending Applications</h3>
+<div class="number" id="pendingApplications">0</div>
+</div>
+<div class="card">
+<h3>Open Complaints</h3>
+<div class="number" id="openComplaints">0</div>
+</div>
+<div class="card">
+<h3>Room Occupancy</h3>
+<div class="number" id="occupancy">0%</div>
+</div>
+</div>
+<div class="section">
+<h2>Hostel Overview</h2>
+<p>
+            Manage student applications, room allocation, complaints
+            and mess details from one place.
+        </p>
+<p>
+            Use the navigation menu on the left to access each section.
+        </p>
+</div>
+
+    </div>
+    <div id="rooms" class="warden-section">
+        
+<div class="dashboard-label">WARDEN DASHBOARD</div>
+<h1>Applications &amp; Room Allocation</h1>
+<div class="section">
+<h2>Student Applications</h2>
+<table>
+<thead>
+<tr>
+<th>Student</th>
+<th>Course</th>
+<th>Requested Block</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="applicationTable"></tbody>
+</table>
+</div>
+<div class="section">
+<h2>Room Availability</h2>
+<div class="room-grid" id="roomGrid"></div>
+</div>
+
+    </div>
+    <div id="complaints" class="warden-section">
+        
+<div class="dashboard-label">WARDEN DASHBOARD</div>
+<h1>Complaints</h1>
+<div class="section">
+<h2>Student Complaints</h2>
+<div id="complaintList"></div>
+</div>
+<div class="section">
+<h2>Add New Complaint</h2>
+<form onsubmit="addComplaint(event)">
+<input id="student" placeholder="Student name" required="" type="text"/>
+<input id="room" placeholder="Room number" required="" type="text"/>
+<textarea id="complaint" placeholder="Enter complaint" required=""></textarea>
+<button type="submit">
+                Add Complaint
+            </button>
+</form>
+</div>
+
+    </div>
+    <div id="mess" class="warden-section">
+        
+<div class="dashboard-label">WARDEN DASHBOARD</div>
+<h1>Mess Details</h1>
+<div class="section">
+<h2>Weekly Menu</h2>
+<div class="menu-row">
+<div class="day">Monday</div>
+<input id="monday"/>
+</div>
+<div class="menu-row">
+<div class="day">Tuesday</div>
+<input id="tuesday"/>
+</div>
+<div class="menu-row">
+<div class="day">Wednesday</div>
+<input id="wednesday"/>
+</div>
+<div class="menu-row">
+<div class="day">Thursday</div>
+<input id="thursday"/>
+</div>
+<div class="menu-row">
+<div class="day">Friday</div>
+<input id="friday"/>
+</div>
+<div class="menu-row">
+<div class="day">Saturday</div>
+<input id="saturday"/>
+</div>
+<div class="menu-row">
+<div class="day">Sunday</div>
+<input id="sunday"/>
+</div>
+<button onclick="saveMenu()">
+            Save Menu
+        </button>
+<div id="message"></div>
+</div>
+
+    </div>
+</div>
 
 <script>
 
-function handleLogin(e) {
-    e.preventDefault();
 
-    const email = document.getElementById('wardenEmail').value;
-    const password = document.getElementById('wardenPassword').value;
+    function updateOverview() {
 
-    console.log('Login attempt:', {
-        email: email,
-        password: password
+        let applications =
+            JSON.parse(localStorage.getItem("applications")) || [];
+
+        let complaints =
+            JSON.parse(localStorage.getItem("complaints")) || [];
+
+        let rooms =
+            JSON.parse(localStorage.getItem("rooms")) || [
+                { room: "A-104", capacity: 4, occupied: 2 },
+                { room: "A-110", capacity: 4, occupied: 1 },
+                { room: "B-201", capacity: 4, occupied: 3 },
+                { room: "B-207", capacity: 4, occupied: 1 },
+                { room: "C-305", capacity: 4, occupied: 2 }
+            ];
+
+        let pending = applications.filter(
+            app => app.status === "Pending"
+        ).length;
+
+        let open = complaints.filter(
+            c => c.status !== "resolved"
+        ).length;
+
+        let totalCapacity = 0;
+        let totalOccupied = 0;
+
+        rooms.forEach(room => {
+            totalCapacity += room.capacity;
+            totalOccupied += room.occupied;
+        });
+
+        let occupancy = totalCapacity === 0
+            ? 0
+            : Math.round((totalOccupied / totalCapacity) * 100);
+
+        document.getElementById("pendingApplications").innerText = pending;
+        document.getElementById("openComplaints").innerText = open;
+        document.getElementById("occupancy").innerText = occupancy + "%";
+    }
+
+    updateOverview();
+
+
+
+
+
+    let applications =
+        JSON.parse(localStorage.getItem("applications")) || [
+            {
+                id: 1,
+                name: "Ananya S",
+                course: "CSE",
+                block: "A",
+                status: "Pending",
+                room: ""
+            },
+            {
+                id: 2,
+                name: "Meera K",
+                course: "ECE",
+                block: "B",
+                status: "Pending",
+                room: ""
+            },
+            {
+                id: 3,
+                name: "Arjun P",
+                course: "CSE",
+                block: "A",
+                status: "Pending",
+                room: ""
+            }
+        ];
+
+
+    let rooms =
+        JSON.parse(localStorage.getItem("rooms")) || [
+            {
+                room: "A-104",
+                block: "A",
+                capacity: 4,
+                occupied: 2
+            },
+            {
+                room: "A-110",
+                block: "A",
+                capacity: 4,
+                occupied: 1
+            },
+            {
+                room: "B-201",
+                block: "B",
+                capacity: 4,
+                occupied: 3
+            },
+            {
+                room: "B-207",
+                block: "B",
+                capacity: 4,
+                occupied: 1
+            },
+            {
+                room: "C-305",
+                block: "C",
+                capacity: 4,
+                occupied: 2
+            }
+        ];
+
+
+    function saveData() {
+        localStorage.setItem(
+            "applications",
+            JSON.stringify(applications)
+        );
+
+        localStorage.setItem(
+            "rooms",
+            JSON.stringify(rooms)
+        );
+    }
+
+
+    function displayApplications() {
+
+        let table =
+            document.getElementById("applicationTable");
+
+        table.innerHTML = "";
+
+        applications.forEach(app => {
+
+            let row = document.createElement("tr");
+
+            let buttonText =
+                app.status === "Pending"
+                    ? "Allocate Room"
+                    : app.room;
+
+            let disabled =
+                app.status !== "Pending"
+                    ? "disabled"
+                    : "";
+
+            row.innerHTML = `
+                <td>${app.name}</td>
+                <td>${app.course}</td>
+                <td>Block ${app.block}</td>
+                <td>${app.status}</td>
+                <td>
+                    <button
+                        onclick="allocateRoom(${app.id})"
+                        ${disabled}>
+                        ${buttonText}
+                    </button>
+                </td>
+            `;
+
+            table.appendChild(row);
+
+        });
+    }
+
+
+    function allocateRoom(id) {
+
+        let application =
+            applications.find(app => app.id === id);
+
+        if (!application) return;
+
+
+        let room =
+            rooms.find(r =>
+                r.block === application.block &&
+                r.occupied < r.capacity
+            );
+
+
+        if (!room) {
+
+            room =
+                rooms.find(r =>
+                    r.occupied < r.capacity
+                );
+
+        }
+
+
+        if (!room) {
+
+            alert("No rooms are available.");
+
+            return;
+        }
+
+
+        room.occupied++;
+
+        application.status = "Allocated";
+
+        application.room = room.room;
+
+        saveData();
+
+        displayApplications();
+
+        displayRooms();
+
+    }
+
+
+    function displayRooms() {
+
+        let grid =
+            document.getElementById("roomGrid");
+
+        grid.innerHTML = "";
+
+        rooms.forEach(room => {
+
+            let available =
+                room.capacity - room.occupied;
+
+            let status =
+                available === 0
+                    ? "Full"
+                    : available + " bed(s) available";
+
+            grid.innerHTML += `
+                <div class="room">
+                    <h3>${room.room}</h3>
+                    <p>Block ${room.block}</p>
+                    <p>
+                        ${room.occupied}/${room.capacity}
+                        occupied
+                    </p>
+                    <strong class="${available === 0 ? 'full' : 'available'}">
+                        ${status}
+                    </strong>
+                </div>
+            `;
+
+        });
+
+    }
+
+
+    displayApplications();
+    displayRooms();
+
+
+
+
+
+    let complaints =
+        JSON.parse(localStorage.getItem("complaints")) || [
+            {
+                id: 1,
+                student: "Ananya S",
+                room: "A-104",
+                complaint: "Water supply issue",
+                date: "04-10-2026",
+                status: "open"
+            },
+            {
+                id: 2,
+                student: "Meera K",
+                room: "B-201",
+                complaint: "Fan not working",
+                date: "04-10-2026",
+                status: "progress"
+            }
+        ];
+
+
+    function saveComplaints() {
+
+        localStorage.setItem(
+            "complaints",
+            JSON.stringify(complaints)
+        );
+
+    }
+
+
+    function displayComplaints() {
+
+        let list =
+            document.getElementById("complaintList");
+
+        list.innerHTML = "";
+
+
+        if (complaints.length === 0) {
+
+            list.innerHTML =
+                "<p>No complaints available.</p>";
+
+            return;
+        }
+
+
+        complaints.forEach(item => {
+
+            let statusText =
+                item.status === "open"
+                    ? "Open"
+                    : item.status === "progress"
+                    ? "In Progress"
+                    : "Resolved";
+
+
+            let action = "";
+
+            if (item.status === "open") {
+
+                action = `
+                    <button onclick="startWork(${item.id})">
+                        Start Work
+                    </button>
+                `;
+
+            } else if (item.status === "progress") {
+
+                action = `
+                    <button onclick="resolveComplaint(${item.id})">
+                        Mark Resolved
+                    </button>
+                `;
+
+            }
+
+
+            list.innerHTML += `
+
+                <div class="complaint">
+
+                    <h3>${item.complaint}</h3>
+
+                    <p>
+                        <strong>Student:</strong>
+                        ${item.student}
+                    </p>
+
+                    <p>
+                        <strong>Room:</strong>
+                        ${item.room}
+                    </p>
+
+                    <p>
+                        <strong>Date:</strong>
+                        ${item.date}
+                    </p>
+
+                    <span class="status ${item.status}">
+                        ${statusText}
+                    </span>
+
+                    <br><br>
+
+                    ${action}
+
+                </div>
+
+            `;
+
+        });
+
+    }
+
+
+    function startWork(id) {
+
+        let complaint =
+            complaints.find(c => c.id === id);
+
+        complaint.status = "progress";
+
+        saveComplaints();
+
+        displayComplaints();
+
+    }
+
+
+    function resolveComplaint(id) {
+
+        let complaint =
+            complaints.find(c => c.id === id);
+
+        complaint.status = "resolved";
+
+        saveComplaints();
+
+        displayComplaints();
+
+    }
+
+
+    function addComplaint(event) {
+
+        event.preventDefault();
+
+
+        let student =
+            document.getElementById("student").value;
+
+        let room =
+            document.getElementById("room").value;
+
+        let complaint =
+            document.getElementById("complaint").value;
+
+
+        complaints.push({
+
+            id: Date.now(),
+
+            student: student,
+
+            room: room,
+
+            complaint: complaint,
+
+            date: new Date().toLocaleDateString(),
+
+            status: "open"
+
+        });
+
+
+        saveComplaints();
+
+        displayComplaints();
+
+        event.target.reset();
+
+    }
+
+
+    displayComplaints();
+
+
+
+
+
+    let defaultMenu = {
+
+        monday: "Chapati, Dal, Mixed Veg, Rice",
+
+        tuesday: "Idli, Sambar, Chutney, Egg Curry",
+
+        wednesday: "Pulao, Raita, Paneer Curry, Papad",
+
+        thursday: "Dosa, Sambar, Chutney, Fish Curry",
+
+        friday: "Chapati, Chana Masala, Rice",
+
+        saturday: "Biryani, Raita, Boiled Egg",
+
+        sunday: "Puri, Aloo Curry, Kheer"
+
+    };
+
+
+    let menu =
+        JSON.parse(localStorage.getItem("hostelMenu"))
+        || defaultMenu;
+
+
+    function loadMenu() {
+
+        document.getElementById("monday").value =
+            menu.monday;
+
+        document.getElementById("tuesday").value =
+            menu.tuesday;
+
+        document.getElementById("wednesday").value =
+            menu.wednesday;
+
+        document.getElementById("thursday").value =
+            menu.thursday;
+
+        document.getElementById("friday").value =
+            menu.friday;
+
+        document.getElementById("saturday").value =
+            menu.saturday;
+
+        document.getElementById("sunday").value =
+            menu.sunday;
+
+    }
+
+
+    function saveMenu() {
+
+        menu = {
+
+            monday:
+                document.getElementById("monday").value,
+
+            tuesday:
+                document.getElementById("tuesday").value,
+
+            wednesday:
+                document.getElementById("wednesday").value,
+
+            thursday:
+                document.getElementById("thursday").value,
+
+            friday:
+                document.getElementById("friday").value,
+
+            saturday:
+                document.getElementById("saturday").value,
+
+            sunday:
+                document.getElementById("sunday").value
+
+        };
+
+
+        localStorage.setItem(
+            "hostelMenu",
+            JSON.stringify(menu)
+        );
+
+
+        document.getElementById("message").innerText =
+            "Menu updated successfully!";
+
+    }
+
+
+    loadMenu();
+
+
+
+
+function showSection(sectionId) {
+    document.querySelectorAll(".warden-section").forEach(function(section) {
+        section.style.display = "none";
     });
 
-    alert('Login submitted (connect this form to your backend).');
+    var selected = document.getElementById(sectionId);
+    if (selected) {
+        selected.style.display = "block";
+    }
 
-    return false;
+    document.querySelectorAll(".menu a[data-section]").forEach(function(link) {
+        link.classList.remove("active");
+    });
+
+    var activeLink = document.querySelector('.menu a[data-section="' + sectionId + '"]');
+    if (activeLink) {
+        activeLink.classList.add("active");
+    }
 }
 
-
-function handleForgotPassword(e) {
-    e.preventDefault();
-
-    const resetEmail =
-        document.getElementById('resetEmail').value;
-
-    console.log(
-        'Password reset requested for:',
-        resetEmail
-    );
-
-    alert(
-        'If this email is registered, a reset link has been sent.'
-    );
-
-    showLoginForm();
-
-    return false;
-}
-
-
-function showForgotPassword() {
-
-    document.getElementById('loginForm').style.display = 'none';
-
-    document.getElementById('forgotForm').style.display = 'block';
-
-    document.getElementById('loginFooter').style.display = 'none';
-
-    document.getElementById('errorMsg').style.display = 'none';
-
-    return false;
-}
-
-
-function showLoginForm() {
-
-    document.getElementById('forgotForm').style.display = 'none';
-
-    document.getElementById('loginForm').style.display = 'block';
-
-    document.getElementById('loginFooter').style.display = 'block';
-
-    return false;
-}
-
-
-function showError() {
-
-    document.getElementById('errorMsg').style.display = 'block';
-
-}
+document.addEventListener("DOMContentLoaded", function() {
+    showSection("overview");
+});
 
 </script>
 
