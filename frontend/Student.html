@@ -801,26 +801,68 @@
 
         <!-- Room Section -->
         <div id="room" class="content-section">
-              <div class="flex-row" style="margin-bottom: 25px;">
+            <div class="flex-row" style="margin-bottom: 25px;">
                 <div>
-                    <h2>Monthly Fee Payment</h2>
-                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Settle your monthly hostel fees securely.</p>
+                    <h2>Room & Application Status</h2>
+                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">View your current hostel allotment and room details.</p>
                 </div>
-                <div><span class="badge due" style="font-size: 0.9rem; padding: 8px 15px;">Total Due: ₹9,200</span></div>
+                <div><span class="badge resolved" style="font-size: 0.9rem; padding: 8px 15px;">Allotment Active</span></div>
             </div>
 
-            <div class="section-heading">PENDING DUES</div>
-            <div class="card-box flex-row" style="margin-bottom: 30px;">
-                <div>
-                    <h4 style="color: #3d1738; margin-bottom: 4px;">September 2026 Hostel Fee</h4>
-                    <p style="font-size: 0.85rem; color: #777;">Due Date: 10th September 2026</p>
+            <div class="section-heading">CURRENT ROOM DETAILS</div>
+            <div class="overview-stats-grid" style="margin-bottom: 30px;">
+                <div class="overview-card">
+                    <h4>Room Number</h4>
+                    <div class="card-main-val">C-305</div>
+                    <div class="card-sub-val">Block C</div>
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 1.2rem; font-weight: bold; color: #b33939; margin-bottom: 8px;">₹9,200</div>
-                    <button class="action-btn" onclick="alert('Redirecting to Secure Payment Gateway...')">Pay Now</button>
+                <div class="overview-card">
+                    <h4>Accommodation</h4>
+                    <div class="card-main-val">2-Sharing</div>
+                    <div class="card-sub-val">All-Inclusive</div>
+                </div>
+                <div class="overview-card">
+                    <h4>Allotment Status</h4>
+                    <div class="card-main-val" style="color: #27ae60;">Confirmed</div>
+                    <div class="card-sub-val">Academic Year 2026-27</div>
                 </div>
             </div>
+
+            <div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
+            <div class="card-box" style="margin-bottom: 30px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: center;">
+                    <select style="padding: 12px; border: 1px solid #ead6e4; border-radius: 6px; font-size: 0.9rem; background: white; color: #3d1738; outline: none;">
+                        <option>A Block</option>
+                        <option>B Block</option>
+                        <option selected>C Block</option>
+                    </select>
+                    <select style="padding: 12px; border: 1px solid #ead6e4; border-radius: 6px; font-size: 0.9rem; background: white; color: #3d1738; outline: none;" disabled>
+                        <option selected>2-Sharing Room</option>
+                    </select>
+                    <button class="action-btn" onclick="alert('Room application submitted successfully!')">Submit application</button>
+                </div>
+            </div>
+
+            <div class="section-heading">ROOMMATE INFORMATION</div>
+            <div class="card-box flex-row" style="margin-bottom: 30px;">
+                <div>
+                    <h4 style="color: #3d1738; margin-bottom: 4px;">Rahul Sharma</h4>
+                    <p style="font-size: 0.85rem; color: #777;">Roll No: CS-2024-118 · Contact: +91 98765 43210</p>
+                </div>
+                <div><span class="badge event">ASSIGNED BED 2</span></div>
+            </div>
+
+            <div class="section-heading">APPLICATION HISTORY</div>
+            <table class="custom-table">
+                <thead>
+                    <tr><th>Application ID</th><th>Type</th><th>Applied Date</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>#APP-2026-089</td><td>Hostel & Room Renewal (C-305)</td><td>2026-06-10</td><td><span class="badge paid">APPROVED</span></td></tr>
+                </tbody>
+            </table>
         </div>
+        
 
         <!-- Fee Payment Section -->
         <div id="fees" class="content-section">
@@ -849,7 +891,7 @@
                         <td>Completed</td>
                     </tr>
                     <tr>
-                        <td>January 2026</td>
+                        <td>July 2026</td>
                         <td>₹9,200</td>
                         <td>2026-01-10</td>
                         <td>Completed</td>
