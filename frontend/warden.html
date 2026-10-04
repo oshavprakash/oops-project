@@ -1060,10 +1060,10 @@
 <li><a data-section="rooms" href="#rooms" onclick="showSection('rooms'); return false;">🔑 Applications &amp; Rooms</a></li>
 <li><a data-section="complaints" href="#complaints" onclick="showSection('complaints'); return false;">🚩 Complaints</a></li>
 <li><a data-section="mess" href="#mess" onclick="showSection('mess'); return false;">🍽️ Mess Details</a></li>
-<li><a href="#">📦 Inventory &amp; Records</a></li>
-<li><a href="#">📢 Announcements</a></li>
+<li><a data-section="inventory" href="#inventory" onclick="showSection('inventory'); return false;">📦 Inventory &amp; Records</a></li>
+<li><a data-section="announcements" href="#announcements" onclick="showSection('announcements'); return false;">📢 Announcements</a></li>
 </ul>
-<div class="signout">Sign out</div>
+<div class="signout" onclick="signOut()">Sign out</div>
 </div>
 
 <div class="main">
@@ -1183,6 +1183,58 @@
 <div id="message"></div>
 </div>
 
+    </div>
+
+    <div id="inventory" class="warden-section">
+        <div class="dashboard-label">WARDEN DASHBOARD</div>
+        <h1>Inventory &amp; Records</h1>
+
+        <div class="section">
+            <h2>Inventory &amp; Assets</h2>
+
+            <div class="list-row">
+                <div class="list-row-content">
+                    <h5>Study tables</h5>
+                    <p>A Block · qty 60</p>
+                </div>
+                <span class="badge resolved">Good</span>
+            </div>
+
+            <div class="list-row">
+                <div class="list-row-content">
+                    <h5>Water coolers</h5>
+                    <p>B Block · qty 4</p>
+                </div>
+                <span class="badge open">Needs Service</span>
+            </div>
+
+            <div class="list-row">
+                <div class="list-row-content">
+                    <h5>Fire extinguishers</h5>
+                    <p>C Block · qty 12</p>
+                </div>
+                <span class="badge resolved">Good</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="announcements" class="warden-section">
+        <div class="dashboard-label">WARDEN DASHBOARD</div>
+        <h1>Announcements</h1>
+
+        <div class="section">
+            <h2>Post Announcement</h2>
+            <form onsubmit="postAnnouncement(event)">
+                <input id="announcementTitle" placeholder="Announcement title" required type="text">
+                <button type="submit">Post</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>Announcements</h2>
+            <div id="announcementList"></div>
+        </div>
     </div>
 </div>
 
@@ -1731,6 +1783,59 @@
     loadMenu();
 
 
+
+
+    let announcements = JSON.parse(localStorage.getItem("wardenAnnouncements")) || [
+        { title: "Mess timing change from Aug 6", date: "2026-08-03" },
+        { title: "Hostel day fee collection open", date: "2026-08-01" }
+    ];
+
+    function saveAnnouncements() {
+        localStorage.setItem("wardenAnnouncements", JSON.stringify(announcements));
+    }
+
+    function displayAnnouncements() {
+        const list = document.getElementById("announcementList");
+        if (!list) return;
+
+        list.innerHTML = "";
+
+        announcements.forEach(function(item) {
+            list.innerHTML += `
+                <div class="list-row">
+                    <div class="list-row-content">
+                        <h5>${item.title}</h5>
+                        <p>${item.date}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function postAnnouncement(event) {
+        event.preventDefault();
+
+        const input = document.getElementById("announcementTitle");
+        const title = input.value.trim();
+
+        if (!title) return;
+
+        const today = new Date();
+        const date = today.getFullYear() + "-" +
+            String(today.getMonth() + 1).padStart(2, "0") + "-" +
+            String(today.getDate()).padStart(2, "0");
+
+        announcements.unshift({ title: title, date: date });
+        saveAnnouncements();
+        displayAnnouncements();
+        event.target.reset();
+    }
+
+    function signOut() {
+        window.location.href = "login1.html";
+    }
+
+    displayAnnouncements();
 
 
 function showSection(sectionId) {
