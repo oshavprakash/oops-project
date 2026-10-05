@@ -127,6 +127,12 @@
                 return;
             }
 
+            // Admin login
+            if (inputID === "admin123" && inputPassword === "Admin@123") {
+                window.location.href = "admin.html";
+                return;
+            }
+
             // Fetch registered users from localStorage
             let users = JSON.parse(localStorage.getItem("hostelUsers")) || [];
 
