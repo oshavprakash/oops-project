@@ -57,9 +57,9 @@
 
 <body>
     <div class="login-box">
-        <h1>Student Login</h1>
+        <h1>Login</h1>
         <form onsubmit="login(event)">
-            <label>Student ID / Username:</label>
+            <label>Username:</label>
             <input type="text"
                    id="studentId"
                    placeholder="Enter Username or ID"
@@ -128,7 +128,7 @@
             }
 
             // Admin login
-            if (inputID === "admin123" && inputPassword === "Admin@123") {
+            if (inputId === "admin123" && inputPassword === "Admin@123") {
                 window.location.href = "admin.html";
                 return;
             }
