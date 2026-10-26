@@ -681,81 +681,102 @@ html {
 </head>
 
 <body>
-
-
     <nav>
         <ul>
             <li><a href="#about">About</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a class="login-link" href="login1.html">Login</a></li>
-
+            <li><a href="#features">Features</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a class="login-link" href="login1.html">Login</a></li>
         </ul>
     </nav>
+
     <header>
-        <b>
-            <h1>HostelConnect</h1>
-        </b>
+        <h1>Features</h1>
         <h2>Welcome to HostelConnect!</h2>
-        
+        <div id="hostel-slider" style="position:relative; z-index:1; width:min(100%, 900px); height:clamp(210px, 38vw, 390px); margin:28px auto 0; overflow:hidden; border-radius:16px; box-shadow:0 10px 28px rgba(84,47,63,0.18);">
+            <img class="hostel-slide" src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1400&q=85" alt="Comfortable hostel accommodation" style="display:block; width:100%; height:100%; object-fit:cover;">
+            <img class="hostel-slide" src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1400&q=85" alt="Comfortable student bedroom" style="display:none; width:100%; height:100%; object-fit:cover;">
+            <img class="hostel-slide" src="https://images.unsplash.com/photo-1567521464027-f127ff144326?auto=format&fit=crop&w=1400&q=85" alt="Dining facilities" style="display:none; width:100%; height:100%; object-fit:cover;">
+            <img class="hostel-slide" src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=85" alt="Quiet study area" style="display:none; width:100%; height:100%; object-fit:cover;">
+            <button type="button" onclick="changeHostelSlide(-1)" aria-label="Previous image" style="position:absolute; top:50%; left:14px; transform:translateY(-50%); padding:8px 15px; border-radius:50%; background:rgba(84,47,63,0.82); color:#fff; font-size:24px;">&#10094;</button>
+            <button type="button" onclick="changeHostelSlide(1)" aria-label="Next image" style="position:absolute; top:50%; right:14px; transform:translateY(-50%); padding:8px 15px; border-radius:50%; background:rgba(84,47,63,0.82); color:#fff; font-size:24px;">&#10095;</button>
+            <div id="hostel-slide-dots" style="position:absolute; bottom:14px; left:0; right:0; display:flex; justify-content:center; gap:9px;">
+                <button type="button" onclick="showHostelSlide(0)" aria-label="Show image 1" style="width:11px; height:11px; padding:0; border-radius:50%; background:#C9A34E; box-shadow:none;"></button>
+                <button type="button" onclick="showHostelSlide(1)" aria-label="Show image 2" style="width:11px; height:11px; padding:0; border-radius:50%; background:#F5EEE7; box-shadow:none;"></button>
+                <button type="button" onclick="showHostelSlide(2)" aria-label="Show image 3" style="width:11px; height:11px; padding:0; border-radius:50%; background:#F5EEE7; box-shadow:none;"></button>
+                <button type="button" onclick="showHostelSlide(3)" aria-label="Show image 4" style="width:11px; height:11px; padding:0; border-radius:50%; background:#F5EEE7; box-shadow:none;"></button>
+            </div>
+        </div>
     </header>
+
     <main>
         <section id="about">
             <h2>About Hostel</h2>
             <p>Our student hostel provides the perfect blend of affordable living, academic convenience, and a vibrant community. Designed specifically for university students, we offer comfortably furnished shared and private rooms, dedicated quiet study lounges, and fully equipped communal spaces where you can cook, relax, and connect with peers. Located just minutes from campus, we ensure a safe and secure environment with 24/7 security, high-speed Wi-Fi, and a supportive atmosphere that helps you succeed academically while making lifelong friends.</p>
         </section>
-        <section id="features">
-            <h2>Features</h2>
-            <ul>
-                <li>Room Allocation: Streamlined process for assigning rooms to students.</li>
-                <li>Fee Payments: Easy and secure online payment of hostel fees.</li>
-                <li>Complaints: Submit and track complaints related to hostel facilities.</li>
-                <li>Mess Updates: Stay informed about mess menus, timings, and announcements.</li>
-                <li>Events: Get updates on hostel events and activities.</li>
-                <li>Inventory Management: Keep track of hostel inventory and resources.</li>
-                <li>Lost & Found: Report and locate lost items within the hostel.</li>
-                <li>Hostel Registration & Room Allocation – Apply for hostel accommodation, submit details and documents, and view room allocation.</li>
-                <li>Fee Management – Manage hostel fees, make online payments, and access digital receipts and payment history.</li>
-                <li>Complaint Management – Submit maintenance or disciplinary complaints and track their status.</li>
-                <li>Mess Management – View daily and weekly menus and specify food preferences or dietary requirements.</li>
-                <li>Lost & Found – Report lost belongings or post details of found items to help recover them.</li>
-                <li>Events & Announcements – Stay updated with hostel meetings, celebrations, programs, announcements, and maintenance schedules.</li>
-                <li>Inventory Management – Monitor hostel assets, their condition, maintenance requirements, and replacement records.</li>
-                <li>Roommate Preferences – Specify preferences such as study habits, sleeping schedules, cleanliness, and department for suitable roommate matching.</li>
-                <li>Secure Role-Based Access – Provides separate access and dashboards for students, wardens, and administrators.</li>
-            </ul>
-        </section>
-        <section id="contact">
-            <h2>Contact Us</h2>
-            <p>If you have any questions or feedback, feel free to reach out to us:</p>
-            <ul>
-                <li>Email: info@hostelconnect.com</li>
-                <li>Phone: +91 1234567890</li>
-                <li>Address: Near Model Engineering College, Thrikkakara, Kochi, Kerala</li>
-            </ul>
-        </section>
-        <section>
-            <form>
-                <div>
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" required placeholder="Enter your name...">
-                </div>
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required placeholder="Enter your email...">
-                </div>
-                <div>
-                    <label for="message">Message:</label>
-                    <textarea id="message" name="message" required placeholder="Enter your message..."></textarea>
-                </div>
-                <div>
-                    <button type="submit">Submit</button>
 
-                </div>
-            </form>
+        <section id="features">
+            <h2>Hostel Facilities</h2>
+            <ul>
+                <li>Accommodation: Provides rooms and living spaces for students.</li>
+                <li>Food and Dining: Offers daily meals, drinking water, and dining facilities.</li>
+                <li>Washroom Facilities: Provides shared or attached bathrooms and toilets.</li>
+                <li>Laundry Facilities: Provides washing machines, washing areas, and drying spaces.</li>
+                <li>Study Facilities: Provides quiet study rooms, reading areas, and common study spaces.</li>
+                <li>Recreational Facilities: Includes common rooms, television, indoor games, and outdoor sports facilities.</li>
+                <li>Internet Connectivity: Provides Wi-Fi access for academic and personal use.</li>
+                <li>Security: Includes security personnel, CCTV surveillance, controlled entry, and exit facilities.</li>
+                <li>Water and Electricity: Ensures access to clean water, electricity, and backup power where available.</li>
+                <li>Housekeeping and Cleanliness: Maintains the cleanliness of rooms, corridors, washrooms, and common areas.</li>
+                <li>Medical Facilities: Provides first-aid facilities and access to medical assistance during emergencies.</li>
+                <li>Maintenance Facilities: Supports repairs and maintenance of electrical equipment, plumbing, furniture, and other hostel facilities.</li>
+                <li>Parking Facilities: Provides designated parking spaces for bicycles, motorcycles, and other permitted vehicles.</li>
+                <li>Visitors' Facilities: Provides designated visitor areas and facilities for meeting guests.</li>
+                <li>Common Areas: Includes lounges, seating areas, gardens, and spaces for social interaction.</li>
+                <li>Waste Management: Provides waste collection bins, disposal facilities, and recycling arrangements.</li>
+                <li>Fire Safety: Includes fire extinguishers, emergency exits, alarms, and evacuation arrangements.</li>
+                <li>Accessibility: Provides accessible pathways and facilities for students with disabilities, where available.</li>
+            </ul>
         </section>
     </main>
+
+    <footer id="contact" style="background-color:#542F3F; color:#F5EEE7; padding:32px 25px; text-align:center;">
+        <h2 style="color:#F5EEE7; margin-top:0;">Contact Us</h2>
+        <p>If you have any questions, feel free to reach out to us:</p>
+        <ul style="list-style:none; padding:0; margin:0;">
+            <li style="padding:7px 0;">Email: info@hostelconnect.com</li>
+            <li style="padding:7px 0;">Phone: +91 1234567890</li>
+            <li style="padding:7px 0;">Address: Near Model Engineering College, Thrikkakara, Kochi, Kerala</li>
+        </ul>
+        <p style="margin-bottom:0;">&copy; HostelConnect</p>
+    </footer>
+
+<script>
+    let currentHostelSlide = 0;
+    let hostelSlideTimer;
+
+    function showHostelSlide(index) {
+        const slides = document.querySelectorAll(".hostel-slide");
+        const dots = document.querySelectorAll("#hostel-slide-dots button");
+        currentHostelSlide = (index + slides.length) % slides.length;
+
+        slides.forEach((slide, i) => {
+            slide.style.display = i === currentHostelSlide ? "block" : "none";
+        });
+        dots.forEach((dot, i) => {
+            dot.style.backgroundColor = i === currentHostelSlide ? "#C9A34E" : "#F5EEE7";
+        });
+        clearInterval(hostelSlideTimer);
+        hostelSlideTimer = setInterval(() => showHostelSlide(currentHostelSlide + 1), 4500);
+    }
+
+    function changeHostelSlide(direction) {
+        showHostelSlide(currentHostelSlide + direction);
+    }
+
+    hostelSlideTimer = setInterval(() => showHostelSlide(currentHostelSlide + 1), 4500);
+</script>
+
 </body>
 
-</html>
 </html>
