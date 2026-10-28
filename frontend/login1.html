@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Login - Hostel Connect</title>
+
     <style>
         body {
             margin: 0;
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background-color: rgb(245, 235, 242);
         }
+
         .login-box {
             width: 350px;
             margin: 100px auto;
@@ -16,10 +18,12 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(79, 42, 65, 0.2);
         }
+
         h1 {
             text-align: center;
             color: rgb(67, 41, 57);
         }
+
         input[type="text"],
         input[type="password"] {
             width: 100%;
@@ -27,6 +31,7 @@
             margin: 8px 0 15px;
             box-sizing: border-box;
         }
+
         button {
             width: 100%;
             padding: 10px;
@@ -36,128 +41,168 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
         .options {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .options a {
+
+        .options a,
+        .register a {
             color: rgb(105, 63, 89);
         }
+
         .register {
             text-align: center;
             margin-top: 20px;
         }
+
         .register a {
-            color: rgb(105, 63, 89);
             text-decoration: none;
         }
     </style>
 </head>
 
 <body>
+
     <div class="login-box">
         <h1>Login</h1>
-        <form onsubmit="login(event)">
-            <label>Username:</label>
-            <input type="text"
-                   id="studentId"
-                   placeholder="Enter Username or ID"
-                   required>
-            
+
+        <form id="loginForm">
+
+            <label>Student ID or Email:</label>
+            <input
+                type="text"
+                id="studentId"
+                placeholder="Enter Student ID or Email"
+                required
+            >
+
             <label>Password:</label>
-            <input type="password"
-                   id="studentPassword"
-                   placeholder="Enter Password"
-                   required>
-            
+            <input
+                type="password"
+                id="studentPassword"
+                placeholder="Enter Password"
+                required
+            >
+
             <div class="options">
                 <label>
                     <input type="checkbox" id="remember">
                     Remember Me
                 </label>
 
-                <a href="#" onclick="forgotPassword()">
-                    Forgot Password?
-                </a>
+                <a href="#" id="forgotLink">Forgot Password?</a>
             </div>
+
             <br>
 
             <label>
-                <input type="checkbox" onclick="showPassword()">
+                <input type="checkbox" id="showPassword">
                 Show Password
             </label>
 
-            <button type="submit">
-                Login
-            </button>
+            <button type="submit" id="loginButton">Login</button>
+
             <div class="register">
                 <p>New User?</p>
                 <a href="register.html">Register here!</a>
             </div>
+
         </form>
     </div>
 
     <script>
-        function showPassword() {
-            let passwordInput = document.getElementById("studentPassword");
-            if (passwordInput.type == "password") {
-                passwordInput.type = "text";
-            } else {
-                passwordInput.type = "password";
-            }
-        }
+        // Local backend address for development.
+        // This must change when the backend is deployed.
+        const API_URL = "http://localhost:8080/api/login";
 
-        window.onload = function() {
-            let savedId = localStorage.getItem("studentId");
-            if (savedId != null) {
-                document.getElementById("studentId").value = savedId;
-                document.getElementById("remember").checked = true;
-            }
-        };
+        const studentId = document.getElementById("studentId");
+        const studentPassword = document.getElementById("studentPassword");
+        const remember = document.getElementById("remember");
+        const showPassword = document.getElementById("showPassword");
+        const loginButton = document.getElementById("loginButton");
 
-        function login(event) {
+        window.addEventListener("load", function () {
+            const savedId = localStorage.getItem("studentId");
+
+            if (savedId) {
+                studentId.value = savedId;
+                remember.checked = true;
+            }
+        });
+
+        showPassword.addEventListener("change", function () {
+            studentPassword.type = this.checked ? "text" : "password";
+        });
+
+        document.getElementById("forgotLink").addEventListener("click", function (event) {
             event.preventDefault();
-            let inputId = document.getElementById("studentId").value.trim();
-            let inputPassword = document.getElementById("studentPassword").value;
 
-            let params = new URLSearchParams();
-            params.append("username", inputId);
-            params.append("password", inputPassword);
-
-            fetch("api/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: params.toString()
-            })
-            .then(response => response.json().then(data => ({ status: response.status, body: data })))
-            .then(res => {
-                let data = res.body;
-                if (res.status === 200 && data.success) {
-                    if (data.userName) {
-                        localStorage.setItem("studentName", data.userName);
-                    }
-                    if (document.getElementById("remember").checked) {
-                        localStorage.setItem("studentId", inputId);
-                    } else {
-                        localStorage.removeItem("studentId");
-                    }
-                    window.location.href = data.redirect || "Student.html";
-                } else {
-                    alert(data.message || "Invalid credentials. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error("Login error:", error);
-                alert("Unable to reach backend server. Please verify the server is running.");
-            });
-        }
-
-        function forgotPassword() {
             alert("Please contact your hostel administrator to reset your password.");
-        }
+        });
+
+        document.getElementById("loginForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const username = studentId.value.trim();
+            const password = studentPassword.value;
+
+            const params = new URLSearchParams();
+            params.append("username", username);
+            params.append("password", password);
+
+            loginButton.disabled = true;
+            loginButton.textContent = "Logging in...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: params.toString()
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    alert(data.message || "Login failed. Please check your credentials.");
+                    return;
+                }
+
+                if (data.userName) {
+                    localStorage.setItem("studentName", data.userName);
+                }
+
+                if (remember.checked) {
+                    localStorage.setItem("studentId", username);
+                } else {
+                    localStorage.removeItem("studentId");
+                }
+
+                window.location.href = data.redirect || "Student.html";
+
+            } catch (error) {
+                console.error("Login error:", error);
+
+                alert(
+                    "Unable to connect to the backend. " +
+                    "Check that the server is running and that the page can access it."
+                );
+
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = "Login";
+            }
+        });
     </script>
+
 </body>
 </html>
