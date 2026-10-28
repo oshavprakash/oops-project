@@ -121,44 +121,42 @@
             let inputId = document.getElementById("studentId").value.trim();
             let inputPassword = document.getElementById("studentPassword").value;
 
-            // Warden login
-            if (inputId === "warden123" && inputPassword === "Warden@123") {
-                window.location.href = "warden.html";
-                return;
-            }
+            let params = new URLSearchParams();
+            params.append("username", inputId);
+            params.append("password", inputPassword);
 
-            // Admin login
-            if (inputId === "admin123" && inputPassword === "Admin@123") {
-                window.location.href = "admin.html";
-                return;
-            }
-
-            // Fetch registered users from localStorage
-            let users = JSON.parse(localStorage.getItem("hostelUsers")) || [];
-
-            // Find if a matching user exists
-            let matchedUser = users.find(u => (u.username === inputId || u.email === inputId) && u.password === inputPassword);
-
-            if (!matchedUser) {
-                alert("Invalid credentials or user not registered. Please register first!");
-                return;
-            }
-
-            // Save the verified student's name for the dashboard greeting
-            localStorage.setItem("studentName", matchedUser.username);
-
-            if (document.getElementById("remember").checked) {
-                localStorage.setItem("studentId", inputId);
-            } else {
-                localStorage.removeItem("studentId");
-            }
-
-            // Route securely to the student dashboard
-            window.location.href = "Student.html";
+            fetch("api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: params.toString()
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(res => {
+                let data = res.body;
+                if (res.status === 200 && data.success) {
+                    if (data.userName) {
+                        localStorage.setItem("studentName", data.userName);
+                    }
+                    if (document.getElementById("remember").checked) {
+                        localStorage.setItem("studentId", inputId);
+                    } else {
+                        localStorage.removeItem("studentId");
+                    }
+                    window.location.href = data.redirect || "Student.html";
+                } else {
+                    alert(data.message || "Invalid credentials. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error("Login error:", error);
+                alert("Unable to reach backend server. Please verify the server is running.");
+            });
         }
 
         function forgotPassword() {
-            alert("Please contact your administrator to reset your password.");
+            alert("Please contact your hostel administrator to reset your password.");
         }
     </script>
 </body>

@@ -168,6 +168,10 @@
             let password = document.getElementById("password").value;
             let confirmPassword = document.getElementById("confirm_password").value;
 
+            if (username.length > 10) {
+                alert("Username / Student ID must be 10 characters or less.");
+                return;
+            }
             if (password.length < 8) {
                 alert("Password must be at least 8 characters long.");
                 return;
@@ -193,22 +197,32 @@
                 return;
             }
 
-            // Retrieve existing users or create an empty list
-            let users = JSON.parse(localStorage.getItem("hostelUsers")) || [];
+            // Submit registration to Java backend
+            let params = new URLSearchParams();
+            params.append("username", username);
+            params.append("email", email);
+            params.append("password", password);
 
-            // Check if user already exists
-            let existingUser = users.find(u => u.email === email || u.username === username);
-            if (existingUser) {
-                alert("User already registered with this username or email!");
-                return;
-            }
-
-            // Save new user
-            users.push({ username: username, email: email, password: password });
-            localStorage.setItem("hostelUsers", JSON.stringify(users));
-
-            alert("Registration successful! Please login.");
-            window.location.href = "login1.html";
+            fetch("api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: params.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || "Registration successful! Your application is PENDING approval by the warden.");
+                    window.location.href = "login1.html";
+                } else {
+                    alert(data.message || "Registration failed. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error("Registration error:", error);
+                alert("Unable to reach backend server. Please verify the server is running.");
+            });
         }
     </script>
 

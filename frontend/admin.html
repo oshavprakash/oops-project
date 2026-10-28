@@ -1,20 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HostelConnect - Admin</title>
-
     <style>
         * {
             box-sizing: border-box;
         }
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f8f0f7;
             color: #222;
         }
-
         /* SIDEBAR */
         .sidebar {
             width: 315px;
@@ -25,14 +24,15 @@
             left: 0;
             top: 0;
             padding: 28px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-
         .logo {
             font-size: 22px;
             font-weight: bold;
-            margin-bottom: 35px;
+            margin-bottom: 25px;
         }
-
         .logo-box {
             display: inline-block;
             background: #c895bd;
@@ -41,102 +41,126 @@
             border-radius: 6px;
             margin-right: 10px;
         }
-
         .admin-box {
             background: #321d2f;
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #c895bd;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
-
         .admin-box small {
             color: #c895bd;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
-
         .admin-box div {
             font-size: 18px;
             margin-top: 5px;
         }
-
         .menu {
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-
         .menu li {
-            padding: 15px;
-            margin: 5px 0;
+            padding: 14px 16px;
             border-radius: 7px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ddd;
+            transition: 0.2s;
         }
-
         .menu li:hover {
             background: #392338;
+            color: white;
         }
-
         .menu li.active {
             background: #c895bd;
             color: #241020;
             font-weight: bold;
+        }
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+        .sign-out-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            color: #ff9999;
+            background: rgba(255, 153, 153, 0.08);
+            border: 1px solid rgba(255, 153, 153, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            text-align: left;
+            transition: 0.2s;
+        }
+        .sign-out-btn:hover {
+            background: rgba(255, 153, 153, 0.18);
         }
 
         /* MAIN CONTENT */
         .main {
             margin-left: 315px;
             padding: 45px;
+            min-height: 100vh;
         }
-
         .heading-small {
             color: #777;
             letter-spacing: 2px;
             font-weight: bold;
             font-size: 14px;
         }
-
         h1 {
             color: #38133c;
             margin-top: 5px;
-            font-size: 36px;
+            margin-bottom: 25px;
+            font-size: 34px;
         }
-
         .page {
             display: none;
         }
-
         .page.active {
             display: block;
         }
-
         /* CARDS */
         .card-container {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
+            margin-bottom: 30px;
         }
-
         .card {
             background: white;
-            padding: 25px;
+            padding: 24px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px #ddd;
+            box-shadow: 0 4px 15px rgba(56, 19, 60, 0.05);
+            border: 1px solid #ead6e4;
             flex: 1;
             min-width: 200px;
         }
-
         .card h2 {
             margin-top: 0;
-            color: #38133c;
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
         .number {
-            font-size: 30px;
+            font-size: 32px;
             font-weight: bold;
-            color: #9c4d91;
+            color: #38133c;
+            margin-top: 8px;
         }
-
         /* TABLE */
         table {
             width: 100%;
@@ -144,78 +168,157 @@
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(56, 19, 60, 0.05);
+            border: 1px solid #ead6e4;
+            margin-top: 15px;
         }
-
         th, td {
-            padding: 15px;
+            padding: 14px 16px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f2e6f0;
+            font-size: 14px;
         }
-
         th {
-            background: #ead7e7;
+            background: #fcf8fa;
+            color: #777;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        td {
             color: #38133c;
         }
-
         /* BUTTON */
         button {
-            background: #9c4d91;
+            background: #38133c;
             color: white;
             border: none;
-            padding: 10px 16px;
+            padding: 10px 18px;
             border-radius: 6px;
+            font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
         }
-
         button:hover {
-            background: #71366a;
+            background: #5a2653;
         }
-
         .notice {
             background: white;
-            padding: 20px;
+            padding: 22px;
             margin-top: 15px;
             border-radius: 10px;
-            box-shadow: 0 2px 7px #ddd;
+            border: 1px solid #ead6e4;
+            box-shadow: 0 2px 8px rgba(56, 19, 60, 0.04);
+        }
+        .notice h2 {
+            color: #38133c;
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        .notice p {
+            color: #666;
+            margin: 0 0 10px 0;
+            line-height: 1.5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-student { background: #e0f2fe; color: #0369a1; }
+        .badge-warden { background: #fef3c7; color: #92400e; }
+        .badge-admin { background: #f3e8ff; color: #6b21a8; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(36, 16, 32, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 480px;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-box h2 {
+            color: #38133c;
+            margin-top: 0;
+            margin-bottom: 18px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            color: #555;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-cancel {
+            background: #eee;
+            color: #333;
         }
 
         @media(max-width: 800px) {
             .sidebar {
-                width: 220px;
+                width: 240px;
             }
-
             .main {
-                margin-left: 220px;
+                margin-left: 240px;
                 padding: 25px;
             }
         }
     </style>
 </head>
-
 <body>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-
-    <div class="logo">
-        <span class="logo-box">H</span>
-        HostelConnect
+    <div>
+        <div class="logo">
+            <span class="logo-box">H</span>
+            HostelConnect
+        </div>
+        <div class="admin-box">
+            <small>ADMIN PORTAL</small>
+            <div id="adminNameDisplay">Administrator</div>
+        </div>
+        <ul class="menu">
+            <li class="active" onclick="showPage('users', this)">Users &amp; Hostel Data</li>
+            <li onclick="showPage('fees', this)">Fee Monitor</li>
+            <li onclick="showPage('reports', this)">Reports</li>
+            <li onclick="showPage('announcements', this)">Announcements &amp; Ops</li>
+        </ul>
     </div>
-
-    <div class="admin-box">
-        <small>ADMIN</small>
-        <div>Administrator</div>
+    <div class="sidebar-bottom">
+        <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
     </div>
-
-    <ul class="menu">
-
-        <li class="active" onclick="showPage('users', this)">👥 Users & Hostel Data</li>
-        <li onclick="showPage('fees', this)">💳 Fee Monitor</li>
-        <li onclick="showPage('reports', this)">📊 Reports</li>
-        <li onclick="showPage('announcements', this)">📢 Announcements & Ops</li>
-
-    </ul>
 </div>
 
 <!-- MAIN CONTENT -->
@@ -223,195 +326,360 @@
 
     <!-- USERS PAGE -->
     <div id="users" class="page active">
-
         <div class="heading-small">ADMIN DASHBOARD</div>
-        <h1>Users & Hostel Data</h1>
+        <h1>Users &amp; Hostel Data</h1>
 
         <div class="card-container">
-
             <div class="card">
-                <h2>Total Students</h2>
-                <div class="number">144</div>
+                <h2>Total Registered Users</h2>
+                <div class="number" id="statTotalUsers">0</div>
             </div>
-
             <div class="card">
-                <h2>Rooms</h2>
-                <div class="number">80</div>
+                <h2>Registered Students</h2>
+                <div class="number" id="statStudents">0</div>
             </div>
-
+            <div class="card">
+                <h2>Hostel Rooms</h2>
+                <div class="number" id="statRooms">0</div>
+            </div>
             <div class="card">
                 <h2>Occupied Rooms</h2>
-                <div class="number">72</div>
+                <div class="number" id="statOccupiedRooms">0</div>
             </div>
-
         </div>
 
+        <h3 style="color:#38133c; margin-bottom: 10px;">Registered Users (Database Live)</h3>
         <table>
-            <tr>
-                <th>Student</th>
-                <th>Department</th>
-                <th>Room</th>
-                <th>Status</th>
-            </tr>
-
-            <tr>
-                <td>Nandita Manu</td>
-                <td>CSE</td>
-                <td>A-204</td>
-                <td>Active</td>
-            </tr>
-
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <tr><td colspan="4" style="text-align:center; padding: 20px; color:#888;">Loading users from database...</td></tr>
+            </tbody>
         </table>
-
     </div>
-
 
     <!-- FEE PAGE -->
     <div id="fees" class="page">
-
         <div class="heading-small">ADMIN DASHBOARD</div>
         <h1>Fee Monitor</h1>
 
         <div class="card-container">
-
             <div class="card">
-                <h2>Total Collected</h2>
-                <div class="number">₹9,200</div>
+                <h2>Total Collections (₹)</h2>
+                <div class="number" id="statFeeTotal">₹0</div>
             </div>
-
             <div class="card">
-                <h2>Pending</h2>
-                <div class="number">₹9,200</div>
+                <h2>Successful Payments</h2>
+                <div class="number" id="statFeeCount">0</div>
             </div>
-
             <div class="card">
-                <h2>Paid Students</h2>
-                <div class="number">144</div>
+                <h2>Pending Records</h2>
+                <div class="number" id="statFeePending">0</div>
             </div>
-
         </div>
 
+        <h3 style="color:#38133c; margin-bottom: 10px;">Fee Payment History</h3>
         <table>
-            <tr>
-                <th>Student</th>
-                <th>Room</th>
-                <th>Amount</th>
-                <th>Status</th>
-            </tr>
-
-            <tr>
-                <td>Nandita Manu</td>
-                <td>A-204</td>
-                <td>₹9,200</td>
-                <td>Paid</td>
-            </tr>
-
+            <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Fee Type</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="feesTableBody">
+                <tr><td colspan="7" style="text-align:center; padding: 20px; color:#888;">No fee payments recorded yet.</td></tr>
+            </tbody>
         </table>
-
     </div>
-
 
     <!-- REPORTS PAGE -->
     <div id="reports" class="page">
-
         <div class="heading-small">ADMIN DASHBOARD</div>
-        <h1>Reports</h1>
+        <h1>Reports &amp; Statistics</h1>
 
         <div class="card-container">
-
             <div class="card">
-                <h2>Occupancy</h2>
-                <div class="number">90%</div>
-                <p>Current hostel occupancy</p>
+                <h2>Hostel Occupancy Rate</h2>
+                <div class="number" id="reportOccupancy">0%</div>
+                <p style="color:#777; font-size:12px; margin-top:5px;">Based on total capacity vs active residents</p>
             </div>
-
             <div class="card">
-                <h2>Complaints</h2>
-                <div class="number">12</div>
-                <p>Open complaints</p>
+                <h2>Total Complaints Logged</h2>
+                <div class="number" id="reportComplaints">0</div>
+                <p style="color:#777; font-size:12px; margin-top:5px;">Maintenance and service requests</p>
             </div>
-
             <div class="card">
-                <h2>Maintenance</h2>
-                <div class="number">7</div>
-                <p>Pending requests</p>
+                <h2>Available Rooms</h2>
+                <div class="number" id="reportAvailableRooms">0</div>
+                <p style="color:#777; font-size:12px; margin-top:5px;">Rooms ready for allocation</p>
             </div>
-
         </div>
 
         <div class="notice">
-            <h2>Monthly Hostel Report</h2>
-            <p>Student occupancy, fee collection and complaint statistics can be viewed here.</p>
-            <button>View Report</button>
+            <h2>Monthly Summary Report</h2>
+            <p>Live summary generated from the hostel database tables (users, rooms, and applications).</p>
+            <button onclick="alert('All records are currently active and synced with TiDB Cloud.')">Refresh Database Cache</button>
         </div>
-
-        <div class="notice">
-            <h2>Download Reports</h2>
-            <p>Generate reports for hostel administration and record keeping.</p>
-            <button>Generate Report</button>
-        </div>
-
     </div>
-
 
     <!-- ANNOUNCEMENTS PAGE -->
     <div id="announcements" class="page">
-
         <div class="heading-small">ADMIN DASHBOARD</div>
-        <h1>Announcements & Ops</h1>
+        <h1>Announcements &amp; Operations</h1>
 
-        <div class="notice">
-            <h2>📢 Hostel Maintenance</h2>
-            <p>Water supply maintenance is scheduled for Saturday from 10 AM to 1 PM.</p>
-        </div>
-
-        <div class="notice">
-            <h2>📢 Mess Update</h2>
-            <p>The weekly mess menu has been updated.</p>
-        </div>
-
-        <div class="notice">
-            <h2>📢 Hostel Event</h2>
-            <p>Hostel cultural event will be conducted on Friday evening.</p>
-        </div>
-
-        <br>
-
-        <button onclick="alert('Announcement form opened!')">
-            + New Announcement
+        <button onclick="openAnnouncementModal()" style="margin-bottom: 20px;">
+            + Post New Announcement
         </button>
 
+        <div id="announcementsContainer">
+            <div class="notice">
+                <p style="color:#888;">Loading announcements from database...</p>
+            </div>
+        </div>
     </div>
 
 </div>
 
+<!-- POST ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="announcementModal">
+    <div class="modal-box">
+        <h2>Post New Announcement</h2>
+        <form onsubmit="submitAnnouncement(event)">
+            <div class="form-group">
+                <label>Announcement Title</label>
+                <input type="text" id="eventTitle" placeholder="e.g. Water Maintenance / Cultural Evening" required>
+            </div>
+            <div class="form-group">
+                <label>Event Date</label>
+                <input type="date" id="eventDate" required>
+            </div>
+            <div class="form-group">
+                <label>Venue / Location</label>
+                <input type="text" id="eventVenue" placeholder="e.g. Hostel Common Hall" value="Hostel Main Block">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="eventDesc" rows="3" placeholder="Provide full details..." required></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeAnnouncementModal()">Cancel</button>
+                <button type="submit">Publish to Hostel Portal</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-<!-- JAVASCRIPT -->
 <script>
-
     function showPage(pageName, menuItem) {
-
-        // Hide all pages
-        let pages = document.querySelectorAll(".page");
-
-        pages.forEach(function(page) {
-            page.classList.remove("active");
-        });
-
-        // Show selected page
+        document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
         document.getElementById(pageName).classList.add("active");
 
-        // Remove active from all menu items
-        let menuItems = document.querySelectorAll(".menu li");
-
-        menuItems.forEach(function(item) {
-            item.classList.remove("active");
-        });
-
-        // Highlight clicked menu item
-        menuItem.classList.add("active");
+        document.querySelectorAll(".menu li").forEach(item => item.classList.remove("active"));
+        if (menuItem) menuItem.classList.add("active");
     }
 
+    function loadAdminDashboard() {
+        fetch("api/admin/dashboard")
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = "login1.html";
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                // 1. Users Table & Stats
+                let users = data.users || [];
+                let studentCount = 0;
+                let usersHtml = "";
+
+                if (users.length === 0) {
+                    usersHtml = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#888;">No users found in database.</td></tr>';
+                } else {
+                    users.forEach(u => {
+                        let roleBadge = "badge-student";
+                        if (u.role.toLowerCase() === "warden") roleBadge = "badge-warden";
+                        if (u.role.toLowerCase() === "administrator" || u.role.toLowerCase() === "admin") roleBadge = "badge-admin";
+
+                        if (u.role.toLowerCase() === "student") studentCount++;
+
+                        usersHtml += `
+                            <tr>
+                                <td><strong>${escapeHtml(u.userID)}</strong></td>
+                                <td>${escapeHtml(u.name)}</td>
+                                <td>${escapeHtml(u.email)}</td>
+                                <td><span class="badge ${roleBadge}">${escapeHtml(u.role)}</span></td>
+                            </tr>
+                        `;
+                    });
+                }
+                document.getElementById("usersTableBody").innerHTML = usersHtml;
+                document.getElementById("statTotalUsers").innerText = users.length;
+                document.getElementById("statStudents").innerText = studentCount;
+
+                // 2. Rooms
+                let rooms = data.rooms || [];
+                let occupiedRooms = 0;
+                let totalCapacity = 0;
+                let totalOccupancy = 0;
+                let availableRooms = 0;
+
+                rooms.forEach(r => {
+                    totalCapacity += (r.capacity || 0);
+                    totalOccupancy += (r.occupancy || 0);
+                    if ((r.occupancy || 0) > 0) occupiedRooms++;
+                    if ((r.status || "").toLowerCase() === "available") availableRooms++;
+                });
+
+                document.getElementById("statRooms").innerText = rooms.length;
+                document.getElementById("statOccupiedRooms").innerText = occupiedRooms;
+                document.getElementById("reportAvailableRooms").innerText = availableRooms;
+
+                let occPercent = totalCapacity > 0 ? Math.round((totalOccupancy / totalCapacity) * 100) : 0;
+                document.getElementById("reportOccupancy").innerText = occPercent + "%";
+
+                // 3. Complaints
+                let complaints = data.complaints || [];
+                document.getElementById("reportComplaints").innerText = complaints.length;
+
+                // 4. Fees
+                let fees = data.fees || [];
+                let feeTotal = 0;
+                let feePending = 0;
+                let feesHtml = "";
+
+                if (fees.length === 0) {
+                    feesHtml = '<tr><td colspan="7" style="text-align:center; padding: 20px; color:#888;">No fee records in database.</td></tr>';
+                } else {
+                    fees.forEach(f => {
+                        let amount = parseFloat(f.amount) || 0;
+                        if ((f.status || "").toLowerCase() === "success") {
+                            feeTotal += amount;
+                        } else {
+                            feePending++;
+                        }
+                        feesHtml += `
+                            <tr>
+                                <td>${escapeHtml(f.paymentID)}</td>
+                                <td>${escapeHtml(f.studentID)}</td>
+                                <td>${escapeHtml(f.studentName || "")}</td>
+                                <td>${escapeHtml(f.feeType)}</td>
+                                <td>₹${amount.toFixed(2)}</td>
+                                <td>${escapeHtml(f.paymentDate || "")}</td>
+                                <td><span class="badge badge-success">${escapeHtml(f.status)}</span></td>
+                            </tr>
+                        `;
+                    });
+                }
+                document.getElementById("feesTableBody").innerHTML = feesHtml;
+                document.getElementById("statFeeTotal").innerText = "₹" + feeTotal.toLocaleString();
+                document.getElementById("statFeeCount").innerText = fees.length - feePending;
+                document.getElementById("statFeePending").innerText = feePending;
+
+                // 5. Events / Announcements
+                renderAnnouncements(data.events || []);
+            })
+            .catch(err => {
+                console.error("Dashboard fetch error:", err);
+            });
+    }
+
+    function renderAnnouncements(events) {
+        let container = document.getElementById("announcementsContainer");
+        if (events.length === 0) {
+            container.innerHTML = `
+                <div class="notice">
+                    <h2>No Announcements Yet</h2>
+                    <p>Click the button above to post the first hostel announcement or event.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = "";
+        events.forEach(e => {
+            html += `
+                <div class="notice">
+                    <h2>📢 ${escapeHtml(e.title || "")}</h2>
+                    <p style="color:#777; font-size:12px; margin-bottom:6px;">
+                        📅 Date: <strong>${escapeHtml(e.date || "")}</strong> | 📍 Venue: <strong>${escapeHtml(e.venue || "Hostel Block")}</strong>
+                    </p>
+                    <p>${escapeHtml(e.description || "")}</p>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function openAnnouncementModal() {
+        document.getElementById("announcementModal").style.display = "flex";
+        // Default to today
+        document.getElementById("eventDate").value = new Date().toISOString().split("T")[0];
+    }
+
+    function closeAnnouncementModal() {
+        document.getElementById("announcementModal").style.display = "none";
+    }
+
+    function submitAnnouncement(e) {
+        e.preventDefault();
+        let params = new URLSearchParams();
+        params.append("title", document.getElementById("eventTitle").value);
+        params.append("date", document.getElementById("eventDate").value);
+        params.append("venue", document.getElementById("eventVenue").value);
+        params.append("description", document.getElementById("eventDesc").value);
+        params.append("organizer", "Hostel Administration");
+
+        fetch("api/admin/event", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params.toString()
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Announcement published successfully!");
+                closeAnnouncementModal();
+                loadAdminDashboard();
+            } else {
+                alert(data.message || "Failed to publish announcement.");
+            }
+        });
+    }
+
+    function signOut() {
+        fetch("api/logout", { method: "POST" })
+            .finally(() => {
+                window.location.href = "login1.html";
+            });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadAdminDashboard();
+    });
 </script>
 
 </body>

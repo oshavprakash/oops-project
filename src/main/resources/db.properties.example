@@ -1,0 +1,9 @@
+# TiDB Cloud Database Configuration
+db.host=gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+db.port=4000
+db.name=hostelconnect
+db.username=2DL4cWRn4GTLSek.root
+# Put your real database password below (do not commit this file to git):
+db.password=L09TBiQsmHXhbCXb
+# SSL Mode: REQUIRED or VERIFY_IDENTITY
+db.sslMode=REQUIRED

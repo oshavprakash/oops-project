@@ -1,0 +1,11 @@
+target/
+*.class
+*.war
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+.env
+db.properties
+src/main/resources/db.properties
