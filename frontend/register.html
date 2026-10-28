@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register - Hostel Connect</title>
 
     <style>
         * {
@@ -18,11 +19,11 @@
             align-items: center;
             background-color: #f5edf4;
             font-family: Arial, sans-serif;
+            padding: 20px 0;
         }
 
         .register-container {
             width: 474px;
-            min-height: 557px;
             padding: 36px 35px;
             background: #ffffff;
             border-radius: 11px;
@@ -30,7 +31,7 @@
         }
 
         h2 {
-            margin: 22px 0 26px;
+            margin: 10px 0 26px;
             text-align: center;
             font-size: 36px;
             color: #382044;
@@ -78,6 +79,11 @@
             background-color: #bd83a7;
         }
 
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
         .login-text {
             margin-top: 23px;
             text-align: center;
@@ -99,6 +105,7 @@
         @media (max-width: 550px) {
             .register-container {
                 width: calc(100% - 30px);
+                padding: 30px 24px;
             }
         }
     </style>
@@ -110,14 +117,25 @@
 
         <h2>Register</h2>
 
-        <form onsubmit="validateRegister(event)">
+        <form id="registerForm" onsubmit="validateRegister(event)">
 
-            <label for="username">Username:</label>
+            <label for="username">Student ID:</label>
             <input
                 type="text"
                 id="username"
                 name="username"
-                placeholder="Enter Username"
+                placeholder="Enter College Student ID"
+                maxlength="10"
+                required
+            >
+
+            <label for="fullname">Full Name:</label>
+            <input
+                type="text"
+                id="fullname"
+                name="fullname"
+                placeholder="Enter Full Name"
+                maxlength="100"
                 required
             >
 
@@ -127,6 +145,7 @@
                 id="email"
                 name="email"
                 placeholder="Enter Email ID"
+                maxlength="100"
                 required
             >
 
@@ -136,6 +155,7 @@
                 id="password"
                 name="password"
                 placeholder="Enter Password"
+                autocomplete="new-password"
                 required
             >
 
@@ -145,10 +165,11 @@
                 id="confirm_password"
                 name="confirm_password"
                 placeholder="Confirm Password"
+                autocomplete="new-password"
                 required
             >
 
-            <button type="submit">Register</button>
+            <button type="submit" id="registerButton">Register</button>
 
         </form>
 
@@ -160,71 +181,110 @@
     </div>
 
     <script>
-        function validateRegister(event) {
+        async function validateRegister(event) {
             event.preventDefault();
-            
-            let username = document.getElementById("username").value.trim();
-            let email = document.getElementById("email").value.trim();
-            let password = document.getElementById("password").value;
-            let confirmPassword = document.getElementById("confirm_password").value;
 
-            if (username.length > 10) {
-                alert("Username / Student ID must be 10 characters or less.");
+            const studentID = document.getElementById("username").value.trim();
+            const fullname = document.getElementById("fullname").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm_password").value;
+            const registerButton = document.getElementById("registerButton");
+
+            // Validate student ID
+            if (studentID.length === 0 || studentID.length > 10) {
+                alert("Student ID must contain 1 to 10 characters.");
                 return;
             }
+
+            // Validate full name
+            if (fullname.length === 0) {
+                alert("Please enter your full name.");
+                return;
+            }
+
+            // Validate password length
             if (password.length < 8) {
                 alert("Password must be at least 8 characters long.");
                 return;
             }
+
+            // Password must contain an uppercase letter
             if (!/[A-Z]/.test(password)) {
                 alert("Password must contain an uppercase letter.");
                 return;
             }
+
+            // Password must contain a lowercase letter
             if (!/[a-z]/.test(password)) {
                 alert("Password must contain a lowercase letter.");
                 return;
             }
+
+            // Password must contain a number
             if (!/[0-9]/.test(password)) {
                 alert("Password must contain a number.");
                 return;
             }
+
+            // Password must contain a special character
             if (!/[!@#$%^&*]/.test(password)) {
                 alert("Password must contain a special character.");
                 return;
             }
+
+            // Check password confirmation
             if (password !== confirmPassword) {
                 alert("Passwords do not match.");
                 return;
             }
 
-            // Submit registration to Java backend
-            let params = new URLSearchParams();
-            params.append("username", username);
+            const params = new URLSearchParams();
+            params.append("studentID", studentID);
+            params.append("name", fullname);
             params.append("email", email);
             params.append("password", password);
 
-            fetch("api/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: params.toString()
-            })
-            .then(response => response.json())
-            .then(data => {
+            registerButton.disabled = true;
+            registerButton.textContent = "Registering...";
+
+            try {
+                const response = await fetch("http://localhost:8080/api/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: params.toString()
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Registration failed.");
+                }
+
                 if (data.success) {
-                    alert(data.message || "Registration successful! Your application is PENDING approval by the warden.");
+                    alert(data.message || "Registration successful!");
                     window.location.href = "login1.html";
                 } else {
                     alert(data.message || "Registration failed. Please try again.");
                 }
-            })
-            .catch(error => {
+
+            } catch (error) {
                 console.error("Registration error:", error);
-                alert("Unable to reach backend server. Please verify the server is running.");
-            });
+
+                alert(
+                    error.message ||
+                    "Unable to reach the backend. Please check that the server is running."
+                );
+
+            } finally {
+                registerButton.disabled = false;
+                registerButton.textContent = "Register";
+            }
         }
     </script>
 
 </body>
 </html>
+
