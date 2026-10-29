@@ -2045,59 +2045,59 @@ async function loadEvents() {
 }
 
     function renderEventsSection(events) {
-    console.log("renderEventsSection() is running!");
-    console.log("=== RENDER EVENTS START ===");
-    console.log("Events received:", events);
+        console.log("renderEventsSection() is running!");
+        console.log("=== RENDER EVENTS START ===");
+        console.log("Events received:", events);
 
-    const container = document.getElementById("eventsContainer");
-    const countBadge = document.getElementById("eventCountBadge");
+        const container = document.getElementById("eventsContainer");
+        const countBadge = document.getElementById("eventCountBadge");
 
-    console.log("Events container:", container);
-    console.log("Count badge:", countBadge);
+        console.log("Events container:", container);
+        console.log("Count badge:", countBadge);
 
-    if (!container) {
-        console.error("Events container not found!");
-        return;
-    }
+        if (!container) {
+            console.error("Events container not found!");
+            return;
+        }
 
-    if (!Array.isArray(events)) {
-        console.error("Expected an array of events:", events);
-        container.innerHTML = "<p>Invalid event data received.</p>";
-        return;
-    }
+        if (!Array.isArray(events)) {
+            console.error("Expected an array of events:", events);
+            container.innerHTML = "<p>Invalid event data received.</p>";
+            return;
+        }
 
     // Count events scheduled in the current month
-    const now = new Date();
+        const now = new Date();
 
-    const thisMonthEvents = events.filter(event => {
-        const date = new Date(event.event_date ?? event.date);
+        const thisMonthEvents = events.filter(event => {
+            const date = new Date(event.event_date ?? event.date);
 
-        return !isNaN(date.getTime()) &&
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear();
-    });
+            return !isNaN(date.getTime()) &&
+                date.getMonth() === now.getMonth() &&
+                date.getFullYear() === now.getFullYear();
+        });
 
-    if (countBadge) {
-        const count = thisMonthEvents.length;
-        countBadge.textContent =
-            `${count} ${count === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
-    }
+        if (countBadge) {
+            const count = thisMonthEvents.length;
+            countBadge.textContent =
+                `${count} ${count === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
+        }
 
-    if (events.length === 0) {
-        container.innerHTML = "<p>No upcoming events.</p>";
-        return;
-    }
+        if (events.length === 0) {
+            container.innerHTML = "<p>No upcoming events.</p>";
+            return;
+        }
+    
+        container.innerHTML = events.map(event => {
+            const title = event.event_name ?? event.title ?? "Hostel Event";
+            const description = event.description ?? "";
+            const venue = event.venue ?? "Venue not specified";
 
-    container.innerHTML = events.map(event => {
-        const title = event.event_name ?? event.title ?? "Hostel Event";
-        const description = event.description ?? "";
-        const venue = event.venue ?? "Venue not specified";
-
-        const rawDate = event.event_date ?? event.date;
-        const rawTime = event.event_time ?? event.time;
-
-        const date = rawDate
-            ? new Date(rawDate).toLocaleDateString("en-IN", {
+            const rawDate = event.event_date ?? event.date;
+            const rawTime = event.event_time ?? event.time;
+    
+            const date = rawDate
+                ? new Date(rawDate).toLocaleDateString("en-IN", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -2157,6 +2157,8 @@ async function loadEvents() {
             </div>
         `;
     }).join("");
+    console.log("Events rendered:", container.querySelectorAll(".card-box").length);
+    console.log("Events container height:", container.getBoundingClientRect().height);
 }
 /* -------------------- LOST AND FOUND -------------------- */
 
