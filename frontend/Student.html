@@ -1471,8 +1471,9 @@ async function loadStudentDashboard() {
         }
 
         const data = await response.json();
-        console.log("FEE PAYMENT RESPONSE:", data);
-        console.log("OUTSTANDING FEES:", data.due);
+        console.log("FULL FEE DATA:", data);
+        console.log("PAID FEES:", data.paid);
+        console.log("DUE FEES:", data.due);
         console.log("TOTAL DUE:", data.totalDue);
         studentData = data;
 
