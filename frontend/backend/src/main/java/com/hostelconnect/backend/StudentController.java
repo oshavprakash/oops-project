@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,6 +24,8 @@ public class StudentController {
     public StudentController(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
+
+    
 
     // -------------------- STUDENT AUTHENTICATION --------------------
 
@@ -362,27 +365,98 @@ public class StudentController {
 
     // -------------------- PAY FEE --------------------
 
-    @PostMapping("/pay-fee")
-    public ResponseEntity<?> payFee(HttpSession session) {
-        try {
-            getStudentID(session);
+    
+    // -------------------- PAY FEES --------------------
 
-            // Do not mark fees as paid without processing
-            // and verifying an actual payment.
-            return ResponseEntity.status(
-                HttpStatus.NOT_IMPLEMENTED
-            ).body(
-                Map.of(
-                    "success", false,
-                    "message",
-                    "Online payment processing is not configured yet."
-                )
+    
+@PostMapping("/fees/pay")
+@Transactional
+public ResponseEntity<?> payFees(
+        @RequestBody Map<String, List<String>> request,
+        HttpSession session) {
+
+    try {
+        // Identify the currently logged-in student.
+        String sid = getStudentID(session);
+
+        List<String> paymentIDs = request.get("paymentIDs");
+
+        if (paymentIDs == null || paymentIDs.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                Map.of("message", "Select at least one fee.")
+            );
+        }
+
+        // Remove duplicate IDs.
+        paymentIDs = new ArrayList<>(
+            new LinkedHashSet<>(paymentIDs)
+        );
+
+        // Validate all selected fees before updating any of them.
+        for (String paymentID : paymentIDs) {
+
+            if (paymentID == null || paymentID.isBlank()) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("message", "Invalid payment ID.")
+                );
+            }
+
+            Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM FeePayments " +
+                "WHERE paymentID = ? AND studentID = ? " +
+                "AND status = 'Pending'",
+                Integer.class,
+                paymentID,
+                sid
             );
 
-        } catch (RuntimeException e) {
-            return handleError(e);
+            if (count == null || count != 1) {
+                return ResponseEntity.badRequest().body(
+                    Map.of(
+                        "message",
+                        "A selected fee is invalid or is no longer pending. Refresh and try again."
+                    )
+                );
+            }
         }
+
+        // Mark each selected fee as paid.
+        int paidCount = 0;
+
+        for (String paymentID : paymentIDs) {
+
+            int updated = jdbc.update(
+                "UPDATE FeePayments " +
+                "SET status = 'Paid', paymentDate = ? " +
+                "WHERE paymentID = ? AND studentID = ? " +
+                "AND status = 'Pending'",
+                LocalDate.now(),
+                paymentID,
+                sid
+            );
+
+            if (updated != 1) {
+                throw new IllegalStateException(
+                    "Fee update failed. Please refresh and try again."
+                );
+            }
+
+            paidCount++;
+        }
+
+        return ResponseEntity.ok(
+            Map.of(
+                "success", true,
+                "message", "Selected fees marked as paid.",
+                "paidCount", paidCount
+            )
+        );
+
+    } catch (RuntimeException e) {
+        return handleError(e);
     }
+}
+
 
     // -------------------- COMPLAINTS --------------------
 
