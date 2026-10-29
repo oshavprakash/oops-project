@@ -585,7 +585,7 @@ public class StudentController {
 
     // -------------------- EVENTS --------------------
 
-    
+
 @GetMapping("/events")
 public ResponseEntity<?> getEvents(
         @RequestParam(required = false) String all,
@@ -594,26 +594,28 @@ public ResponseEntity<?> getEvents(
     try {
         getStudentID(session);
 
+        String sql =
+            "SELECT event_id, event_name, description, " +
+            "event_date, event_time, venue, organized_by, created_at " +
+            "FROM Events ";
+
         if ("true".equalsIgnoreCase(all)) {
-            return ResponseEntity.ok(jdbc.queryForList(
-                "SELECT `event id`, `event name`, description, " +
-                "event_date, `event time`, venue, organized_by, created_at " +
-                "FROM Events ORDER BY event_date, `event time`"
-            ));
+            sql += "ORDER BY event_date, event_time";
+            return ResponseEntity.ok(jdbc.queryForList(sql));
         }
 
-        return ResponseEntity.ok(jdbc.queryForList(
-            "SELECT `event id`, `event name`, description, " +
-            "event_date, `event time`, venue, organized_by, created_at " +
-            "FROM Events WHERE event_date >= ? " +
-            "ORDER BY event_date, `event time`",
-            LocalDate.now()
-        ));
+        sql += "WHERE event_date >= ? " +
+               "ORDER BY event_date, event_time";
+
+        return ResponseEntity.ok(
+            jdbc.queryForList(sql, LocalDate.now())
+        );
 
     } catch (RuntimeException e) {
         return handleError(e);
     }
 }
+
 
 
     // -------------------- ROOMMATE PREFERENCES --------------------
