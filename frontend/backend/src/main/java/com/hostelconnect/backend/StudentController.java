@@ -55,12 +55,10 @@ public class StudentController {
     private Map<String, Object> room(String sid) {
     List<Map<String, Object>> rows = jdbc.queryForList(
         "SELECT a.allocationID, a.roomID AS roomID, " +
-        "r.hostelID, h.name AS hostelName, " +
         "r.roomType, r.capacity, r.occupancy, " +
         "a.allocationDate " +
         "FROM RoomAllocations a " +
         "LEFT JOIN Rooms r ON r.roomID = a.roomID " +
-        "LEFT JOIN Hostels h ON h.hostelID = r.hostelID " +
         "WHERE a.studentID = ? " +
         "ORDER BY a.allocationDate DESC LIMIT 1",
         sid
