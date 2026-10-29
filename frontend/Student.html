@@ -2096,6 +2096,7 @@ async function loadEvents() {
 }
 
     
+
 function renderEventsSection(events) {
     const container = document.getElementById("eventsContainer");
     const countBadge = document.getElementById("eventCountBadge");
@@ -2155,9 +2156,11 @@ function renderEventsSection(events) {
             const hours = Number(parts[0]);
             const minutes = Number(parts[1]);
 
-            if (parts.length >= 2 &&
+            if (
+                parts.length >= 2 &&
                 Number.isFinite(hours) &&
-                Number.isFinite(minutes)) {
+                Number.isFinite(minutes)
+            ) {
                 timeText =
                     `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
             }
@@ -2182,12 +2185,37 @@ function renderEventsSection(events) {
         `;
     }).join("");
 
+    // Events-only visibility fix
+    container.style.setProperty("display", "flex", "important");
+    container.style.setProperty("flex-direction", "column", "important");
+    container.style.setProperty("align-items", "stretch", "important");
+    container.style.setProperty("height", "auto", "important");
+    container.style.setProperty("min-height", "100px", "important");
+    container.style.setProperty("overflow", "visible", "important");
+
+    container.querySelectorAll(".hostel-event-card").forEach(card => {
+        card.style.setProperty("display", "block", "important");
+        card.style.setProperty("position", "relative", "important");
+        card.style.setProperty("height", "auto", "important");
+        card.style.setProperty("min-height", "100px", "important");
+        card.style.setProperty("width", "100%", "important");
+        card.style.setProperty("visibility", "visible", "important");
+        card.style.setProperty("opacity", "1", "important");
+        card.style.setProperty("box-sizing", "border-box", "important");
+        card.style.setProperty("background", "#fff", "important");
+        card.style.setProperty("color", "#3d1738", "important");
+        card.style.setProperty("padding", "18px", "important");
+        card.style.setProperty("margin-bottom", "10px", "important");
+        card.style.setProperty("border", "1px solid #ead6e4", "important");
+        card.style.setProperty("border-radius", "10px", "important");
+    });
+
     console.log(
         "Event cards inserted:",
         container.querySelectorAll(".hostel-event-card").length
     );
-    console.log("LIVE EVENTS HTML:", document.getElementById("eventsContainer").innerHTML);
 }
+
 
 /* -------------------- LOST AND FOUND -------------------- */
 
