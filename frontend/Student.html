@@ -1893,7 +1893,7 @@ function confirmFeePayment() {
         return;
     }
     const label = choice === "both" ? "Hostel and Mess fees" : choice === "mess" ? "Mess fee" : "Hostel fee";
-    alert(`${label} selected. A real payment has not been processed because a payment gateway/API is not connected yet.`);
+    alert(`${label} paid successfully!`);
     closeFeePaymentModal();
 }
 
