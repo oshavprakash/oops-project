@@ -1171,7 +1171,8 @@
                     <h2>Hostel Events & Activities</h2>
                     <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Browse upcoming cultural events, sports tournaments, and announced meetings.</p>
                 </div>
-                <div><span class="badge event" style="font-size: 0.9rem; padding: 8px 15px;">3 Events This Month</span></div>
+                <div><span class="badge event" id="eventCountBadge">
+                       0 EVENTS THIS MONTH</span></div>
             </div>
 
             <div class="section-heading">ANNOUNCED EVENTS</div>
@@ -1745,42 +1746,156 @@ function renderEventsSection(events) {
         "#events .section-heading + div"
     );
 
+    const countBadge = document.getElementById("eventCountBadge");
+
     if (!container) {
         console.error("Events container was not found.");
         return;
     }
 
-    if (!Array.isArray(events) || events.length === 0) {
+    if (!Array.isArray(events)) {
+        console.error("Events response is not an array:", events);
         container.innerHTML =
-            '<div class="card-box"><p style="color:#888;">No upcoming hostel events scheduled yet.</p></div>';
+            '<div class="card-box">Unable to load events.</div>';
+        return;
+    }
+
+    // Count events in the current month
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const thisMonthCount = events.filter(event => {
+        const rawDate = event.event_date ?? event.date ?? "";
+        const dateOnly = String(rawDate).split("T")[0];
+
+        const parts = dateOnly.split("-");
+
+        if (parts.length !== 3) {
+            return false;
+        }
+
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+
+        return year === currentYear && month === currentMonth + 1;
+    }).length;
+
+    // Update the event count badge
+    if (countBadge) {
+        countBadge.textContent =
+            `${thisMonthCount} EVENTS THIS MONTH`;
+    }
+
+    // Display a message if there are no events
+    if (events.length === 0) {
+        container.innerHTML =
+            '<div class="card-box">' +
+            '<p style="color:#888;">' +
+            'No upcoming hostel events scheduled yet.' +
+            '</p></div>';
         return;
     }
 
     let html = "";
 
-    events.forEach(e => {
-        const title = e.title ?? e["event name"] ?? "Hostel Event";
-        const date = e.date ?? e.event_date ?? "";
-        const time = e.time ?? e["event time"] ?? "TBA";
-        const venue = e.venue ?? "Hostel Main Block";
-        const description = e.description ?? "";
+    events.forEach(event => {
+        // Use the actual database column names
+        const title =
+            event.event_name ??
+            event.title ??
+            event["event name"] ??
+            "Hostel Event";
+
+        const rawDate =
+            event.event_date ??
+            event.date ??
+            "";
+
+        const rawTime =
+            event.event_time ??
+            event.time ??
+            event["event time"] ??
+            "";
+
+        const venue = event.venue ?? "Not announced";
+        const description = event.description ?? "";
+
+        // Format date: 2026-10-31 -> 31 Oct 2026
+        let formattedDate = "Date to be announced";
+
+        if (rawDate) {
+            const dateOnly = String(rawDate).split("T")[0];
+            const parts = dateOnly.split("-");
+
+            if (parts.length === 3) {
+                const year = Number(parts[0]);
+                const month = Number(parts[1]);
+                const day = Number(parts[2]);
+
+                const date = new Date(year, month - 1, day);
+
+                if (!Number.isNaN(date.getTime())) {
+                    formattedDate = date.toLocaleDateString(
+                        "en-GB",
+                        {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                        }
+                    );
+                }
+            }
+        }
+
+        // Format time: 19:10:00 -> 7:10 PM
+        let formattedTime = "Time to be announced";
+
+        if (rawTime) {
+            const timeString = String(rawTime);
+            const match = timeString.match(
+                /(\d{1,2}):(\d{2})/
+            );
+
+            if (match) {
+                const hours = Number(match[1]);
+                const minutes = Number(match[2]);
+
+                if (hours >= 0 && hours <= 23 && minutes <= 59) {
+                    const timeDate = new Date(2000, 0, 1, hours, minutes);
+
+                    formattedTime = timeDate.toLocaleTimeString(
+                        "en-US",
+                        {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true
+                        }
+                    );
+                }
+            }
+        }
 
         html += `
             <div class="card-box">
                 <div class="flex-gap">
                     <span class="badge event">ANNOUNCEMENT</span>
+
                     <h4 style="color:#3d1738;font-size:1.1rem;">
                         ${escapeHtml(String(title))}
                     </h4>
                 </div>
 
                 <p style="font-size:0.85rem;color:#777;margin-bottom:4px;">
-                    📅 Date: <strong>${escapeHtml(String(date))}</strong>
-                    | ⏰ Time: ${escapeHtml(String(time))}
+                    🗓️ Date:
+                    <strong>${escapeHtml(formattedDate)}</strong>
+                    | ⏰ Time:
+                    <strong>${escapeHtml(formattedTime)}</strong>
                 </p>
 
                 <p style="font-size:0.85rem;color:#555;">
-                    📍 Venue: ${escapeHtml(String(venue))}
+                    📍 Venue:
+                    ${escapeHtml(String(venue))}
                 </p>
 
                 <p style="font-size:0.85rem;color:#666;margin-top:6px;">
