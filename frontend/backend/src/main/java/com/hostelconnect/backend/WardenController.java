@@ -308,61 +308,68 @@ jdbcTemplate.update(
     }
 
     // GET: List events for the warden dashboard.
-    @GetMapping("/events")
-    public ResponseEntity<?> getEvents(HttpSession session) {
-        String wardenId = getWardenId(session);
-        if (wardenId == null) return forbidden();
+  @GetMapping("/events")
+public ResponseEntity<?> getEvents(HttpSession session) {
+    String wardenId = getWardenId(session);
 
-        String sql = """
-            SELECT `event id`, `event name`, description,
-                   event_date, `event time`, venue,
-                   organized_by, created_at
-            FROM Events
-            ORDER BY created_at DESC
-            """;
-
-        return ResponseEntity.ok(jdbcTemplate.queryForList(sql));
+    if (wardenId == null) {
+        return forbidden();
     }
+
+    String sql = """
+        SELECT event_id, event_name, description,
+               event_date, `event time`, venue,
+               organized_by, created_at
+        FROM Events
+        ORDER BY created_at DESC
+        """;
+
+    return ResponseEntity.ok(jdbcTemplate.queryForList(sql));
+}
 
     // POST: Create an event. Warden login is required.
     @PostMapping("/events")
-    public ResponseEntity<?> createEvent(
-            @RequestBody Map<String, Object> body,
-            HttpSession session) {
-        String wardenId = getWardenId(session);
-        if (wardenId == null) return forbidden();
+public ResponseEntity<?> createEvent(
+        @RequestBody Map<String, Object> body,
+        HttpSession session) {
 
-        String eventName = body.get("event_name") == null
+    String wardenId = getWardenId(session);
+
+    if (wardenId == null) {
+        return forbidden();
+    }
+
+    String eventName = body.get("event_name") == null
             ? "" : body.get("event_name").toString().trim();
 
-        String description = body.get("description") == null
+    String description = body.get("description") == null
             ? "" : body.get("description").toString().trim();
 
-        String eventDate = body.get("event_date") == null
+    String eventDate = body.get("event_date") == null
             ? "" : body.get("event_date").toString().trim();
 
-        String eventTime = body.get("event_time") == null
+    String eventTime = body.get("event_time") == null
             ? "" : body.get("event_time").toString().trim();
 
-        String venue = body.get("venue") == null
+    String venue = body.get("venue") == null
             ? "" : body.get("venue").toString().trim();
 
-        if (eventName.isBlank() || eventDate.isBlank()
-                || eventTime.isBlank() || venue.isBlank()) {
-            return ResponseEntity.badRequest().body(
+    if (eventName.isBlank() || eventDate.isBlank()
+            || eventTime.isBlank() || venue.isBlank()) {
+        return ResponseEntity.badRequest().body(
                 Map.of("error",
-                    "Event name, date, time and venue are required")
-            );
-        }
+                        "Event name, date, time and venue are required")
+        );
+    }
 
-        String sql = """
-            INSERT INTO Events
-                (`event name`, description, event_date,
-                 `event time`, venue, organized_by)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """;
+    String sql = """
+        INSERT INTO Events
+            (event_name, description, event_date,
+             `event time`, venue, organized_by)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """;
 
-        jdbcTemplate.update(
+    jdbcTemplate.update(
             sql,
             eventName,
             description,
@@ -370,13 +377,14 @@ jdbcTemplate.update(
             eventTime,
             venue,
             wardenId
-        );
+    );
 
-        return ResponseEntity.ok(
+    return ResponseEntity.ok(
             Map.of(
-                "success", true,
-                "message", "Event created successfully"
+                    "success", true,
+                    "message", "Event created successfully"
             )
-        );
-    }
+    );
+}
+
 }
