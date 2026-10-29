@@ -1853,6 +1853,7 @@ async function submitRoomChangeApp() {
 
 /* -------------------- FEE PAYMENT MODAL -------------------- */
 let latestDueFees = [];
+let latestPaidFees = [];
 
 function feeTypeGroup(fee) {
     const type = String(fee.feeType || fee.fee_type || "").toLowerCase();
@@ -1887,13 +1888,29 @@ function confirmFeePayment() {
         if (choice === "both") return true;
         return group === choice;
     });
+
     if (!selected.length) {
         alert("There are no due fees for this selection.");
         closeFeePaymentModal();
         return;
     }
+
     const label = choice === "both" ? "Hostel and Mess fees" : choice === "mess" ? "Mess fee" : "Hostel fee";
+    const paidAt = new Date();
+    const selectedSet = new Set(selected);
+
+    // Update the visible fee history after the user acknowledges the popup.
     alert(`${label} paid successfully!`);
+    latestPaidFees = latestPaidFees.concat(selected.map(fee => ({
+        ...fee,
+        status: "Paid",
+        paymentDate: paidAt.toISOString(),
+        paymentTime: paidAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+    })));
+    latestDueFees = latestDueFees.filter(fee => !selectedSet.has(fee));
+
+    const totalDue = latestDueFees.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0);
+    renderFeeSection(latestPaidFees, latestDueFees, totalDue);
     closeFeePaymentModal();
 }
 
@@ -2003,12 +2020,10 @@ async function loadStudentFees() {
 
         const data = await response.json();
 
+        latestPaidFees = Array.isArray(data.paid) ? data.paid : [];
         latestDueFees = Array.isArray(data.due) ? data.due : [];
-        renderFeeSection(
-            Array.isArray(data.paid) ? data.paid : [],
-            latestDueFees,
-            data.totalDue
-        );
+        const totalDue = data.totalDue ?? latestDueFees.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0);
+        renderFeeSection(latestPaidFees, latestDueFees, totalDue);
     } catch (error) {
         console.error("Error loading student fees:", error);
     }
