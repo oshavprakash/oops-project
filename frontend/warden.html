@@ -397,6 +397,7 @@ function renderApplications(applications) {
         const id = escapeHtml(app.applicationID ?? app.applicationId ?? "");
         const studentId = escapeHtml(app.studentID ?? app.studentId ?? "");
         const studentName = escapeHtml(app.studentName ?? app.name ?? "");
+        const studentEmail = escapeHtml(app.studentEmail ?? app.email ?? "");
 
         // The backend should return these fields when available.
         const allocated = app.allocated === true ||
