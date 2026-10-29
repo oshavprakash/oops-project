@@ -1459,6 +1459,12 @@
         }
 
 function renderFeeSection(fees) {
+    console.log("Fees received for display:", fees);
+
+console.log(
+    "Fee tables found:",
+    document.querySelectorAll("#fees .custom-table tbody").length
+);
     let tables = document.querySelectorAll("#fees .custom-table tbody");
 
     if (tables.length === 0) return;
