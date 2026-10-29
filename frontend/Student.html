@@ -2033,6 +2033,8 @@ document.getElementById("eventsContainer")?.innerHTML
         const events = await response.json();
 
         console.log("Events received from backend:", events);
+        console.log("First event:", events[0]);
+console.log("Events container:", document.getElementById("eventsContainer"));
 
         renderEventsSection(events);
 
