@@ -507,27 +507,38 @@
         });
     }
 
-    function updateComplaintStatus(complaintId, status) {
-        let params = new URLSearchParams();
-        params.append("complaintId", complaintId);
-        params.append("status", status);
-        params.append("remarks", "Updated by Warden on " + new Date().toLocaleDateString());
+async function updateComplaintStatus(complaintId, status) {
+    try {
+        const response = await fetch(
+            `${API_BASE}/warden/update-complaint`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    complaint_id: complaintId,
+                    status: status
+                })
+            }
+        );
 
-         fetch(`${API_BASE}/warden/update-complaint`, {
-            method: "POST",
-        credentials: "include",
-        headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: params.toString()
-})
-        .then(res => res.json())
-        .then(data => {
-            alert("Complaint updated to " + status);
-            loadWardenDashboard();
-        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Failed to update complaint.");
+            return;
+        }
+
+        alert("Complaint updated to " + status);
+        loadWardenDashboard();
+
+    } catch (error) {
+        console.error("Complaint update failed:", error);
+        alert("Could not connect to the server.");
     }
-
+}
     function addInventoryItem(e) {
         e.preventDefault();
         let params = new URLSearchParams();
