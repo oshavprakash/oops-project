@@ -823,7 +823,7 @@ async function allocateRoomToStudent(studentId) {
                 const details = document.createElement("p");
                 details.textContent =
                     "Date: " + (eventItem.event_date || "Not set") +
-                    " | Time: " + (eventItem["event time"] || "Not set");
+                    " | Time: " + (eventItem.event_time || "Not set");
 
                 const venue = document.createElement("p");
                 venue.textContent = "Venue: " + (eventItem.venue || "Not set");
