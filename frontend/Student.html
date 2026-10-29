@@ -893,6 +893,39 @@
     opacity: 1 !important;
 }
 
+#eventsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#eventsContainer .hostel-event-card {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 18px;
+    background: #fff;
+    color: #493D3D;
+    border: 1px solid #ead6e4;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(70, 30, 60, 0.08);
+}
+
+#eventsContainer .hostel-event-card h4 {
+    display: block;
+    margin: 10px 0;
+    color: #3d1738;
+    font-size: 1.1rem;
+}
+
+#eventsContainer .hostel-event-card p {
+    display: block;
+    margin: 6px 0;
+    color: #493D3D;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
     </style>
 </head>
 <body>
@@ -2078,60 +2111,52 @@ async function loadEvents() {
     }
 }
 
-    function renderEventsSection(events) {
-        console.log("renderEventsSection() is running!");
-        console.log("=== RENDER EVENTS START ===");
-        console.log("Events received:", events);
-
-        const container = document.getElementById("eventsContainer");
-        const countBadge = document.getElementById("eventCountBadge");
-
-        console.log("Events container:", container);
-        console.log("Count badge:", countBadge);
-
-        if (!container) {
-            console.error("Events container not found!");
-            return;
-        }
-
-        if (!Array.isArray(events)) {
-            console.error("Expected an array of events:", events);
-            container.innerHTML = "<p>Invalid event data received.</p>";
-            return;
-        }
-
-    // Count events scheduled in the current month
-        const now = new Date();
-
-        const thisMonthEvents = events.filter(event => {
-            const date = new Date(event.event_date ?? event.date);
-
-            return !isNaN(date.getTime()) &&
-                date.getMonth() === now.getMonth() &&
-                date.getFullYear() === now.getFullYear();
-        });
-
-        if (countBadge) {
-            const count = thisMonthEvents.length;
-            countBadge.textContent =
-                `${count} ${count === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
-        }
-
-        if (events.length === 0) {
-            container.innerHTML = "<p>No upcoming events.</p>";
-            return;
-        }
     
-        container.innerHTML = events.map(event => {
-            const title = event.event_name ?? event.title ?? "Hostel Event";
-            const description = event.description ?? "";
-            const venue = event.venue ?? "Venue not specified";
+function renderEventsSection(events) {
+    const container = document.getElementById("eventsContainer");
+    const countBadge = document.getElementById("eventCountBadge");
 
-            const rawDate = event.event_date ?? event.date;
-            const rawTime = event.event_time ?? event.time;
-    
-            const date = rawDate
-                ? new Date(rawDate).toLocaleDateString("en-IN", {
+    if (!container) {
+        console.error("Events container not found");
+        return;
+    }
+
+    if (!Array.isArray(events)) {
+        container.innerHTML = "<p>Could not load events.</p>";
+        console.error("Invalid events response:", events);
+        return;
+    }
+
+    const now = new Date();
+
+    const thisMonthEvents = events.filter(event => {
+        const d = new Date(event.event_date ?? event.date);
+
+        return !isNaN(d.getTime()) &&
+            d.getMonth() === now.getMonth() &&
+            d.getFullYear() === now.getFullYear();
+    });
+
+    if (countBadge) {
+        const count = thisMonthEvents.length;
+        countBadge.textContent =
+            `${count} ${count === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
+    }
+
+    if (events.length === 0) {
+        container.innerHTML = "<p>No upcoming events.</p>";
+        return;
+    }
+
+    container.innerHTML = events.map(event => {
+        const title = event.event_name ?? event.title ?? "Hostel Event";
+        const description = event.description ?? "";
+        const venue = event.venue ?? "Venue not specified";
+        const rawDate = event.event_date ?? event.date;
+        const rawTime = event.event_time ?? event.time;
+
+        const dateText = rawDate
+            ? new Date(rawDate).toLocaleDateString("en-IN", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -2139,61 +2164,46 @@ async function loadEvents() {
             })
             : "Date not specified";
 
-        let time = "Time not specified";
+        let timeText = "Time not specified";
 
         if (rawTime) {
-            const timeParts = String(rawTime).split(":");
-            const hours = Number(timeParts[0]);
-            const minutes = Number(timeParts[1]);
+            const parts = String(rawTime).split(":");
+            const hours = Number(parts[0]);
+            const minutes = Number(parts[1]);
 
-            if (
-                timeParts.length >= 2 &&
+            if (parts.length >= 2 &&
                 Number.isFinite(hours) &&
-                Number.isFinite(minutes)
-            ) {
-                const formattedHours = hours % 12 || 12;
-                const period = hours >= 12 ? "PM" : "AM";
-
-                time = `${formattedHours}:${String(minutes).padStart(2, "0")} ${period}`;
+                Number.isFinite(minutes)) {
+                timeText =
+                    `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
             }
         }
 
-        const escapeHtml = value =>
-            String(value).replace(/[&<>"']/g, char => ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#39;"
-            })[char]);
+        const safe = value => String(value).replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
 
         return `
-            <div class="card-box">
-                <div class="flex-gap">
-                    <span class="badge event">ANNOUNCEMENT</span>
-                    <h4 style="color:#3d1738;font-size:1.1rem;">
-                        ${escapeHtml(title)}
-                    </h4>
-                </div>
-
-                <p style="font-size:0.85rem;color:#777;margin-bottom:4px;">
-                    📅 Date: ${escapeHtml(date)}
-                    | ⏰ Time: ${escapeHtml(time)}
-                </p>
-
-                <p style="font-size:0.85rem;color:#555;">
-                    📍 Venue: ${escapeHtml(venue)}
-                </p>
-
-                <p style="font-size:0.85rem;color:#666;margin-top:6px;">
-                    ${escapeHtml(description)}
-                </p>
-            </div>
+            <article class="hostel-event-card">
+                <span class="badge event">ANNOUNCEMENT</span>
+                <h4>${safe(title)}</h4>
+                <p>📅 Date: ${safe(dateText)} | ⏰ Time: ${safe(timeText)}</p>
+                <p>📍 Venue: ${safe(venue)}</p>
+                <p>${safe(description)}</p>
+            </article>
         `;
     }).join("");
-    console.log("Events rendered:", container.querySelectorAll(".card-box").length);
-    console.log("Events container height:", container.getBoundingClientRect().height);
+
+    console.log(
+        "Event cards inserted:",
+        container.querySelectorAll(".hostel-event-card").length
+    );
 }
+
 /* -------------------- LOST AND FOUND -------------------- */
 
 function renderLostFoundSection(items) {
