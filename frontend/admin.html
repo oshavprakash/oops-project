@@ -1,19 +1,23 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HostelConnect - Admin</title>
+
     <style>
         * {
             box-sizing: border-box;
         }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f8f0f7;
             color: #222;
         }
+
         /* SIDEBAR */
         .sidebar {
             width: 315px;
@@ -28,11 +32,13 @@
             flex-direction: column;
             justify-content: space-between;
         }
+
         .logo {
             font-size: 22px;
             font-weight: bold;
             margin-bottom: 25px;
         }
+
         .logo-box {
             display: inline-block;
             background: #c895bd;
@@ -41,6 +47,7 @@
             border-radius: 6px;
             margin-right: 10px;
         }
+
         .admin-box {
             background: #321d2f;
             padding: 15px;
@@ -48,15 +55,18 @@
             border-left: 4px solid #c895bd;
             margin-bottom: 25px;
         }
+
         .admin-box small {
             color: #c895bd;
             font-weight: bold;
             letter-spacing: 1px;
         }
+
         .admin-box div {
             font-size: 18px;
             margin-top: 5px;
         }
+
         .menu {
             list-style: none;
             padding: 0;
@@ -65,6 +75,7 @@
             flex-direction: column;
             gap: 6px;
         }
+
         .menu li {
             padding: 14px 16px;
             border-radius: 7px;
@@ -76,19 +87,23 @@
             color: #ddd;
             transition: 0.2s;
         }
+
         .menu li:hover {
             background: #392338;
             color: white;
         }
+
         .menu li.active {
             background: #c895bd;
             color: #241020;
             font-weight: bold;
         }
+
         .sidebar-bottom {
             margin-top: auto;
             padding-top: 20px;
         }
+
         .sign-out-btn {
             display: flex;
             align-items: center;
@@ -104,6 +119,7 @@
             text-align: left;
             transition: 0.2s;
         }
+
         .sign-out-btn:hover {
             background: rgba(255, 153, 153, 0.18);
         }
@@ -114,24 +130,29 @@
             padding: 45px;
             min-height: 100vh;
         }
+
         .heading-small {
             color: #777;
             letter-spacing: 2px;
             font-weight: bold;
             font-size: 14px;
         }
+
         h1 {
             color: #38133c;
             margin-top: 5px;
             margin-bottom: 25px;
             font-size: 34px;
         }
+
         .page {
             display: none;
         }
+
         .page.active {
             display: block;
         }
+
         /* CARDS */
         .card-container {
             display: flex;
@@ -139,6 +160,7 @@
             flex-wrap: wrap;
             margin-bottom: 30px;
         }
+
         .card {
             background: white;
             padding: 24px;
@@ -148,6 +170,7 @@
             flex: 1;
             min-width: 200px;
         }
+
         .card h2 {
             margin-top: 0;
             color: #666;
@@ -155,12 +178,14 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .number {
             font-size: 32px;
             font-weight: bold;
             color: #38133c;
             margin-top: 8px;
         }
+
         /* TABLE */
         table {
             width: 100%;
@@ -172,12 +197,14 @@
             border: 1px solid #ead6e4;
             margin-top: 15px;
         }
+
         th, td {
             padding: 14px 16px;
             text-align: left;
             border-bottom: 1px solid #f2e6f0;
             font-size: 14px;
         }
+
         th {
             background: #fcf8fa;
             color: #777;
@@ -185,9 +212,11 @@
             font-size: 12px;
             letter-spacing: 0.5px;
         }
+
         td {
             color: #38133c;
         }
+
         /* BUTTON */
         button {
             background: #38133c;
@@ -199,9 +228,11 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         button:hover {
             background: #5a2653;
         }
+
         .notice {
             background: white;
             padding: 22px;
@@ -210,17 +241,20 @@
             border: 1px solid #ead6e4;
             box-shadow: 0 2px 8px rgba(56, 19, 60, 0.04);
         }
+
         .notice h2 {
             color: #38133c;
             font-size: 18px;
             margin-top: 0;
             margin-bottom: 8px;
         }
+
         .notice p {
             color: #666;
             margin: 0 0 10px 0;
             line-height: 1.5;
         }
+
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -229,37 +263,60 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        .badge-student { background: #e0f2fe; color: #0369a1; }
-        .badge-warden { background: #fef3c7; color: #92400e; }
-        .badge-admin { background: #f3e8ff; color: #6b21a8; }
-        .badge-success { background: #dcfce7; color: #15803d; }
+
+        .badge-student {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-warden {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-admin {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
 
         /* MODAL */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(36, 16, 32, 0.5);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
+
         .modal-box {
             background: white;
             padding: 30px;
             border-radius: 12px;
             width: 480px;
             max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
+
         .modal-box h2 {
             color: #38133c;
             margin-top: 0;
             margin-bottom: 18px;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 6px;
@@ -267,28 +324,33 @@
             font-size: 13px;
             color: #555;
         }
-        .form-group input, .form-group textarea {
+
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-family: inherit;
         }
+
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
             margin-top: 20px;
         }
+
         .btn-cancel {
             background: #eee;
             color: #333;
         }
 
-        @media(max-width: 800px) {
+        @media (max-width: 800px) {
             .sidebar {
                 width: 240px;
             }
+
             .main {
                 margin-left: 240px;
                 padding: 25px;
@@ -296,6 +358,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <!-- SIDEBAR -->
@@ -305,19 +368,31 @@
             <span class="logo-box">H</span>
             HostelConnect
         </div>
+
         <div class="admin-box">
             <small>ADMIN PORTAL</small>
             <div id="adminNameDisplay">Administrator</div>
         </div>
+
         <ul class="menu">
-            <li class="active" onclick="showPage('users', this)">Users &amp; Hostel Data</li>
-            <li onclick="showPage('fees', this)">Fee Monitor</li>
-            <li onclick="showPage('reports', this)">Reports</li>
-            <li onclick="showPage('announcements', this)">Announcements &amp; Ops</li>
+            <li class="active" onclick="showPage('users', this)">
+                Users &amp; Hostel Data
+            </li>
+
+            <li onclick="showPage('fees', this)">
+                Fee Monitor
+            </li>
+
+            <li onclick="showPage('announcements', this)">
+                Announcements &amp; Ops
+            </li>
         </ul>
     </div>
+
     <div class="sidebar-bottom">
-        <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+        <button class="sign-out-btn" onclick="signOut()">
+            Sign Out
+        </button>
     </div>
 </div>
 
@@ -334,21 +409,27 @@
                 <h2>Total Registered Users</h2>
                 <div class="number" id="statTotalUsers">0</div>
             </div>
+
             <div class="card">
                 <h2>Registered Students</h2>
                 <div class="number" id="statStudents">0</div>
             </div>
+
             <div class="card">
                 <h2>Hostel Rooms</h2>
                 <div class="number" id="statRooms">0</div>
             </div>
+
             <div class="card">
                 <h2>Occupied Rooms</h2>
                 <div class="number" id="statOccupiedRooms">0</div>
             </div>
         </div>
 
-        <h3 style="color:#38133c; margin-bottom: 10px;">Registered Users (Database Live)</h3>
+        <h3 style="color:#38133c; margin-bottom:10px;">
+            Registered Users (Database Live)
+        </h3>
+
         <table>
             <thead>
                 <tr>
@@ -358,8 +439,14 @@
                     <th>Role</th>
                 </tr>
             </thead>
+
             <tbody id="usersTableBody">
-                <tr><td colspan="4" style="text-align:center; padding: 20px; color:#888;">Loading users from database...</td></tr>
+                <tr>
+                    <td colspan="4"
+                        style="text-align:center; padding:20px; color:#888;">
+                        Loading users from database...
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -374,17 +461,22 @@
                 <h2>Total Collections (₹)</h2>
                 <div class="number" id="statFeeTotal">₹0</div>
             </div>
+
             <div class="card">
                 <h2>Successful Payments</h2>
                 <div class="number" id="statFeeCount">0</div>
             </div>
+
             <div class="card">
                 <h2>Pending Records</h2>
                 <div class="number" id="statFeePending">0</div>
             </div>
         </div>
 
-        <h3 style="color:#38133c; margin-bottom: 10px;">Fee Payment History</h3>
+        <h3 style="color:#38133c; margin-bottom:10px;">
+            Fee Payment History
+        </h3>
+
         <table>
             <thead>
                 <tr>
@@ -397,40 +489,16 @@
                     <th>Status</th>
                 </tr>
             </thead>
+
             <tbody id="feesTableBody">
-                <tr><td colspan="7" style="text-align:center; padding: 20px; color:#888;">No fee payments recorded yet.</td></tr>
+                <tr>
+                    <td colspan="7"
+                        style="text-align:center; padding:20px; color:#888;">
+                        No fee payments recorded yet.
+                    </td>
+                </tr>
             </tbody>
         </table>
-    </div>
-
-    <!-- REPORTS PAGE -->
-    <div id="reports" class="page">
-        <div class="heading-small">ADMIN DASHBOARD</div>
-        <h1>Reports &amp; Statistics</h1>
-
-        <div class="card-container">
-            <div class="card">
-                <h2>Hostel Occupancy Rate</h2>
-                <div class="number" id="reportOccupancy">0%</div>
-                <p style="color:#777; font-size:12px; margin-top:5px;">Based on total capacity vs active residents</p>
-            </div>
-            <div class="card">
-                <h2>Total Complaints Logged</h2>
-                <div class="number" id="reportComplaints">0</div>
-                <p style="color:#777; font-size:12px; margin-top:5px;">Maintenance and service requests</p>
-            </div>
-            <div class="card">
-                <h2>Available Rooms</h2>
-                <div class="number" id="reportAvailableRooms">0</div>
-                <p style="color:#777; font-size:12px; margin-top:5px;">Rooms ready for allocation</p>
-            </div>
-        </div>
-
-        <div class="notice">
-            <h2>Monthly Summary Report</h2>
-            <p>Live summary generated from the hostel database tables (users, rooms, and applications).</p>
-            <button onclick="alert('All records are currently active and synced with TiDB Cloud.')">Refresh Database Cache</button>
-        </div>
     </div>
 
     <!-- ANNOUNCEMENTS PAGE -->
@@ -438,13 +506,16 @@
         <div class="heading-small">ADMIN DASHBOARD</div>
         <h1>Announcements &amp; Operations</h1>
 
-        <button onclick="openAnnouncementModal()" style="margin-bottom: 20px;">
+        <button onclick="openAnnouncementModal()"
+                style="margin-bottom:20px;">
             + Post New Announcement
         </button>
 
         <div id="announcementsContainer">
             <div class="notice">
-                <p style="color:#888;">Loading announcements from database...</p>
+                <p style="color:#888;">
+                    Loading announcements from database...
+                </p>
             </div>
         </div>
     </div>
@@ -455,190 +526,300 @@
 <div class="modal-overlay" id="announcementModal">
     <div class="modal-box">
         <h2>Post New Announcement</h2>
+
         <form onsubmit="submitAnnouncement(event)">
             <div class="form-group">
                 <label>Announcement Title</label>
-                <input type="text" id="eventTitle" placeholder="e.g. Water Maintenance / Cultural Evening" required>
+                <input type="text"
+                       id="eventTitle"
+                       placeholder="e.g. Water Maintenance / Cultural Evening"
+                       required>
             </div>
+
             <div class="form-group">
                 <label>Event Date</label>
                 <input type="date" id="eventDate" required>
             </div>
+
             <div class="form-group">
                 <label>Venue / Location</label>
-                <input type="text" id="eventVenue" placeholder="e.g. Hostel Common Hall" value="Hostel Main Block">
+                <input type="text"
+                       id="eventVenue"
+                       placeholder="e.g. Hostel Common Hall"
+                       value="Hostel Main Block">
             </div>
+
             <div class="form-group">
                 <label>Description</label>
-                <textarea id="eventDesc" rows="3" placeholder="Provide full details..." required></textarea>
+                <textarea id="eventDesc"
+                          rows="3"
+                          placeholder="Provide full details..."
+                          required></textarea>
             </div>
+
             <div class="modal-actions">
-                <button type="button" class="btn-cancel" onclick="closeAnnouncementModal()">Cancel</button>
-                <button type="submit">Publish to Hostel Portal</button>
+                <button type="button"
+                        class="btn-cancel"
+                        onclick="closeAnnouncementModal()">
+                    Cancel
+                </button>
+
+                <button type="submit">
+                    Publish to Hostel Portal
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+
+    // SWITCH BETWEEN ADMIN PAGES
     function showPage(pageName, menuItem) {
-        document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.remove("active");
+        });
+
         document.getElementById(pageName).classList.add("active");
 
-        document.querySelectorAll(".menu li").forEach(item => item.classList.remove("active"));
-        if (menuItem) menuItem.classList.add("active");
+        document.querySelectorAll(".menu li").forEach(item => {
+            item.classList.remove("active");
+        });
+
+        if (menuItem) {
+            menuItem.classList.add("active");
+        }
     }
 
+
+    // LOAD ADMIN DASHBOARD DATA
     function loadAdminDashboard() {
+
         fetch("https://hostelconnect-backend-za3a.onrender.com/api/admin/dashboard", {
-    credentials: "include"
-})
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
-                    window.location.href = "login1.html";
-                    return null;
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (!data) return;
+            credentials: "include"
+        })
 
-                // 1. Users Table & Stats
-                let users = data.users || [];
-                let studentCount = 0;
-                let usersHtml = "";
+        .then(res => {
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = "login1.html";
+                return null;
+            }
 
-                if (users.length === 0) {
-                    usersHtml = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#888;">No users found in database.</td></tr>';
-                } else {
-                    users.forEach(u => {
-                        let roleBadge = "badge-student";
-                        if (u.role.toLowerCase() === "warden") roleBadge = "badge-warden";
-                        if (u.role.toLowerCase() === "administrator" || u.role.toLowerCase() === "admin") roleBadge = "badge-admin";
+            return res.json();
+        })
 
-                        if (u.role.toLowerCase() === "student") studentCount++;
+        .then(data => {
+            if (!data) return;
 
-                        usersHtml += `
-                            <tr>
-                                <td><strong>${escapeHtml(u.userID)}</strong></td>
-                                <td>${escapeHtml(u.name)}</td>
-                                <td>${escapeHtml(u.email)}</td>
-                                <td><span class="badge ${roleBadge}">${escapeHtml(u.role)}</span></td>
-                            </tr>
-                        `;
-                    });
-                }
-                document.getElementById("usersTableBody").innerHTML = usersHtml;
-                document.getElementById("statTotalUsers").innerText = users.length;
-                document.getElementById("statStudents").innerText = studentCount;
+            // 1. USERS TABLE AND STATISTICS
+            let users = data.users || [];
+            let studentCount = 0;
+            let usersHtml = "";
 
-                // 2. Rooms
-                let rooms = data.rooms || [];
-                let occupiedRooms = 0;
-                let totalCapacity = 0;
-                let totalOccupancy = 0;
-                let availableRooms = 0;
+            if (users.length === 0) {
+                usersHtml = `
+                    <tr>
+                        <td colspan="4"
+                            style="text-align:center; padding:20px; color:#888;">
+                            No users found in database.
+                        </td>
+                    </tr>
+                `;
+            } else {
 
-                rooms.forEach(r => {
-                    totalCapacity += (r.capacity || 0);
-                    totalOccupancy += (r.occupancy || 0);
-                    if ((r.occupancy || 0) > 0) occupiedRooms++;
-                    if ((r.status || "").toLowerCase() === "available") availableRooms++;
+                users.forEach(u => {
+
+                    let roleBadge = "badge-student";
+
+                    if (u.role.toLowerCase() === "warden") {
+                        roleBadge = "badge-warden";
+                    }
+
+                    if (
+                        u.role.toLowerCase() === "administrator" ||
+                        u.role.toLowerCase() === "admin"
+                    ) {
+                        roleBadge = "badge-admin";
+                    }
+
+                    if (u.role.toLowerCase() === "student") {
+                        studentCount++;
+                    }
+
+                    usersHtml += `
+                        <tr>
+                            <td><strong>${escapeHtml(u.userID)}</strong></td>
+                            <td>${escapeHtml(u.name)}</td>
+                            <td>${escapeHtml(u.email)}</td>
+                            <td>
+                                <span class="badge ${roleBadge}">
+                                    ${escapeHtml(u.role)}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
                 });
+            }
 
-                document.getElementById("statRooms").innerText = rooms.length;
-                document.getElementById("statOccupiedRooms").innerText = occupiedRooms;
-                document.getElementById("reportAvailableRooms").innerText = availableRooms;
+            document.getElementById("usersTableBody").innerHTML = usersHtml;
 
-                let occPercent = totalCapacity > 0 ? Math.round((totalOccupancy / totalCapacity) * 100) : 0;
-                document.getElementById("reportOccupancy").innerText = occPercent + "%";
+            document.getElementById("statTotalUsers").innerText = users.length;
 
-                // 3. Complaints
-                let complaints = data.complaints || [];
-                document.getElementById("reportComplaints").innerText = complaints.length;
+            document.getElementById("statStudents").innerText = studentCount;
 
-                // 4. Fees
-                let fees = data.fees || [];
-                let feeTotal = 0;
-                let feePending = 0;
-                let feesHtml = "";
 
-                if (fees.length === 0) {
-                    feesHtml = '<tr><td colspan="7" style="text-align:center; padding: 20px; color:#888;">No fee records in database.</td></tr>';
-                } else {
-                    fees.forEach(f => {
-                        let amount = parseFloat(f.amount) || 0;
-                        if ((f.status || "").toLowerCase() === "success") {
-                            feeTotal += amount;
-                        } else {
-                            feePending++;
-                        }
-                        feesHtml += `
-                            <tr>
-                                <td>${escapeHtml(f.paymentID)}</td>
-                                <td>${escapeHtml(f.studentID)}</td>
-                                <td>${escapeHtml(f.studentName || "")}</td>
-                                <td>${escapeHtml(f.feeType)}</td>
-                                <td>₹${amount.toFixed(2)}</td>
-                                <td>${escapeHtml(f.paymentDate || "")}</td>
-                                <td><span class="badge badge-success">${escapeHtml(f.status)}</span></td>
-                            </tr>
-                        `;
-                    });
+            // 2. ROOM STATISTICS
+            let rooms = data.rooms || [];
+            let occupiedRooms = 0;
+
+            rooms.forEach(r => {
+                if ((r.occupancy || 0) > 0) {
+                    occupiedRooms++;
                 }
-                document.getElementById("feesTableBody").innerHTML = feesHtml;
-                document.getElementById("statFeeTotal").innerText = "₹" + feeTotal.toLocaleString();
-                document.getElementById("statFeeCount").innerText = fees.length - feePending;
-                document.getElementById("statFeePending").innerText = feePending;
-
-                // 5. Events / Announcements
-                renderAnnouncements(data.events || []);
-            })
-            .catch(err => {
-                console.error("Dashboard fetch error:", err);
             });
+
+            document.getElementById("statRooms").innerText = rooms.length;
+
+            document.getElementById("statOccupiedRooms").innerText = occupiedRooms;
+
+
+            // 3. FEE PAYMENT DATA
+            let fees = data.fees || [];
+            let feeTotal = 0;
+            let feePending = 0;
+            let feesHtml = "";
+
+            if (fees.length === 0) {
+
+                feesHtml = `
+                    <tr>
+                        <td colspan="7"
+                            style="text-align:center; padding:20px; color:#888;">
+                            No fee records in database.
+                        </td>
+                    </tr>
+                `;
+
+            } else {
+
+                fees.forEach(f => {
+
+                    let amount = parseFloat(f.amount) || 0;
+
+                    if ((f.status || "").toLowerCase() === "success") {
+                        feeTotal += amount;
+                    } else {
+                        feePending++;
+                    }
+
+                    feesHtml += `
+                        <tr>
+                            <td>${escapeHtml(f.paymentID)}</td>
+                            <td>${escapeHtml(f.studentID)}</td>
+                            <td>${escapeHtml(f.studentName || "")}</td>
+                            <td>${escapeHtml(f.feeType)}</td>
+                            <td>₹${amount.toFixed(2)}</td>
+                            <td>${escapeHtml(f.paymentDate || "")}</td>
+                            <td>
+                                <span class="badge badge-success">
+                                    ${escapeHtml(f.status)}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById("feesTableBody").innerHTML = feesHtml;
+
+            document.getElementById("statFeeTotal").innerText =
+                "₹" + feeTotal.toLocaleString();
+
+            document.getElementById("statFeeCount").innerText =
+                fees.length - feePending;
+
+            document.getElementById("statFeePending").innerText = feePending;
+
+
+            // 4. ANNOUNCEMENTS
+            renderAnnouncements(data.events || []);
+
+        })
+
+        .catch(err => {
+            console.error("Dashboard fetch error:", err);
+        });
     }
 
+
+    // DISPLAY ANNOUNCEMENTS
     function renderAnnouncements(events) {
+
         let container = document.getElementById("announcementsContainer");
+
         if (events.length === 0) {
+
             container.innerHTML = `
                 <div class="notice">
                     <h2>No Announcements Yet</h2>
-                    <p>Click the button above to post the first hostel announcement or event.</p>
+                    <p>
+                        Click the button above to post the first hostel
+                        announcement or event.
+                    </p>
                 </div>
             `;
+
             return;
         }
 
         let html = "";
+
         events.forEach(e => {
+
             html += `
                 <div class="notice">
                     <h2>📢 ${escapeHtml(e.title || "")}</h2>
+
                     <p style="color:#777; font-size:12px; margin-bottom:6px;">
-                        📅 Date: <strong>${escapeHtml(e.date || "")}</strong> | 📍 Venue: <strong>${escapeHtml(e.venue || "Hostel Block")}</strong>
+                        📅 Date:
+                        <strong>${escapeHtml(e.date || "")}</strong>
+                        |
+                        📍 Venue:
+                        <strong>${escapeHtml(e.venue || "Hostel Block")}</strong>
                     </p>
+
                     <p>${escapeHtml(e.description || "")}</p>
                 </div>
             `;
         });
+
         container.innerHTML = html;
     }
 
+
+    // OPEN ANNOUNCEMENT FORM
     function openAnnouncementModal() {
+
         document.getElementById("announcementModal").style.display = "flex";
-        // Default to today
-        document.getElementById("eventDate").value = new Date().toISOString().split("T")[0];
+
+        document.getElementById("eventDate").value =
+            new Date().toISOString().split("T")[0];
     }
 
+
+    // CLOSE ANNOUNCEMENT FORM
     function closeAnnouncementModal() {
         document.getElementById("announcementModal").style.display = "none";
     }
 
+
+    // SUBMIT NEW ANNOUNCEMENT
     function submitAnnouncement(e) {
+
         e.preventDefault();
+
         let params = new URLSearchParams();
+
         params.append("title", document.getElementById("eventTitle").value);
         params.append("date", document.getElementById("eventDate").value);
         params.append("venue", document.getElementById("eventVenue").value);
@@ -647,30 +828,50 @@
 
         fetch("api/admin/event", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
             body: params.toString()
         })
+
         .then(res => res.json())
+
         .then(data => {
+
             if (data.success) {
+
                 alert("Announcement published successfully!");
+
                 closeAnnouncementModal();
+
                 loadAdminDashboard();
+
             } else {
+
                 alert(data.message || "Failed to publish announcement.");
             }
         });
     }
 
+
+    // SIGN OUT
     function signOut() {
-        fetch("api/logout", { method: "POST" })
-            .finally(() => {
-                window.location.href = "login1.html";
-            });
+
+        fetch("api/logout", {
+            method: "POST"
+        })
+
+        .finally(() => {
+            window.location.href = "login1.html";
+        });
     }
 
+
+    // PREVENT HTML INJECTION
     function escapeHtml(str) {
+
         if (!str) return "";
+
         return String(str)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -679,10 +880,14 @@
             .replace(/'/g, "&#039;");
     }
 
+
+    // LOAD DASHBOARD WHEN PAGE OPENS
     document.addEventListener("DOMContentLoaded", function() {
         loadAdminDashboard();
     });
+
 </script>
 
 </body>
 </html>
+```
