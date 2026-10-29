@@ -1272,6 +1272,8 @@
                 .then(data => {
                     if (!data) return;
                     studentData = data;
+                    console.log("Full dashboard response:", data);
+                    console.log("Room data:", data.room);
 
                     // 1. Profile Greeting
                     let name = "Student";
