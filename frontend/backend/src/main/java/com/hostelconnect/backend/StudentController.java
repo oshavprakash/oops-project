@@ -769,9 +769,167 @@ public ResponseEntity<?> getEvents(
             return handleError(e);
         }
     }
+    
+    // -------------------- MESS: MEAL TIMINGS --------------------
+
+    @GetMapping("/mess/timings")
+    public ResponseEntity<?> getMealTimings(HttpSession session) {
+        try {
+            getStudentID(session);
+
+            return ResponseEntity.ok(jdbc.queryForList(
+                "SELECT timing_id, meal_type, start_time, end_time, updated_at " +
+                "FROM MealTimings ORDER BY FIELD(" +
+                "meal_type, 'BREAKFAST', 'LUNCH', 'SNACKS', 'DINNER')"
+            ));
+
+        } catch (RuntimeException e) {
+            return handleError(e);
+        }
+    }
+
+    // -------------------- MESS: FOOD PREFERENCE --------------------
+
+    @GetMapping("/mess/preference")
+    public ResponseEntity<?> getMessPreference(HttpSession session) {
+        try {
+            String sid = getStudentID(session);
+
+            List<String> preferences = jdbc.query(
+                "SELECT food_preference FROM StudentFoodPreferences " +
+                "WHERE student_id = ?",
+                (rs, rowNum) -> rs.getString("food_preference"),
+                sid
+            );
+
+            String preference = preferences.isEmpty()
+                ? "VEG" : preferences.get(0);
+
+            return ResponseEntity.ok(
+                Map.of("foodPreference", preference)
+            );
+
+        } catch (RuntimeException e) {
+            return handleError(e);
+        }
+    }
+
+    @PutMapping("/mess/preference")
+    public ResponseEntity<?> saveMessPreference(
+            @RequestBody Map<String, String> body,
+            HttpSession session) {
+        try {
+            String sid = getStudentID(session);
+
+            String preference = body.getOrDefault(
+                "foodPreference", ""
+            ).trim().toUpperCase(Locale.ROOT);
+
+            if (!"VEG".equals(preference)
+                    && !"NON_VEG".equals(preference)) {
+                return ResponseEntity.badRequest().body(
+                    Map.of(
+                        "message",
+                        "Food preference must be VEG or NON_VEG"
+                    )
+                );
+            }
+
+            jdbc.update(
+                "INSERT INTO StudentFoodPreferences " +
+                "(student_id, food_preference) VALUES (?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "food_preference = ?, updated_at = CURRENT_TIMESTAMP",
+                sid, preference, preference
+            );
+
+            return ResponseEntity.ok(
+                Map.of(
+                    "message", "Food preference saved",
+                    "foodPreference", preference
+                )
+            );
+
+        } catch (RuntimeException e) {
+            return handleError(e);
+        }
+    }
+
+    // -------------------- MESS: MENU --------------------
+
+    @GetMapping("/mess/menu")
+    public ResponseEntity<?> getMessMenu(
+            @RequestParam(required = false) String date,
+            HttpSession session) {
+        try {
+            String sid = getStudentID(session);
+
+            LocalDate menuDate;
+
+            try {
+                menuDate = (date == null || date.isBlank())
+                    ? LocalDate.now()
+                    : LocalDate.parse(date);
+            } catch (java.time.format.DateTimeParseException e) {
+                return ResponseEntity.badRequest().body(
+                    Map.of(
+                        "message",
+                        "Invalid date. Use YYYY-MM-DD format"
+                    )
+                );
+            }
+
+            List<String> preferences = jdbc.query(
+                "SELECT food_preference FROM StudentFoodPreferences " +
+                "WHERE student_id = ?",
+                (rs, rowNum) -> rs.getString("food_preference"),
+                sid
+            );
+
+            String preference = preferences.isEmpty()
+                ? "VEG" : preferences.get(0);
+
+            List<Map<String, Object>> menu;
+
+            if ("NON_VEG".equalsIgnoreCase(preference)) {
+                // NON_VEG students can see both VEG and NON_VEG items.
+                menu = jdbc.queryForList(
+                    "SELECT menu_id, meal_type, item_name, food_category, " +
+                    "menu_date, available " +
+                    "FROM MessMenu " +
+                    "WHERE menu_date = ? AND available = TRUE " +
+                    "ORDER BY FIELD(meal_type, 'BREAKFAST', 'LUNCH', " +
+                    "'SNACKS', 'DINNER'), item_name",
+                    menuDate
+                );
+            } else {
+                // VEG students can see only vegetarian items.
+                menu = jdbc.queryForList(
+                    "SELECT menu_id, meal_type, item_name, food_category, " +
+                    "menu_date, available " +
+                    "FROM MessMenu " +
+                    "WHERE menu_date = ? AND available = TRUE " +
+                    "AND food_category = 'VEG' " +
+                    "ORDER BY FIELD(meal_type, 'BREAKFAST', 'LUNCH', " +
+                    "'SNACKS', 'DINNER'), item_name",
+                    menuDate
+                );
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("date", menuDate.toString());
+            result.put("foodPreference", preference);
+            result.put("menu", menu);
+
+            return ResponseEntity.ok(result);
+
+        } catch (RuntimeException e) {
+            return handleError(e);
+        }
+    }
 
     // -------------------- MATCHING HELPERS --------------------
-
+    
     private Set<String> words(String text) {
         Set<String> result = new HashSet<>();
 
