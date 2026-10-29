@@ -206,12 +206,19 @@ public class WardenController {
             );
         }
 
-        jdbcTemplate.update(
-            "INSERT INTO RoomAllocations " +
-            "(studentID, roomID, allocationDate) " +
-            "VALUES (?, ?, CURRENT_DATE)",
-            studentId, roomId
-        );
+        String allocationId = "ALLOC" +
+    java.util.UUID.randomUUID()
+        .toString()
+        .replace("-", "")
+        .substring(0, 12)
+        .toUpperCase();
+
+jdbcTemplate.update(
+    "INSERT INTO RoomAllocations " +
+    "(allocationID, studentID, roomID, allocationDate) " +
+    "VALUES (?, ?, ?, CURRENT_DATE)",
+    allocationId, studentId, roomId
+);
 
         jdbcTemplate.update(
             "UPDATE Rooms SET occupancy = occupancy + 1 WHERE roomID = ?",
