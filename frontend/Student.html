@@ -1725,52 +1725,47 @@ async function loadStudentFees() {
             });
         }
 
-        function savePreferences() {
-            let input = document.getElementById("prefInput");
-            let text = input ? input.value.trim() : "";
-            let status = document.getElementById("preferenceStatus");
+function savePreferences() {
+    let input = document.getElementById("prefInput");
+    let text = input ? input.value.trim() : "";
+    let status = document.getElementById("preferenceStatus");
 
-            if (!text) {
-                if (status) status.innerText = "Please describe your roommate preferences.";
-                return;
-            }
+    if (!text) {
+        if (status) {
+            status.innerText = "Please describe your roommate preferences.";
+        }
+        return;
+    }
 
-            let params = new URLSearchParams();
-            params.append("details", text);
-
-           
-    fetch("https://hostelconnect-backend-za3a.onrender.com/api/student/roommate/preference", {
+    fetch(`${API_BASE}/student/roommate/preference`, {
         method: "PUT",
         credentials: "include",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-            preferenceDetails: params.get("preferenceDetails")
-        })
+        body: new URLSearchParams({
+            details: text
+        }).toString()
     })
     .then(async response => {
         const data = await response.json();
-    
+
         if (!response.ok) {
             throw new Error(data.message || "Failed to save preferences");
         }
-    
-        alert(data.message || "Preferences saved successfully");
+
+        if (status) {
+            status.innerText = data.message || "Preferences saved successfully!";
+        }
     })
     .catch(error => {
         console.error("Roommate preference error:", error);
-        alert("Could not save preferences: " + error.message);
-    });
-    
-            .then(res => res.json())
-            .then(data => {
-                if (status) status.innerText = data.message || "Preferences saved and shared with warden office!";
-            })
-            .catch(() => {
-                if (status) status.innerText = "Preferences recorded successfully.";
-            });
+
+        if (status) {
+            status.innerText = "Could not save preferences: " + error.message;
         }
+    });
+}
 
         function saveFoodPreferences() {
             let diet = document.getElementById("dietPreference").value;
@@ -1811,6 +1806,6 @@ document.addEventListener("DOMContentLoaded", function() {
     loadStudentDashboard();
     loadStudentFees(); 
 });
-    </script>
+</script>
 </body>
 </html>
