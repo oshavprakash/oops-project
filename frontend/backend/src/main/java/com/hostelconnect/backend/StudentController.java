@@ -1,4 +1,3 @@
-
 package com.hostelconnect.backend;
 
 import jakarta.servlet.http.HttpSession;
@@ -25,6 +24,9 @@ public class StudentController {
     public StudentController(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
+
+    // -------------------- STUDENT AUTHENTICATION --------------------
+
     private String getStudentID(HttpSession session) {
         String role = (String) session.getAttribute("userRole");
         String userID = (String) session.getAttribute("userID");
@@ -34,8 +36,8 @@ public class StudentController {
         }
 
         List<String> ids = jdbc.query(
-            "SELECT s.studentID FROM students s " +
-            "JOIN users u ON LOWER(u.email) = LOWER(s.email) " +
+            "SELECT s.studentID FROM Students s " +
+            "JOIN Users u ON LOWER(u.email) = LOWER(s.email) " +
             "WHERE u.userID = ? AND LOWER(u.role) = 'student'",
             (rs, n) -> rs.getString("studentID"),
             userID
@@ -47,6 +49,8 @@ public class StudentController {
 
         return ids.get(0);
     }
+
+    // -------------------- ROOM DETAILS --------------------
 
     private Map<String, Object> room(String sid) {
         List<Map<String, Object>> rows = jdbc.queryForList(
@@ -64,6 +68,8 @@ public class StudentController {
         return rows.isEmpty() ? null : rows.get(0);
     }
 
+    // -------------------- APPLICATIONS --------------------
+
     private List<Map<String, Object>> applications(String sid) {
         return jdbc.queryForList(
             "SELECT applicationID, appliedDate, " +
@@ -73,23 +79,28 @@ public class StudentController {
         );
     }
 
+    // -------------------- COMPLAINTS --------------------
+
     private List<Map<String, Object>> complaints(
             String sid, String status, int limit) {
 
-        Map<String, Object> room = room(sid);
-        String roomID = room == null
-            ? "-" : String.valueOf(room.get("roomID"));
+        Map<String, Object> currentRoom = room(sid);
+
+        String roomID = currentRoom == null
+            ? "-" : String.valueOf(currentRoom.get("roomID"));
 
         List<Map<String, Object>> rows;
 
         if (status == null || status.isBlank()
                 || "All".equalsIgnoreCase(status)) {
+
             rows = jdbc.queryForList(
                 "SELECT complaintID, category, description, " +
                 "`date`, status FROM Complaints " +
                 "WHERE studentID = ? ORDER BY `date` DESC LIMIT ?",
                 sid, limit
             );
+
         } else {
             rows = jdbc.queryForList(
                 "SELECT complaintID, category, description, " +
@@ -100,7 +111,8 @@ public class StudentController {
             );
         }
 
-        rows.forEach(r -> r.put("room", roomID));
+        rows.forEach(c -> c.put("room", roomID));
+
         return rows;
     }
 
@@ -113,36 +125,60 @@ public class StudentController {
 
             Map<String, Object> result = new LinkedHashMap<>();
 
+            // Student name
             result.put("name", jdbc.queryForObject(
-                "SELECT name FROM students WHERE studentID = ?",
+                "SELECT name FROM Students WHERE studentID = ?",
                 String.class, sid
             ));
 
+            // Room information
             result.put("room", room(sid));
 
+            // Total pending fees
             BigDecimal due = jdbc.queryForObject(
                 "SELECT COALESCE(SUM(amount), 0) " +
-                "FROM FeePayments WHERE studentID = ? " +
-                "AND status = 'Pending'",
+                "FROM FeePayments " +
+                "WHERE studentID = ? AND LOWER(status) = 'pending'",
                 BigDecimal.class, sid
             );
 
-            result.put("totalDue", due);
-            result.put("feeStatus",
-                due != null && due.signum() > 0 ? "Due" : "Paid");
+            if (due == null) {
+                due = BigDecimal.ZERO;
+            }
 
+            result.put("totalDue", due);
+            result.put(
+                "feeStatus",
+                due.signum() > 0 ? "Due" : "Paid"
+            );
+
+            // Actual fee records for the dashboard
+            List<Map<String, Object>> fees = jdbc.queryForList(
+                "SELECT paymentID, feeType, amount, paymentDate, status " +
+                "FROM FeePayments WHERE studentID = ? " +
+                "ORDER BY paymentDate DESC",
+                sid
+            );
+
+            result.put("fees", fees);
+
+            // Unresolved complaints
             result.put("openComplaints", jdbc.queryForObject(
                 "SELECT COUNT(*) FROM Complaints " +
                 "WHERE studentID = ? AND status <> 'Resolved'",
                 Integer.class, sid
             ));
 
+            // Events this month
             result.put("upcomingEvents", jdbc.queryForObject(
-                "SELECT COUNT(*) FROM Events WHERE `date` BETWEEN ? AND ?",
-                Integer.class, LocalDate.now(),
+                "SELECT COUNT(*) FROM Events " +
+                "WHERE `date` BETWEEN ? AND ?",
+                Integer.class,
+                LocalDate.now(),
                 YearMonth.now().atEndOfMonth()
             ));
 
+            // Recent complaints
             result.put("recentComplaints",
                 complaints(sid, null, 3));
 
@@ -159,22 +195,27 @@ public class StudentController {
     public ResponseEntity<?> getRoom(HttpSession session) {
         try {
             String sid = getStudentID(session);
-            Map<String, Object> room = room(sid);
+            Map<String, Object> currentRoom = room(sid);
 
             List<Map<String, Object>> roommates =
-                room == null ? List.of() : jdbc.queryForList(
+                currentRoom == null ? List.of() : jdbc.queryForList(
                     "SELECT s.studentID, s.name, s.email " +
-                    "FROM RoomAllocations a JOIN Students s " +
-                    "ON s.studentID = a.studentID " +
+                    "FROM RoomAllocations a " +
+                    "JOIN Students s ON s.studentID = a.studentID " +
                     "WHERE a.roomID = ? AND a.studentID <> ?",
-                    room.get("roomID"), sid
+                    currentRoom.get("roomID"), sid
                 );
 
-            return ResponseEntity.ok(Map.of(
-                "room", room == null ? Map.of() : room,
-                "roommates", roommates,
-                "applications", applications(sid)
-            ));
+            Map<String, Object> result = new LinkedHashMap<>();
+
+            result.put(
+                "room",
+                currentRoom == null ? Map.of() : currentRoom
+            );
+            result.put("roommates", roommates);
+            result.put("applications", applications(sid));
+
+            return ResponseEntity.ok(result);
 
         } catch (RuntimeException e) {
             return handleError(e);
@@ -198,27 +239,33 @@ public class StudentController {
     public ResponseEntity<?> createApplication(
             @RequestBody Map<String, String> body,
             HttpSession session) {
+
         try {
             String sid = getStudentID(session);
+
             String preference = body.getOrDefault(
-                "preferenceDescription", "").trim();
+                "preferenceDescription", ""
+            ).trim();
 
             if (preference.isEmpty()) {
                 return ResponseEntity.badRequest().body(
-                    Map.of("message",
-                        "Preference description is required")
+                    Map.of(
+                        "message",
+                        "Preference description is required"
+                    )
                 );
             }
 
-            String id = UUID.randomUUID().toString()
-                .replace("-", "").substring(0, 10);
+            String id = UUID.randomUUID()
+                .toString().replace("-", "").substring(0, 10);
 
             LocalDate today = LocalDate.now();
 
             jdbc.update(
                 "INSERT INTO Applications " +
                 "(applicationID, studentID, status, appliedDate, " +
-                "preferenceDescription) VALUES (?, ?, 'Pending', ?, ?)",
+                "preferenceDescription) " +
+                "VALUES (?, ?, 'Pending', ?, ?)",
                 id, sid, today, preference
             );
 
@@ -252,26 +299,62 @@ public class StudentController {
 
             List<Map<String, Object>> paid = new ArrayList<>();
             List<Map<String, Object>> due = new ArrayList<>();
+
             BigDecimal totalDue = BigDecimal.ZERO;
 
-            for (Map<String, Object> f : all) {
-                String status = String.valueOf(f.get("status"));
+            for (Map<String, Object> fee : all) {
+                String status = String.valueOf(fee.get("status"));
 
-                if ("Paid".equalsIgnoreCase(status)) {
-                  paid.add(f);
+                if ("Paid".equalsIgnoreCase(status)
+                        || "Success".equalsIgnoreCase(status)) {
+
+                    paid.add(fee);
+
                 } else if ("Pending".equalsIgnoreCase(status)) {
-                  due.add(f);
-                  totalDue = totalDue.add(
-                    new BigDecimal(String.valueOf(f.get("amount")))
-                  );
+
+                    due.add(fee);
+
+                    Object amount = fee.get("amount");
+
+                    if (amount != null) {
+                        totalDue = totalDue.add(
+                            new BigDecimal(String.valueOf(amount))
+                        );
+                    }
                 }
             }
 
-            return ResponseEntity.ok(Map.of(
-                "paid", paid,
-                "due", due,
-                "totalDue", totalDue
-            ));
+            Map<String, Object> result = new LinkedHashMap<>();
+
+            result.put("paid", paid);
+            result.put("due", due);
+            result.put("totalDue", totalDue);
+
+            return ResponseEntity.ok(result);
+
+        } catch (RuntimeException e) {
+            return handleError(e);
+        }
+    }
+
+    // -------------------- PAY FEE --------------------
+
+    @PostMapping("/pay-fee")
+    public ResponseEntity<?> payFee(HttpSession session) {
+        try {
+            getStudentID(session);
+
+            // Do not mark fees as paid without processing
+            // and verifying an actual payment.
+            return ResponseEntity.status(
+                HttpStatus.NOT_IMPLEMENTED
+            ).body(
+                Map.of(
+                    "success", false,
+                    "message",
+                    "Online payment processing is not configured yet."
+                )
+            );
 
         } catch (RuntimeException e) {
             return handleError(e);
@@ -284,6 +367,7 @@ public class StudentController {
     public ResponseEntity<?> getComplaints(
             @RequestParam(required = false) String status,
             HttpSession session) {
+
         try {
             return ResponseEntity.ok(
                 complaints(getStudentID(session), status, 200)
@@ -297,16 +381,24 @@ public class StudentController {
     public ResponseEntity<?> createComplaint(
             @RequestBody Map<String, String> body,
             HttpSession session) {
+
         try {
             String sid = getStudentID(session);
-            String category = body.getOrDefault("category", "").trim();
+
+            String category = body.getOrDefault(
+                "category", ""
+            ).trim();
+
             String description = body.getOrDefault(
-                "description", "").trim();
+                "description", ""
+            ).trim();
 
             if (category.isEmpty() || description.isEmpty()) {
                 return ResponseEntity.badRequest().body(
-                    Map.of("message",
-                        "Category and description are required")
+                    Map.of(
+                        "message",
+                        "Category and description are required"
+                    )
                 );
             }
 
@@ -327,8 +419,9 @@ public class StudentController {
                 }
             }
 
-            String id = UUID.randomUUID().toString()
-                .replace("-", "").substring(0, 10);
+            String id = UUID.randomUUID()
+                .toString().replace("-", "").substring(0, 10);
+
             LocalDate today = LocalDate.now();
 
             jdbc.update(
@@ -340,13 +433,17 @@ public class StudentController {
             );
 
             Map<String, Object> result = new LinkedHashMap<>();
+
             result.put("complaintID", id);
             result.put("category", category);
             result.put("description", description);
             result.put("date", today.toString());
             result.put("status", "Pending");
-            result.put("room",
-                currentRoom == null ? "-" : currentRoom.get("roomID"));
+            result.put(
+                "room",
+                currentRoom == null
+                    ? "-" : currentRoom.get("roomID")
+            );
 
             return ResponseEntity.status(HttpStatus.CREATED)
                 .body(result);
@@ -369,9 +466,12 @@ public class StudentController {
             );
 
             for (Map<String, Object> row : rows) {
-                row.put("mine", sid.equals(
-                    String.valueOf(row.remove("studentID"))
-                ));
+                Object ownerID = row.remove("studentID");
+
+                row.put(
+                    "mine",
+                    sid.equals(String.valueOf(ownerID))
+                );
             }
 
             return ResponseEntity.ok(rows);
@@ -385,9 +485,13 @@ public class StudentController {
     public ResponseEntity<?> addLostFound(
             @RequestBody Map<String, String> body,
             HttpSession session) {
+
         try {
             String sid = getStudentID(session);
-            String name = body.getOrDefault("itemName", "").trim();
+
+            String name = body.getOrDefault(
+                "itemName", ""
+            ).trim();
 
             if (name.isEmpty()) {
                 return ResponseEntity.badRequest().body(
@@ -396,17 +500,22 @@ public class StudentController {
             }
 
             String status = "Found".equalsIgnoreCase(
-                body.get("status")) ? "Found" : "Lost";
+                body.get("status")
+            ) ? "Found" : "Lost";
 
-            String id = UUID.randomUUID().toString()
-                .replace("-", "").substring(0, 10);
-            String description = body.getOrDefault("description", "");
+            String id = UUID.randomUUID()
+                .toString().replace("-", "").substring(0, 10);
+
+            String description = body.getOrDefault(
+                "description", ""
+            );
+
             LocalDate today = LocalDate.now();
 
             jdbc.update(
                 "INSERT INTO LostFound " +
-                "(itemID, studentID, itemName, description, `date`, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "(itemID, studentID, itemName, description, " +
+                "`date`, status) VALUES (?, ?, ?, ?, ?, ?)",
                 id, sid, name, description, today, status
             );
 
@@ -430,6 +539,7 @@ public class StudentController {
     public ResponseEntity<?> claimItem(
             @PathVariable String itemID,
             HttpSession session) {
+
         try {
             getStudentID(session);
 
@@ -441,7 +551,10 @@ public class StudentController {
 
             if (updated == 0) {
                 return ResponseEntity.status(404).body(
-                    Map.of("message", "Item not found or already claimed")
+                    Map.of(
+                        "message",
+                        "Item not found or already claimed"
+                    )
                 );
             }
 
@@ -460,6 +573,7 @@ public class StudentController {
     public ResponseEntity<?> getEvents(
             @RequestParam(required = false) String all,
             HttpSession session) {
+
         try {
             getStudentID(session);
 
@@ -487,9 +601,9 @@ public class StudentController {
     public ResponseEntity<?> getPreference(HttpSession session) {
         try {
             String sid = getStudentID(session);
-            Map<String, Object> r = room(sid);
+            Map<String, Object> currentRoom = room(sid);
 
-            if (r == null) {
+            if (currentRoom == null) {
                 return ResponseEntity.ok(
                     Map.of("preferenceDetails", "")
                 );
@@ -499,13 +613,15 @@ public class StudentController {
                 "SELECT preferenceDetails FROM RoommatePreferences " +
                 "WHERE allocationID = ?",
                 (rs, n) -> rs.getString("preferenceDetails"),
-                r.get("allocationID")
+                currentRoom.get("allocationID")
             );
 
+            String details = values.isEmpty()
+                || values.get(0) == null
+                    ? "" : values.get(0);
+
             return ResponseEntity.ok(
-                Map.of("preferenceDetails",
-                    values.isEmpty() || values.get(0) == null
-                        ? "" : values.get(0))
+                Map.of("preferenceDetails", details)
             );
 
         } catch (RuntimeException e) {
@@ -517,37 +633,45 @@ public class StudentController {
     public ResponseEntity<?> savePreference(
             @RequestBody Map<String, String> body,
             HttpSession session) {
+
         try {
             String sid = getStudentID(session);
+
             String details = body.getOrDefault(
-                "preferenceDetails", "").trim();
+                "preferenceDetails", ""
+            ).trim();
 
             if (details.isEmpty()) {
                 return ResponseEntity.badRequest().body(
-                    Map.of("message", "Preference details are required")
+                    Map.of(
+                        "message",
+                        "Preference details are required"
+                    )
                 );
             }
 
-            Map<String, Object> r = room(sid);
+            Map<String, Object> currentRoom = room(sid);
 
-            if (r == null) {
+            if (currentRoom == null) {
                 return ResponseEntity.status(409).body(
-                    Map.of("message",
-                        "A room allocation is required first")
+                    Map.of(
+                        "message",
+                        "A room allocation is required first"
+                    )
                 );
             }
 
-            Object allocationID = r.get("allocationID");
+            Object allocationID = currentRoom.get("allocationID");
 
             int updated = jdbc.update(
-                "UPDATE RoommatePreferences SET preferenceDetails = ? " +
-                "WHERE allocationID = ?",
+                "UPDATE RoommatePreferences " +
+                "SET preferenceDetails = ? WHERE allocationID = ?",
                 details, allocationID
             );
 
             if (updated == 0) {
-                String id = UUID.randomUUID().toString()
-                    .replace("-", "").substring(0, 10);
+                String id = UUID.randomUUID()
+                    .toString().replace("-", "").substring(0, 10);
 
                 jdbc.update(
                     "INSERT INTO RoommatePreferences " +
@@ -570,15 +694,17 @@ public class StudentController {
     public ResponseEntity<?> getMatches(HttpSession session) {
         try {
             String sid = getStudentID(session);
-            Map<String, Object> r = room(sid);
+            Map<String, Object> currentRoom = room(sid);
 
-            if (r == null) return ResponseEntity.ok(List.of());
+            if (currentRoom == null) {
+                return ResponseEntity.ok(List.of());
+            }
 
             List<String> mine = jdbc.query(
                 "SELECT preferenceDetails FROM RoommatePreferences " +
                 "WHERE allocationID = ?",
                 (rs, n) -> rs.getString("preferenceDetails"),
-                r.get("allocationID")
+                currentRoom.get("allocationID")
             );
 
             if (mine.isEmpty() || mine.get(0) == null
@@ -589,25 +715,31 @@ public class StudentController {
             List<Map<String, Object>> matches = jdbc.queryForList(
                 "SELECT s.studentID, s.name, p.preferenceDetails " +
                 "FROM RoommatePreferences p " +
-                "JOIN RoomAllocations a ON a.allocationID = p.allocationID " +
+                "JOIN RoomAllocations a " +
+                "ON a.allocationID = p.allocationID " +
                 "JOIN Rooms r ON r.roomID = a.roomID " +
                 "JOIN Students s ON s.studentID = a.studentID " +
                 "WHERE r.hostelID = ? AND s.studentID <> ?",
-                r.get("hostelID"), sid
+                currentRoom.get("hostelID"), sid
             );
 
-            Set<String> words = words(mine.get(0));
+            Set<String> myWords = words(mine.get(0));
 
             for (Map<String, Object> match : matches) {
-                match.put("matchScore", score(
-                    words,
-                    words(String.valueOf(match.get("preferenceDetails")))
-                ));
+                match.put(
+                    "matchScore",
+                    score(
+                        myWords,
+                        words(String.valueOf(
+                            match.get("preferenceDetails")
+                        ))
+                    )
+                );
             }
 
             matches.sort((a, b) -> Integer.compare(
-                (Integer) b.get("matchScore"),
-                (Integer) a.get("matchScore")
+                ((Number) b.get("matchScore")).intValue(),
+                ((Number) a.get("matchScore")).intValue()
             ));
 
             return ResponseEntity.ok(matches);
@@ -617,18 +749,25 @@ public class StudentController {
         }
     }
 
+    // -------------------- MATCHING HELPERS --------------------
+
     private Set<String> words(String text) {
         Set<String> result = new HashSet<>();
 
-        for (String word : text.toLowerCase().split("[^a-z0-9]+")) {
-            if (word.length() > 2) result.add(word);
+        for (String word :
+                text.toLowerCase().split("[^a-z0-9]+")) {
+            if (word.length() > 2) {
+                result.add(word);
+            }
         }
 
         return result;
     }
 
     private int score(Set<String> a, Set<String> b) {
-        if (a.isEmpty() || b.isEmpty()) return 0;
+        if (a.isEmpty() || b.isEmpty()) {
+            return 0;
+        }
 
         Set<String> intersection = new HashSet<>(a);
         intersection.retainAll(b);
@@ -641,47 +780,27 @@ public class StudentController {
         );
     }
 
+    // -------------------- ERROR HANDLING --------------------
+
     private ResponseEntity<?> handleError(RuntimeException e) {
         if ("UNAUTHORIZED".equals(e.getMessage())) {
             return ResponseEntity.status(401).body(
-                Map.of("message", "Please log in with a student account")
+                Map.of(
+                    "message",
+                    "Please log in with a student account"
+                )
             );
         }
 
         if ("STUDENT_RECORD_NOT_FOUND".equals(e.getMessage())) {
             return ResponseEntity.status(404).body(
-                Map.of("message",
-                    "No student record is linked to this account")
+                Map.of(
+                    "message",
+                    "No student record is linked to this account"
+                )
             );
         }
 
         throw e;
     }
-  
-@PostMapping("/pay-fee")
-public ResponseEntity<?> payFee(HttpSession session) {
-    try {
-        String sid = getStudentID(session);
-
-        int updated = jdbc.update(
-            "UPDATE FeePayments SET status = 'Paid' " +
-            "WHERE studentID = ?",
-            sid
-        );
-
-        if (updated == 0) {
-            return ResponseEntity.badRequest().body(
-                Map.of("message", "No fee record found for this student.")
-            );
-        }
-
-        return ResponseEntity.ok(
-            Map.of("success", true, "status", "Paid")
-        );
-
-    } catch (RuntimeException e) {
-        return handleError(e);
-    }
-}
-
 }
