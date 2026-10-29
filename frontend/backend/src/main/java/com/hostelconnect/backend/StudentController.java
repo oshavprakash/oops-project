@@ -471,10 +471,18 @@ public class StudentController {
         try {
             String sid = getStudentID(session);
 
+            
             List<Map<String, Object>> rows = jdbc.queryForList(
-                "SELECT itemID, studentID, itemName, description, " +
-                "`date`, status FROM LostFound ORDER BY `date` DESC"
+                "SELECT lf.itemID, lf.studentID, lf.itemName, " +
+                "lf.description, lf.`date`, lf.status, " +
+                "s.name AS reporterName, r.roomID AS roomNumber " +
+                "FROM LostFound lf " +
+                "LEFT JOIN Students s ON lf.studentID = s.studentID " +
+                "LEFT JOIN RoomAllocations ra ON lf.studentID = ra.studentID " +
+                "LEFT JOIN Rooms r ON ra.roomID = r.roomID " +
+                "ORDER BY lf.`date` DESC"
             );
+
 
             for (Map<String, Object> row : rows) {
                 Object ownerID = row.remove("studentID");
