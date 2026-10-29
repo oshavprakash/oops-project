@@ -1703,6 +1703,38 @@ async function loadStudentFees() {
             });
             container.innerHTML = html;
         }
+        
+async function loadEvents() {
+    try {
+        const response = await fetch(
+            "https://hostelconnect-backend-za3a.onrender.com/api/events",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Failed to load events: HTTP ${response.status}`);
+        }
+
+        const events = await response.json();
+
+        console.log("Events fetched from backend:", events);
+
+        renderEventsSection(Array.isArray(events) ? events : []);
+    } catch (error) {
+        console.error("Error loading hostel events:", error);
+
+        const container = document.querySelector("#events .section-heading + div");
+
+        if (container) {
+            container.innerHTML =
+                '<div class="card-box"><p style="color:#888;">Unable to load events. Please try again later.</p></div>';
+        }
+    }
+}
+
 
         function renderEventsSection(events) {
             let container = document.querySelector("#events .section-heading + div");
@@ -1857,6 +1889,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     loadStudentDashboard();
     loadStudentFees(); 
+    loadEvents();
 });
 </script>
 </body>
