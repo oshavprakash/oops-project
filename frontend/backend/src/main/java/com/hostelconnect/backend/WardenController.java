@@ -25,16 +25,20 @@ public class WardenController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private String getWardenId(HttpSession session) {
-        String role = (String) session.getAttribute("userRole");
-        Object id = session.getAttribute("userID");
+   private String getWardenId(HttpSession session) {
+    String role = (String) session.getAttribute("userRole");
+    Object id = session.getAttribute("userID");
 
-        if (!"warden".equalsIgnoreCase(role) || id == null) {
-            return null;
-        }
+    System.out.println("Session ID: " + session.getId());
+    System.out.println("Session role: " + role);
+    System.out.println("Session userID: " + id);
 
-        return id.toString();
+    if (!"warden".equalsIgnoreCase(role) || id == null) {
+        return null;
     }
+
+    return id.toString();
+}
 
     private ResponseEntity<?> forbidden() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
