@@ -2007,17 +2007,8 @@ function displayComplaints() {
 
 /* -------------------- EVENTS -------------------- */
 
+
 async function loadEvents() {
-    console.log("Events received from backend:", events);
-console.log("Container before rendering:", document.getElementById("eventsContainer"));
-
-renderEventsSection(events);
-
-console.log(
-"Container after rendering:",
-document.getElementById("eventsContainer")?.innerHTML
-);
-
     const container = document.getElementById("eventsContainer");
 
     try {
@@ -2034,9 +2025,14 @@ document.getElementById("eventsContainer")?.innerHTML
 
         console.log("Events received from backend:", events);
         console.log("First event:", events[0]);
-console.log("Events container:", document.getElementById("eventsContainer"));
+        console.log("Events container:", container);
 
         renderEventsSection(events);
+
+        console.log(
+            "Container after rendering:",
+            container?.innerHTML
+        );
 
     } catch (error) {
         console.error("Could not load hostel events:", error);
@@ -2047,7 +2043,8 @@ console.log("Events container:", document.getElementById("eventsContainer"));
         }
     }
 }
-function renderEventsSection(events) {
+
+    function renderEventsSection(events) {
     console.log("renderEventsSection() is running!");
     console.log("=== RENDER EVENTS START ===");
     console.log("Events received:", events);
@@ -2057,8 +2054,6 @@ function renderEventsSection(events) {
 
     console.log("Events container:", container);
     console.log("Count badge:", countBadge);
-    const container = document.getElementById("eventsContainer");
-    const countBadge = document.getElementById("eventCountBadge");
 
     if (!container) {
         console.error("Events container not found!");
