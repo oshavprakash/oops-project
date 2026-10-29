@@ -1026,69 +1026,86 @@
 
         <!-- Mess Section -->
 
-<div id="mess" class="content-section">
 
+<div id="mess" class="content-section">
     <h2>Mess Schedule</h2>
 
     <p class="mess-intro">
-        View today's mess menu and customize it according to your dietary preferences.
+        View the mess menu and customize your food preferences.
     </p>
 
     <div class="mess-preferences">
-
         <div class="mess-preference-header">
             <div>
                 <h3>My Food Preferences</h3>
-                <p>Tell us about allergies, dietary restrictions and food you prefer.</p>
+                <p>Choose your diet and specify other food preferences.</p>
             </div>
         </div>
 
-        
-<div class="preference-item">
-    <label for="dietPreference">Food Preference</label>
-    <select id="dietPreference">
-    <option value="VEG">VEG — Vegetarian only</option>
-    <option value="NON_VEG">NON_VEG — Vegetarian + Non-Vegetarian</option>
-</select>
-</div>
-
+        <div class="preference-grid">
+            <div class="preference-item">
+                <label for="dietPreference">Food Preference</label>
+                <select id="dietPreference">
+                    <option value="VEG">VEG — Vegetarian only</option>
+                    <option value="NON_VEG">
+                        NON_VEG — Vegetarian + Non-Vegetarian
+                    </option>
+                </select>
+            </div>
 
             <div class="preference-item">
                 <label for="allergyPreference">Allergies</label>
-                <input
-                    type="text"
-                    id="allergyPreference"
-                    placeholder="e.g. peanuts, milk, egg"
-                >
+                <input type="text" id="allergyPreference"
+                       placeholder="e.g. peanuts, milk, egg">
             </div>
 
             <div class="preference-item">
                 <label for="foodPreference">Foods I Like</label>
-                <input
-                    type="text"
-                    id="foodPreference"
-                    placeholder="e.g. dosa, chicken, rice"
-                >
+                <input type="text" id="foodPreference"
+                       placeholder="e.g. dosa, chicken, rice">
             </div>
 
             <div class="preference-item">
                 <label for="foodAvoid">Foods I Avoid</label>
-                <input
-                    type="text"
-                    id="foodAvoid"
-                    placeholder="e.g. spicy food, fish"
-                >
+                <input type="text" id="foodAvoid"
+                       placeholder="e.g. spicy food, fish">
             </div>
-
         </div>
 
-        <button class="save-food-preferences" onclick="saveFoodPreferences()">
+        <button class="save-food-preferences"
+                type="button"
+                onclick="saveFoodPreferences()">
             Save Preferences
         </button>
 
-        <p id="foodPreferenceStatus"></p>
-
+        <p id="foodPreferenceStatus" role="status"></p>
     </div>
+
+    <div class="mess-menu">
+        <div class="mess-menu-header">
+            <div>
+                <h3>Mess Menu</h3>
+                <p id="messDate">Loading date...</p>
+            </div>
+
+            <input type="date" id="messMenuDate"
+                   aria-label="Choose menu date">
+
+            <select id="mealFilter" aria-label="Filter by meal">
+                <option value="all">All Meals</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="snacks">Snacks</option>
+                <option value="dinner">Dinner</option>
+            </select>
+        </div>
+
+        <div id="messMenuContainer" aria-live="polite">
+            <p>Loading menu...</p>
+        </div>
+    </div>
+</div>
+
 
     <div class="mess-menu">
 
