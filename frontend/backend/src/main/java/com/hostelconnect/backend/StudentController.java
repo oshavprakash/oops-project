@@ -177,12 +177,11 @@ public class StudentController {
             );
 
             result.put("fees", fees);
-
             // Unresolved complaints
             result.put("openComplaints", jdbc.queryForObject(
                 "SELECT COUNT(*) FROM Complaints " +
-                "WHERE studentID = ? AND status <> 'Resolved'",
-                Integer.class, sid
+                "WHERE student_id = ? AND status <> 'Resolved'",
+                Integer.class, Integer.valueOf(sid)
             ));
 
             // Events this month
