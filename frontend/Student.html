@@ -831,21 +831,33 @@
             <div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
             <div class="card-box" style="margin-bottom: 30px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: center;">
-                    <select id="requestedBlock" style="padding:12px; border:1px solid #ead6e4; border-radius:6px;">
-                        <option value="A Block">A Block</option>
-                        <option value="B Block">B Block</option>
-                        <option value="C Block">C Block</option>
-                    </select>
+                    
+<div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
 
-                    <select id="requestedRoomType"style="padding:12px; border:1px solid #ead6e4; border-radius:6px;">
-                        <option value="2-Sharing">2-Sharing Room</option>
-                    </select>
+<div class="card-box" style="margin-bottom: 30px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: center;">
 
-                    <button class="action-btn" onclick="submitRoomChangeApp()">
-                        Submit application
-                    </button>
+        <select id="requestedBlock" aria-label="Preferred hostel block">
+            <option value="A Block">A Block</option>
+            <option value="B Block">B Block</option>
+            <option value="C Block" selected>C Block</option>
+        </select>
 
-                    <p id="roomApplicationMessage" style="margin-top:10px;"></p>
+        <select id="requestedRoomType" aria-label="Preferred room type">
+            <option value="2-Sharing Room" selected>2-Sharing Room</option>
+        </select>
+
+        <button class="action-btn" type="button"
+                onclick="submitRoomChangeApp()">
+            Submit application
+        </button>
+    </div>
+
+    <p id="roomApplicationMessage"
+       role="status"
+       style="margin-top: 12px;"></p>
+</div>
+
                 </div>
             </div>
 
@@ -1444,28 +1456,60 @@
             }
         }
 
-        function submitRoomChangeApp() {
-            let select = document.querySelector("#room select");
-            let block = select ? select.value : "Any";
-            let pref = "Requested " + block + " room change";
+        
+async function submitRoomChangeApp() {
+    const block = document.getElementById("requestedBlock").value;
+    const roomType = document.getElementById("requestedRoomType").value;
+    const message = document.getElementById("roomApplicationMessage");
+    const button = document.querySelector(
+        'button[onclick="submitRoomChangeApp()"]'
+    );
 
-            let params = new URLSearchParams();
-            params.append("details", pref);
+    const preferenceDescription =
+        "Preferred Block: " + block +
+        "; Preferred Room Type: " + roomType;
 
-          fetch("https://hostelconnect-backend-za3a.onrender.com/api/student/roommate/preference", {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: params.toString()
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message || "Request submitted to warden!");
-            })
-            .catch(() => alert("Request sent to warden office."));
+    message.textContent = "Submitting application...";
+    button.disabled = true;
+
+    try {
+        const response = await fetch(
+            `${API_BASE}/student/applications`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    preferenceDescription: preferenceDescription
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.message || "Unable to submit application."
+            );
         }
+
+        message.textContent =
+            "Application submitted successfully! Status: " +
+            data.status;
+
+        // Refresh the dashboard so the application history can update.
+        await loadStudentDashboard();
+
+    } catch (error) {
+        message.textContent =
+            error.message || "Could not submit the application.";
+    } finally {
+        button.disabled = false;
+    }
+}
+
 
 function renderFeeSection(fees) {
     const tables = document.querySelectorAll("#fees .custom-table tbody");
