@@ -1998,139 +1998,135 @@ function displayComplaints() {
 /* -------------------- EVENTS -------------------- */
 
 async function loadEvents() {
+    const container = document.getElementById("eventsContainer");
+
     try {
-        const response = await fetch(`${API_BASE}/student/events`, {
-            credentials: "include"
-        });
+        const response = await fetch(
+            `${API_BASE}/student/events`,
+            { credentials: "include" }
+        );
 
         if (!response.ok) {
-            throw new Error(
-                `Events request failed: HTTP ${response.status}`
-            );
+            throw new Error(`HTTP ${response.status}`);
         }
 
         const events = await response.json();
 
-        const eventList = Array.isArray(events) ? events : [];
-        const overviewEventCount = document.getElementById("overviewEventCount");
-        if (overviewEventCount) overviewEventCount.textContent = String(eventList.length);
-        renderEventsSection(eventList);
+        console.log("Events received from backend:", events);
+
+        renderEventsSection(events);
 
     } catch (error) {
-        console.error("Could not load events:", error);
+        console.error("Could not load hostel events:", error);
+
+        if (container) {
+            container.innerHTML =
+                '<p style="color:#b00020;">Unable to load events. Please try again later.</p>';
+        }
     }
 }
-
 function renderEventsSection(events) {
-    const container = document.querySelector(
-        "#events .section-heading + div"
-    );
-
+    const container = document.getElementById("eventsContainer");
     const countBadge = document.getElementById("eventCountBadge");
 
     if (!container) {
-        console.error("Events container not found");
+        console.error("Events container not found!");
         return;
     }
 
-    // Count events in the current month
-    const now = new Date();
-
-    const thisMonthCount = events.filter(event => {
-        const rawDate = event.event_date ?? event.date;
-        if (!rawDate) return false;
-
-        const datePart = String(rawDate).split("T")[0];
-        const [year, month] = datePart.split("-").map(Number);
-
-        return year === now.getFullYear()
-            && month === now.getMonth() + 1;
-    }).length;
-
-    if (countBadge) {
-        countBadge.textContent =
-            `${thisMonthCount} ${thisMonthCount === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
+    if (!Array.isArray(events)) {
+        console.error("Expected an array of events:", events);
+        container.innerHTML = "<p>Invalid event data received.</p>";
+        return;
     }
 
-    if (!events.length) {
-        container.innerHTML =
-            '<div class="card-box">No upcoming hostel events scheduled yet.</div>';
+    // Count events scheduled in the current month
+    const now = new Date();
+
+    const thisMonthEvents = events.filter(event => {
+        const date = new Date(event.event_date ?? event.date);
+
+        return !isNaN(date.getTime()) &&
+            date.getMonth() === now.getMonth() &&
+            date.getFullYear() === now.getFullYear();
+    });
+
+    if (countBadge) {
+        const count = thisMonthEvents.length;
+        countBadge.textContent =
+            `${count} ${count === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
+    }
+
+    if (events.length === 0) {
+        container.innerHTML = "<p>No upcoming events.</p>";
         return;
     }
 
     container.innerHTML = events.map(event => {
-        const title =
-            event.event_name ??
-            event["event name"] ??
-            event.title ??
-            "Hostel Event";
+        const title = event.event_name ?? event.title ?? "Hostel Event";
+        const description = event.description ?? "";
+        const venue = event.venue ?? "Venue not specified";
 
-        const rawDate = event.event_date ?? event.date ?? "";
-        const rawTime =
-            event.event_time ??
-            event["event time"] ??
-            event.time ??
-            "";
+        const rawDate = event.event_date ?? event.date;
+        const rawTime = event.event_time ?? event.time;
 
-        let formattedDate = "Date to be announced";
+        const date = rawDate
+            ? new Date(rawDate).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                timeZone: "UTC"
+            })
+            : "Date not specified";
 
-        if (rawDate) {
-            const [year, month, day] =
-                String(rawDate).split("T")[0].split("-").map(Number);
-
-            if (year && month && day) {
-                formattedDate = new Date(year, month - 1, day)
-                    .toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                    });
-            }
-        }
-
-        let formattedTime = "Time to be announced";
+        let time = "Time not specified";
 
         if (rawTime) {
-            const match = String(rawTime).match(/(\d{1,2}):(\d{2})/);
+            const timeParts = String(rawTime).split(":");
+            const hours = Number(timeParts[0]);
+            const minutes = Number(timeParts[1]);
 
-            if (match) {
-                const hours = Number(match[1]);
-                const minutes = Number(match[2]);
+            if (
+                timeParts.length >= 2 &&
+                Number.isFinite(hours) &&
+                Number.isFinite(minutes)
+            ) {
+                const formattedHours = hours % 12 || 12;
+                const period = hours >= 12 ? "PM" : "AM";
 
-                if (hours <= 23 && minutes <= 59) {
-                    formattedTime = new Date(2000, 0, 1, hours, minutes)
-                        .toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                            hour12: true
-                        });
-                }
+                time = `${formattedHours}:${String(minutes).padStart(2, "0")} ${period}`;
             }
         }
 
-        const venue = event.venue ?? "Not announced";
-        const description = event.description ?? "";
+        const escapeHtml = value =>
+            String(value).replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[char]);
 
         return `
             <div class="card-box">
                 <div class="flex-gap">
                     <span class="badge event">ANNOUNCEMENT</span>
                     <h4 style="color:#3d1738;font-size:1.1rem;">
-                        ${escapeHtml(String(title))}
+                        ${escapeHtml(title)}
                     </h4>
                 </div>
 
                 <p style="font-size:0.85rem;color:#777;margin-bottom:4px;">
-                    📅 Date: <strong>${escapeHtml(formattedDate)}</strong>
-                    | ⏰ Time: <strong>${escapeHtml(formattedTime)}</strong>
+                    📅 Date: ${escapeHtml(date)}
+                    | ⏰ Time: ${escapeHtml(time)}
                 </p>
 
                 <p style="font-size:0.85rem;color:#555;">
-                    📍 Venue: ${escapeHtml(String(venue))}
+                    📍 Venue: ${escapeHtml(venue)}
                 </p>
 
                 <p style="font-size:0.85rem;color:#666;margin-top:6px;">
-                    ${escapeHtml(String(description))}
+                    ${escapeHtml(description)}
                 </p>
             </div>
         `;
