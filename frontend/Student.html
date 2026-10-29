@@ -1590,51 +1590,91 @@ async function submitRoomChangeApp() {
 
 /* -------------------- FEES -------------------- */
 
-function renderFeeSection(paidFees = [], dueFees = [], totalDue = 0) {
-    const tables = document.querySelectorAll("#fees .custom-table tbody");
-    if (tables.length < 2) return;
+function renderFeeSection(paidFees, dueFees, totalDue) {
+    console.log("=== FEE RENDER START ===");
+    console.log("Paid fees received:", paidFees);
+    console.log("Due fees received:", dueFees);
+    console.log("Paid count:", paidFees.length);
+    console.log("Due count:", dueFees.length);
+
+    const section = document.getElementById("fees");
+
+    if (!section) {
+        console.error("ERROR: No element with id='fees' found.");
+        return;
+    }
+
+    const tables = section.querySelectorAll("table.custom-table tbody");
+
+    console.log("Fee table bodies found:", tables.length);
+
+    if (tables.length < 2) {
+        console.error("ERROR: Expected 2 fee tables, found:", tables.length);
+        return;
+    }
 
     const paidTable = tables[0];
     const dueTable = tables[1];
 
-    function addRow(table, fee, status) {
+    paidTable.replaceChildren();
+    dueTable.replaceChildren();
+
+    paidFees.forEach(fee => {
         const row = document.createElement("tr");
 
         [
             fee.feeType || "Fee",
             "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
             fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-",
-            status
+            "Completed"
         ].forEach(value => {
             const cell = document.createElement("td");
             cell.textContent = value;
             row.appendChild(cell);
         });
 
-        table.appendChild(row);
-    }
+        paidTable.appendChild(row);
+    });
 
-    paidTable.innerHTML = "";
-    dueTable.innerHTML = "";
+    dueFees.forEach(fee => {
+        const row = document.createElement("tr");
 
-    paidFees.forEach(fee => addRow(paidTable, fee, "Completed"));
-    dueFees.forEach(fee => addRow(dueTable, fee, "Pending"));
+        [
+            fee.feeType || "Fee",
+            "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
+            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-",
+            "Pending"
+        ].forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
 
-    if (!paidFees.length) {
+        dueTable.appendChild(row);
+    });
+
+    if (paidFees.length === 0) {
         paidTable.innerHTML =
             '<tr><td colspan="4">No completed payments.</td></tr>';
     }
 
-    if (!dueFees.length) {
+    if (dueFees.length === 0) {
         dueTable.innerHTML =
             '<tr><td colspan="4">No pending dues.</td></tr>';
     }
 
-    const total = document.getElementById("totalDueAmount");
-    if (total) {
-        total.textContent =
+    const totalElement = document.getElementById("totalDueAmount");
+
+    if (totalElement) {
+        totalElement.textContent =
             "₹" + (Number(totalDue) || 0).toLocaleString("en-IN");
+    } else {
+        console.error("ERROR: totalDueAmount element not found.");
     }
+
+    console.log("Paid rows after rendering:", paidTable.rows.length);
+    console.log("Paid table HTML after rendering:", paidTable.innerHTML);
+    console.log("=== FEE RENDER END ===");
 }
 
 async function loadStudentFees() {
