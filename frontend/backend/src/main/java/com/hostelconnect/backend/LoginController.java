@@ -12,7 +12,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+    origins = "https://oshavprakash.github.io",
+    allowCredentials = "true"
+)
 public class LoginController {
 
     private final JdbcTemplate jdbcTemplate;
