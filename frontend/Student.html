@@ -735,7 +735,6 @@
                 <a class="nav-link" onclick="switchTab(event, 'mess')">Mess &amp; Preferences</a>
                 <a class="nav-link" onclick="switchTab(event, 'lostfound')">Lost &amp; Found</a>
                 <a class="nav-link" onclick="switchTab(event, 'events')">Events</a>
-                <a class="nav-link" onclick="switchTab(event, 'roommate')">Roommate Matching</a>
             </div>
         </div>
         <div><a onclick="signOut()" class="sign-out">Sign Out</a></div>
@@ -1142,54 +1141,6 @@
             </div>
         </div>
 
-
-<!-- Roommate Matching Section -->
-
-
-<div id="roommate" class="content-section">
-
-    <h2>Find Your Roommate</h2>
-
-    <p class="roommate-intro">
-        Find students with similar lifestyle, study and sleep preferences.
-    </p>
-
-    <div class="roommate-profile">
-
-        <h3>Your Preferences</h3>
-
-        <p>
-            Describe your lifestyle so we can find suitable roommates.
-        </p>
-
-        <textarea
-            id="prefInput"
-            placeholder="Example: I am a quiet person, study mostly at night, sleep late and prefer a clean room..."
-        ></textarea>
-
-        <button onclick="savePreferences()">
-            Save Preferences
-        </button>
-
-        <p id="preferenceStatus"></p>
-
-    </div>
-
-    <div class="roommate-results">
-
-        <div class="results-header">
-            <div>
-                <h3>Recommended Roommates</h3>
-                <p>Sorted by compatibility</p>
-            </div>
-        </div>
-
-        <div id="studentsContainer">
-        </div>
-
-    </div>
-
-</div>
 
 
 
@@ -1971,40 +1922,6 @@ function reportLostFoundItem() {
     .catch(error => alert(error.message || "Could not submit report."));
 }
 
-/* -------------------- ROOMMATE PREFERENCES -------------------- */
-
-function savePreferences() {
-    const input = document.getElementById("prefInput");
-    const text = input ? input.value.trim() : "";
-    const status = document.getElementById("preferenceStatus");
-
-    if (!text) {
-        if (status) status.innerText = "Please describe your roommate preferences.";
-        return;
-    }
-
-    fetch(`${API_BASE}/student/roommate/preference`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ details: text }).toString()
-    })
-    .then(async response => {
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || "Failed to save preferences.");
-        }
-
-        if (status) {
-            status.innerText = data.message || "Preferences saved successfully!";
-        }
-    })
-    .catch(error => {
-        console.error("Roommate preference error:", error);
-        if (status) status.innerText = "Could not save preferences: " + error.message;
-    });
-}
 
 /* -------------------- MESS MANAGEMENT -------------------- */
 
