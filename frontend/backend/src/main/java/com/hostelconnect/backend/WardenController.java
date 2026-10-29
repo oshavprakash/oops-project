@@ -1,6 +1,7 @@
 
 package com.hostelconnect.backend;
 
+import java.util.UUID;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -213,11 +214,17 @@ public class WardenController {
         .substring(0, 12)
         .toUpperCase();
 
+String allocationId = "AL" + UUID.randomUUID()
+        .toString()
+        .replace("-", "")
+        .substring(0, 8);
+
 jdbcTemplate.update(
-    "INSERT INTO RoomAllocations " +
-    "(allocationID, studentID, roomID, allocationDate) " +
+    "INSERT INTO RoomAllocations (allocationID, studentID, roomID, allocationDate) " +
     "VALUES (?, ?, ?, CURRENT_DATE)",
-    allocationId, studentId, roomId
+    allocationId,
+    studentId,
+    roomId
 );
 
         jdbcTemplate.update(
