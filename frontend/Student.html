@@ -913,6 +913,110 @@
     border-radius: 10px !important;
 }
 
+/* Fee Payment Popup */
+.fee-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.fee-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #F5EEE7;
+    color: #493D3D;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+.fee-modal-content h2 {
+    color: #542F3F;
+    margin-bottom: 10px;
+}
+
+.fee-description {
+    margin-bottom: 18px;
+    color: #777;
+}
+
+.fee-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    cursor: pointer;
+    color: #542F3F;
+}
+
+.fee-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid #D8C8C8;
+    cursor: pointer;
+}
+
+.fee-option input {
+    width: 18px;
+    height: 18px;
+    accent-color: #542F3F;
+    flex-shrink: 0;
+}
+
+.fee-option-details {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+
+.fee-option-amount {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.fee-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 22px 0;
+    padding-top: 15px;
+    border-top: 2px solid #C9A34E;
+    font-size: 1.05rem;
+}
+
+#confirmFeePayment {
+    width: 100%;
+}
+
+#confirmFeePayment:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#feePaymentMessage {
+    margin: 10px 0;
+    color: #542F3F;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+    .fee-modal-content {
+        padding: 24px 18px;
+    }
+}
+
 
 
     </style>
@@ -1117,10 +1221,11 @@
         </span>
     </div>
 
-    <button class="action-btn" id="payFeesButton"
-            style="margin-top: 15px;" type="button">
-        Pay fees!
-    </button>
+    <button type="button"
+        class="action-btn"
+        id="payFeesButton">
+    Pay Fees
+</button>
 </div>
 
 
@@ -1820,7 +1925,7 @@ async function submitRoomChangeApp() {
 }
 
 /* -------------------- FEES -------------------- */
-
+let currentDueFees = [];
 function renderFeeSection(paidFees, dueFees, totalDue) {
     console.log("=== FEE RENDER START ===");
     console.log("Paid fees received:", paidFees);
@@ -1907,6 +2012,8 @@ function renderFeeSection(paidFees, dueFees, totalDue) {
     console.log("Paid table HTML after rendering:", paidTable.innerHTML);
     console.log("=== FEE RENDER END ===");
 }
+let currentDueFees = [];
+
 
 async function loadStudentFees() {
     try {
@@ -1915,20 +2022,167 @@ async function loadStudentFees() {
         });
 
         if (!response.ok) {
-            throw new Error(`Fees request failed: HTTP ${response.status}`);
+            throw new Error(
+                `Fees request failed: HTTP ${response.status}`
+            );
         }
 
         const data = await response.json();
 
+        const paidFees = Array.isArray(data.paid)
+            ? data.paid
+            : [];
+
+        currentDueFees = Array.isArray(data.due)
+            ? data.due
+            : [];
+
         renderFeeSection(
-            Array.isArray(data.paid) ? data.paid : [],
-            Array.isArray(data.due) ? data.due : [],
+            paidFees,
+            currentDueFees,
             data.totalDue
         );
+
     } catch (error) {
         console.error("Error loading student fees:", error);
     }
 }
+
+
+function formatFeeAmount(amount) {
+    return "₹" + (Number(amount) || 0).toLocaleString("en-IN");
+}
+
+function openFeePaymentModal() {
+    const modal = document.getElementById("feePaymentModal");
+    const container = document.getElementById("feeOptionsContainer");
+    const message = document.getElementById("feePaymentMessage");
+    const payButton = document.getElementById("confirmFeePayment");
+
+    if (!modal || !container || !message || !payButton) return;
+
+    container.replaceChildren();
+    message.textContent = "";
+
+    const totalDue = currentDueFees.reduce(
+        (sum, fee) => sum + (Number(fee.amount) || 0),
+        0
+    );
+
+    document.getElementById("popupTotalDue").textContent =
+        formatFeeAmount(totalDue);
+
+    document.getElementById("selectedFeeTotal").textContent = "₹0";
+
+    if (currentDueFees.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.textContent = "You have no pending fees.";
+        container.appendChild(emptyMessage);
+
+        payButton.disabled = true;
+        modal.style.display = "flex";
+        return;
+    }
+
+    currentDueFees.forEach(fee => {
+        const label = document.createElement("label");
+        label.className = "fee-option";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "fee-payment-checkbox";
+        checkbox.value = fee.paymentID;
+        checkbox.dataset.amount = Number(fee.amount) || 0;
+
+        const details = document.createElement("span");
+        details.className = "fee-option-details";
+        details.textContent = fee.feeType || "Fee";
+
+        const amount = document.createElement("span");
+        amount.className = "fee-option-amount";
+        amount.textContent = formatFeeAmount(fee.amount);
+
+        checkbox.addEventListener("change", updateSelectedFeeTotal);
+
+        label.append(checkbox, details, amount);
+        container.appendChild(label);
+    });
+
+    payButton.disabled = false;
+    modal.style.display = "flex";
+}
+
+function updateSelectedFeeTotal() {
+    const checkboxes = document.querySelectorAll(
+        "#feeOptionsContainer .fee-payment-checkbox:checked"
+    );
+
+    const total = Array.from(checkboxes).reduce(
+        (sum, checkbox) => sum + Number(checkbox.dataset.amount || 0),
+        0
+    );
+
+    document.getElementById("selectedFeeTotal").textContent =
+        formatFeeAmount(total);
+}
+
+function closeFeePaymentModal() {
+    document.getElementById("feePaymentModal").style.display = "none";
+}
+
+async function submitFeePayment() {
+    const button = document.getElementById("confirmFeePayment");
+    const message = document.getElementById("feePaymentMessage");
+
+    const selectedIDs = Array.from(
+        document.querySelectorAll(
+            "#feeOptionsContainer .fee-payment-checkbox:checked"
+        )
+    ).map(checkbox => checkbox.value);
+
+    if (selectedIDs.length === 0) {
+        message.textContent = "Please select at least one fee.";
+        return;
+    }
+
+    button.disabled = true;
+    message.textContent = "Processing demo payment...";
+
+    try {
+        const response = await fetch(`${API_BASE}/student/fees/pay`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                paymentIDs: selectedIDs
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || result.error || "Payment update failed."
+            );
+        }
+
+        message.textContent = "Payment completed successfully.";
+
+        // Reload the tables using the updated database records.
+        await loadStudentFees();
+
+        closeFeePaymentModal();
+
+    } catch (error) {
+        console.error("Fee payment error:", error);
+        message.textContent = error.message || "Something went wrong.";
+    } finally {
+        button.disabled = false;
+    }
+}
+
 
 /* -------------------- COMPLAINTS -------------------- */
 
@@ -2629,8 +2883,17 @@ function escapeHtml(value) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const payBtn = document.querySelector("#fees .action-btn");
-    if (payBtn) payBtn.onclick = null;
+    const payBtn = document.getElementById("payFeesButton");
+
+    if (payBtn) {
+        payBtn.addEventListener("click", openFeePaymentModal);
+    }
+    
+    document.getElementById("closeFeeModal")
+        ?.addEventListener("click", closeFeePaymentModal);
+    
+    document.getElementById("confirmFeePayment")
+        ?.addEventListener("click", submitFeePayment);
 
     const roomAppBtn = document.querySelector("#room .action-btn");
     if (roomAppBtn) roomAppBtn.onclick = submitRoomChangeApp;
@@ -2655,6 +2918,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+
+<!-- Fee Payment Popup -->
+<div id="feePaymentModal" class="fee-modal" style="display: none;">
+    <div class="fee-modal-content">
+
+        <button type="button"
+                id="closeFeeModal"
+                class="fee-close"
+                aria-label="Close">
+            &times;
+        </button>
+
+        <h2>Pay Hostel Fees</h2>
+
+        <p class="fee-description">
+            Select the pending fees you want to pay.
+        </p>
+
+        <p>
+            Total fees due:
+            <strong id="popupTotalDue">₹0</strong>
+        </p>
+
+        <div id="feeOptionsContainer"></div>
+
+        <div class="fee-total-row">
+            <span>Selected amount</span>
+            <strong id="selectedFeeTotal">₹0</strong>
+        </div>
+
+        <p id="feePaymentMessage" role="status"></p>
+
+        <button type="button"
+                id="confirmFeePayment"
+                class="action-btn">
+            Pay Now
+        </button>
+
+    </div>
+</div>
 
 </body>
 </html>
