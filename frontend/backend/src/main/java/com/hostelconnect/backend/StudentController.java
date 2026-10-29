@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -364,70 +363,19 @@ public class StudentController {
     // -------------------- PAY FEE --------------------
 
     @PostMapping("/pay-fee")
-    @Transactional
-    public ResponseEntity<?> payFee(
-            @RequestBody Map<String, String> body,
-            HttpSession session) {
+    public ResponseEntity<?> payFee(HttpSession session) {
         try {
-            String sid = getStudentID(session);
+            getStudentID(session);
 
-            String requestedType = body.getOrDefault("feeType", "")
-                .trim().toUpperCase(Locale.ROOT);
-
-            // This endpoint is for a simulated/demo payment only.
-            // It does not charge money or verify a payment gateway transaction.
-            if (!"HOSTEL".equals(requestedType)
-                    && !"MESS".equals(requestedType)
-                    && !"BOTH".equals(requestedType)) {
-                return ResponseEntity.badRequest().body(
-                    Map.of(
-                        "success", false,
-                        "message", "feeType must be HOSTEL, MESS, or BOTH"
-                    )
-                );
-            }
-
-            String typeCondition;
-            if ("HOSTEL".equals(requestedType)) {
-                typeCondition = "LOWER(feeType) LIKE '%hostel%'";
-            } else if ("MESS".equals(requestedType)) {
-                typeCondition = "LOWER(feeType) LIKE '%mess%'";
-            } else {
-                typeCondition = "(LOWER(feeType) LIKE '%hostel%' " +
-                    "OR LOWER(feeType) LIKE '%mess%')";
-            }
-
-            int updated = jdbc.update(
-                "UPDATE FeePayments " +
-                "SET status = 'Paid', paymentDate = CURRENT_TIMESTAMP " +
-                "WHERE studentID = ? AND LOWER(status) = 'pending' " +
-                "AND " + typeCondition,
-                sid
-            );
-
-            if (updated == 0) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                    Map.of(
-                        "success", false,
-                        "message", "No pending fee records were found for the selected fee type."
-                    )
-                );
-            }
-
-            List<Map<String, Object>> fees = jdbc.queryForList(
-                "SELECT paymentID, feeType, amount, paymentDate, status " +
-                "FROM FeePayments WHERE studentID = ? " +
-                "ORDER BY paymentDate DESC",
-                sid
-            );
-
-            return ResponseEntity.ok(
+            // Do not mark fees as paid without processing
+            // and verifying an actual payment.
+            return ResponseEntity.status(
+                HttpStatus.NOT_IMPLEMENTED
+            ).body(
                 Map.of(
-                    "success", true,
-                    "simulated", true,
-                    "message", "Selected fee records marked as paid.",
-                    "updatedCount", updated,
-                    "fees", fees
+                    "success", false,
+                    "message",
+                    "Online payment processing is not configured yet."
                 )
             );
 
