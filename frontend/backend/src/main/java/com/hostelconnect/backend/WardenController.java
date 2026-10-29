@@ -328,7 +328,7 @@ public ResponseEntity<?> getEvents(HttpSession session) {
 
     String sql = """
         SELECT event_id, event_name, description,
-               event_date, `event time`, venue,
+               event_date, event_time, venue,
                organized_by, created_at
         FROM Events
         ORDER BY created_at DESC
