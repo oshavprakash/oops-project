@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.*;
 
 @RestController
@@ -177,20 +176,24 @@ public class StudentController {
             );
 
             result.put("fees", fees);
-            // Unresolved complaints
+            // Unresolved complaints. Use the same studentID column and
+            // string ID type as the other complaint queries.
             result.put("openComplaints", jdbc.queryForObject(
                 "SELECT COUNT(*) FROM Complaints " +
-                "WHERE student_id = ? AND status <> 'Resolved'",
-                Integer.class, Integer.valueOf(sid)
+                "WHERE studentID = ? AND status <> 'Resolved'",
+                Integer.class, sid
             ));
 
-            // Events this month
+            // Events scheduled from today through the end of this month.
+            // The Events endpoint uses event_date as the date column.
             result.put("upcomingEvents", jdbc.queryForObject(
                 "SELECT COUNT(*) FROM Events " +
-                "WHERE `date` BETWEEN ? AND ?",
+                "WHERE event_date BETWEEN ? AND ?",
                 Integer.class,
                 LocalDate.now(),
-                YearMonth.now().atEndOfMonth()
+                LocalDate.now().withDayOfMonth(
+                    LocalDate.now().lengthOfMonth()
+                )
             ));
 
             // Recent complaints
@@ -418,21 +421,11 @@ public class StudentController {
             }
 
             Map<String, Object> currentRoom = room(sid);
-            Object wardenID = null;
 
-            if (currentRoom != null) {
-                List<Map<String, Object>> wardens =
-                    jdbc.queryForList(
-                        "SELECT w.wardenID FROM Wardens w " +
-                        "JOIN Hostels h ON h.name = w.hostelName " +
-                        "WHERE h.hostelID = ? LIMIT 1",
-                        currentRoom.get("hostelID")
-                    );
-
-                if (!wardens.isEmpty()) {
-                    wardenID = wardens.get(0).get("wardenID");
-                }
-            }
+            // Do not depend on a hostel identifier; the room lookup does not provide one.
+            // The complaint can be created without assigning a warden here;
+            // warden assignment can be handled separately using the schema's
+            // actual room/warden relationship, if one exists.
 
             String id = UUID.randomUUID()
                 .toString().replace("-", "").substring(0, 10);
@@ -444,7 +437,7 @@ public class StudentController {
                 "(complaintID, studentID, wardenID, category, " +
                 "description, `date`, status) " +
                 "VALUES (?, ?, ?, ?, ?, ?, 'Pending')",
-                id, sid, wardenID, category, description, today
+                id, sid, null, category, description, today
             );
 
             Map<String, Object> result = new LinkedHashMap<>();
@@ -741,8 +734,8 @@ public ResponseEntity<?> getEvents(
                 "ON a.allocationID = p.allocationID " +
                 "JOIN Rooms r ON r.roomID = a.roomID " +
                 "JOIN Students s ON s.studentID = a.studentID " +
-                "WHERE r.hostelID = ? AND s.studentID <> ?",
-                currentRoom.get("hostelID"), sid
+                "WHERE a.roomID = ? AND s.studentID <> ?",
+                currentRoom.get("roomID"), sid
             );
 
             Set<String> myWords = words(mine.get(0));
