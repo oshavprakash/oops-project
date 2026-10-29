@@ -65,10 +65,9 @@ public class WardenController {
                 "SELECT * FROM Applications ORDER BY appliedDate DESC"
             );
 
-        List<Map<String, Object>> rooms =
+           List<Map<String, Object>> rooms =
             jdbcTemplate.queryForList(
-                "SELECT * FROM Rooms WHERE hostelID = ?",
-                hostelName
+            "SELECT * FROM Rooms ORDER BY roomID"
             );
 
         List<Map<String, Object>> complaints =
@@ -179,12 +178,12 @@ public class WardenController {
         String hostelName =
             String.valueOf(hostelRows.get(0).get("HostelName"));
 
-        List<Map<String, Object>> roomRows =
-            jdbcTemplate.queryForList(
-                "SELECT roomID, capacity, occupancy, status " +
-                "FROM Rooms WHERE roomID = ? AND hostelID = ? FOR UPDATE",
-                roomId, hostelName
-            );
+       List<Map<String, Object>> roomRows =
+    jdbcTemplate.queryForList(
+        "SELECT roomID, capacity, occupancy, status " +
+        "FROM Rooms WHERE roomID = ? FOR UPDATE",
+        roomId
+    );
 
         if (roomRows.isEmpty()) {
             return ResponseEntity.badRequest()
