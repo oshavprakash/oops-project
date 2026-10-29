@@ -207,13 +207,12 @@ public class WardenController {
             );
         }
 
-        String allocationId = "ALLOC" +
+       String allocationId = "AL" +
     java.util.UUID.randomUUID()
         .toString()
         .replace("-", "")
-        .substring(0, 12)
+        .substring(0, 8)
         .toUpperCase();
-
 
 
 jdbcTemplate.update(
