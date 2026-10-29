@@ -1043,16 +1043,15 @@
             </div>
         </div>
 
-        <div class="preference-grid">
+        
+<div class="preference-item">
+    <label for="dietPreference">Food Preference</label>
+    <select id="dietPreference">
+        <option value="VEG">Vegetarian (VEG)</option>
+        <option value="NON_VEG">Non-Vegetarian (NON_VEG)</option>
+    </select>
+</div>
 
-            <div class="preference-item">
-                <label for="dietPreference">Diet</label>
-                <select id="dietPreference">
-                    <option value="any">No Preference</option>
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="non-vegetarian">Non-Vegetarian</option>
-                </select>
-            </div>
 
             <div class="preference-item">
                 <label for="allergyPreference">Allergies</label>
@@ -1098,6 +1097,8 @@
                 <h3>Today's Menu</h3>
                 <p id="messDate"></p>
             </div>
+            
+<input type="date" id="messMenuDate" aria-label="Choose menu date">
 
             <select id="mealFilter" onchange="displayMessMenu()">
                 <option value="all">All Meals</option>
@@ -1921,20 +1922,187 @@ function savePreferences() {
 }
 
 
-        function saveFoodPreferences() {
-            let diet = document.getElementById("dietPreference").value;
-            let allergies = document.getElementById("allergyPreference").value;
-            let likes = document.getElementById("foodPreference").value;
-            let avoids = document.getElementById("foodAvoid").value;
+        
+async function saveFoodPreferences() {
+    const diet = document.getElementById("dietPreference").value;
+    const allergies = document.getElementById("allergyPreference").value.trim();
+    const likes = document.getElementById("foodPreference").value.trim();
+    const avoids = document.getElementById("foodAvoid").value.trim();
+    const status = document.getElementById("foodPreferenceStatus");
 
-            let pref = { diet, allergies, likes, avoids };
-            localStorage.setItem("foodPreferences", JSON.stringify(pref));
-            let status = document.getElementById("foodPreferenceStatus");
-            if (status) {
-                status.innerText = "Food preferences updated successfully!";
-                setTimeout(() => status.innerText = "", 3000);
-            }
+    status.textContent = "Saving preferences...";
+
+    // Keep the additional dietary details in this browser.
+    localStorage.setItem("foodPreferences", JSON.stringify({
+        diet,
+        allergies,
+        likes,
+        avoids
+    }));
+
+    try {
+        const response = await fetch(`${API_BASE}/student/mess/preference`, {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ foodPreference: diet })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Could not save food preference.");
         }
+
+        status.textContent = "Food preference saved successfully!";
+        await loadMessData();
+    } catch (error) {
+        status.textContent = "Unable to save food preference: " + error.message;
+    }
+}
+
+
+// Load the student's saved diet preference.
+async function loadMessPreference() {
+    const response = await fetch(`${API_BASE}/student/mess/preference`, {
+        credentials: "include"
+    });
+
+    if (!response.ok) {
+        throw new Error("Could not load your food preference.");
+    }
+
+    const data = await response.json();
+    document.getElementById("dietPreference").value =
+        data.foodPreference || "VEG";
+}
+
+
+// Load meal timings and the menu from the backend.
+async function loadMessData() {
+    const container = document.getElementById("messMenuContainer");
+    const dateInput = document.getElementById("messMenuDate");
+
+    if (!container || !dateInput) return;
+
+    if (!dateInput.value) {
+        const now = new Date();
+        dateInput.value = [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, "0"),
+            String(now.getDate()).padStart(2, "0")
+        ].join("-");
+    }
+
+    container.innerHTML = "<p>Loading menu...</p>";
+
+    try {
+        const date = dateInput.value;
+
+        const [timingsResponse, menuResponse] = await Promise.all([
+            fetch(`${API_BASE}/student/mess/timings`, {
+                credentials: "include"
+            }),
+            fetch(
+                `${API_BASE}/student/mess/menu?date=${encodeURIComponent(date)}`,
+                { credentials: "include" }
+            )
+        ]);
+
+        if (!timingsResponse.ok || !menuResponse.ok) {
+            throw new Error("Could not load mess information. Please try again.");
+        }
+
+        const timings = await timingsResponse.json();
+        const result = await menuResponse.json();
+
+        // Use the preference returned by the backend as the source of truth.
+        document.getElementById("dietPreference").value =
+            result.foodPreference || "VEG";
+
+        renderMessMenu(result.menu || [], timings, result.date || date);
+
+    } catch (error) {
+        console.error("Mess loading error:", error);
+        container.innerHTML =
+            `<p role="alert">${escapeHtml(error.message)}</p>`;
+    }
+}
+
+
+// Render menu items grouped by meal type.
+function renderMessMenu(menu, timings, date) {
+    const container = document.getElementById("messMenuContainer");
+    const filter = document.getElementById("mealFilter").value;
+    const timingMap = {};
+
+    (timings || []).forEach(timing => {
+        timingMap[String(timing.meal_type).toUpperCase()] = timing;
+    });
+
+    const groups = {
+        BREAKFAST: "Breakfast",
+        LUNCH: "Lunch",
+        SNACKS: "Snacks",
+        DINNER: "Dinner"
+    };
+
+    document.getElementById("messDate").textContent =
+        "Menu for " + date;
+
+    const filtered = menu.filter(item =>
+        filter === "all" ||
+        String(item.meal_type).toLowerCase() === filter
+    );
+
+    if (filtered.length === 0) {
+        container.innerHTML =
+            '<p style="padding:15px 0;color:#777;">No menu items available for this date and meal.</p>';
+        return;
+    }
+
+    container.innerHTML = Object.entries(groups).map(([key, label]) => {
+        const items = filtered.filter(item =>
+            String(item.meal_type).toUpperCase() === key
+        );
+
+        if (items.length === 0) return "";
+
+        const timing = timingMap[key];
+        const timeText = timing
+            ? `${escapeHtml(String(timing.start_time))} – ${escapeHtml(String(timing.end_time))}`
+            : "Timing not announced";
+
+        const foodList = items.map(item => {
+            const category = String(item.food_category || "").toUpperCase();
+            const categoryLabel = category === "NON_VEG" ? "Non-Veg" : "Veg";
+
+            return `
+                <span style="display:inline-block;margin:5px 5px 0 0;padding:7px 10px;background:#f8eff6;border-radius:7px;">
+                    ${escapeHtml(item.item_name)}
+                    <small>(${categoryLabel})</small>
+                </span>
+            `;
+        }).join("");
+
+        return `
+            <div class="mess-meal">
+                <div class="meal-top">
+                    <span class="meal-name">${label}</span>
+                    <span class="meal-time">${timeText}</span>
+                </div>
+                <div class="meal-food">${foodList}</div>
+            </div>
+        `;
+    }).join("");
+}
+
+
+// Keep the meal filter and date selector connected to the backend.
+function displayMessMenu() {
+    loadMessData();
+}
+
 
         function escapeHtml(str) {
             if (!str) return "";
@@ -1960,6 +2128,8 @@ document.addEventListener("DOMContentLoaded", function() {
     loadStudentDashboard();
     loadStudentFees(); 
     loadEvents();
+    loadMessData();
+    document.getElementById("messMenuDate").addEventListener("change", loadMessData);
 });
 </script>
 </body>
