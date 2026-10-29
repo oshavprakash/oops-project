@@ -473,8 +473,6 @@ public class StudentController {
 
             
             List<Map<String, Object>> rows = jdbc.queryForList(
-                "SELECT itemID, studentID, itemName, description, " +
-                "`date`, status FROM LostFound ORDER BY `date` DESC"
                 "SELECT lf.itemID, lf.studentID, lf.itemName, " +
                 "lf.description, lf.`date`, lf.status, " +
                 "s.name AS reporterName, r.roomID AS roomNumber " +
@@ -776,7 +774,7 @@ public ResponseEntity<?> getEvents(
             return handleError(e);
         }
     }
-
+    
     // -------------------- MESS: MEAL TIMINGS --------------------
 
     @GetMapping("/mess/timings")
@@ -936,7 +934,7 @@ public ResponseEntity<?> getEvents(
     }
 
     // -------------------- MATCHING HELPERS --------------------
-
+    
     private Set<String> words(String text) {
         Set<String> result = new HashSet<>();
 
