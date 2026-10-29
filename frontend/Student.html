@@ -2135,39 +2135,64 @@ function renderEventsSection(events) {
 /* -------------------- LOST AND FOUND -------------------- */
 
 function renderLostFoundSection(items) {
-    
     const tbody = document.querySelector("#lostfound .custom-table tbody");
     if (!tbody) return;
 
     if (!items.length) {
         tbody.innerHTML =
-            '<tr><td colspan="5" style="text-align:center;padding:15px;color:#888;">No lost or found items reported yet.</td></tr>';
+            '<tr><td colspan="7" style="text-align:center;padding:15px;color:#888;">No lost or found items reported yet.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = items.map(item => `
-        <tr>
-            <td>
-                <strong>${escapeHtml(item.itemName || "")}</strong>
-                <div style="font-size:.8rem;color:#777;">
-                    ${escapeHtml(item.description || "")}
-                </div>
-            </td>
-            <td>Campus</td>
-            <td>${escapeHtml(item.date || "")}</td>
-            <td>
-                <span class="badge ${(item.status || "").toLowerCase() === "found" ? "found" : "lost"}">
-                    ${escapeHtml(item.status || "Lost")}
-                </span>
-            </td>
-            <td>
-                <span class="badge ${(item.status || "").toLowerCase() === "claimed" ? "claimed" : "progress"}">
-                    ${escapeHtml(item.status || "Searching")}
-                </span>
-            </td>
-        </tr>
-    `).join("");
+    tbody.innerHTML = items.map(item => {
+        const description = String(item.description || "");
+        const lines = description.split(/\r?\n/);
+
+        const locationLine = lines.find(line =>
+            /^Location:/i.test(line)
+        );
+
+        const location = locationLine
+            ? locationLine.replace(/^Location:\s*/i, "").trim()
+            : "Not specified";
+
+        const details = lines
+            .filter(line => !/^Location:/i.test(line))
+            .join("\n")
+            .replace(/^Details:\s*/i, "")
+            .trim();
+
+        const status = item.status || "Lost";
+
+        return `
+            <tr>
+                <td>
+                    <strong>${escapeHtml(item.itemName || "")}</strong>
+                    <div style="font-size:.8rem;color:#777;">
+                        ${escapeHtml(details)}
+                    </div>
+                </td>
+                <td>${escapeHtml(location)}</td>
+                <td>${escapeHtml(item.reporterName || "Unknown")}</td>
+                <td>${escapeHtml(item.roomNumber || "Not allocated")}</td>
+                <td>${escapeHtml(item.date || "")}</td>
+                <td>
+                    <span class="badge ${status.toLowerCase() === "found" ? "found" : "lost"}">
+                        ${escapeHtml(status)}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${status.toLowerCase() === "claimed" ? "claimed" : "progress"}">
+                        ${escapeHtml(status)}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join("");
 }
+
+
+
 async function loadLostFoundItems() {
     try {
         const response = await fetch(`${API_BASE}/student/lostfound`, {
