@@ -711,7 +711,153 @@
         width: 100%;
     }
 }
+/* Lost and Found Modal */
 
+.lf-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 30, 25, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+    overflow-y: auto;
+}
+
+.lf-modal {
+    background: #fff;
+    color: #26352e;
+    width: 100%;
+    max-width: 540px;
+    margin: auto;
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.lf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.lf-modal-header h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+}
+
+.lf-modal-header p {
+    margin: 0;
+    color: #727b75;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.lf-close {
+    background: #f2f4f2;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    font-size: 25px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.lf-modal label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 16px 0 7px;
+}
+
+.lf-modal input,
+.lf-modal select,
+.lf-modal textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #d7ddd8;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 14px;
+    background: #fff;
+    color: #26352e;
+}
+
+.lf-modal input:focus,
+.lf-modal select:focus,
+.lf-modal textarea:focus {
+    outline: 2px solid #789b86;
+    border-color: #789b86;
+}
+
+.lf-modal textarea {
+    resize: vertical;
+}
+
+.lf-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.lf-actions button {
+    padding: 12px 18px;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.lf-cancel {
+    background: #fff;
+    border: 1px solid #d7ddd8;
+    color: #26352e;
+}
+
+.lf-submit {
+    background: #263d35;
+    color: #fff;
+    border: 1px solid #263d35;
+}
+
+.lf-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#lfMessage {
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.lf-required {
+    color: #727b75;
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+    .lf-modal {
+        padding: 20px;
+    }
+
+    .lf-actions {
+        flex-direction: column-reverse;
+    }
+
+    .lf-actions button {
+        width: 100%;
+    }
+}
 
     </style>
 </head>
@@ -1106,7 +1252,71 @@
                     </tr>
                 </tbody>
             </table>
+            <!-- Lost and Found Report Modal -->
+<div id="lostFoundModal" class="lf-overlay" style="display: none;">
+
+    <div class="lf-modal">
+
+        <div class="lf-modal-header">
+            <div>
+                <h2>Report an Item</h2>
+                <p>Help your hostel community find lost belongings.</p>
+            </div>
+
+            <button type="button" class="lf-close"
+                    onclick="closeLostFoundModal()">
+                &times;
+            </button>
         </div>
+
+        <form id="lostFoundForm">
+
+            <label for="lfStatus">Report Type *</label>
+            <select id="lfStatus" required>
+                <option value="Lost">I lost an item</option>
+                <option value="Found">I found an item</option>
+            </select>
+
+            <label for="lfItemName">Item Name *</label>
+            <input type="text" id="lfItemName"
+                   maxlength="100"
+                   placeholder="e.g. Black water bottle"
+                   required>
+
+            <label for="lfLocation">Location *</label>
+            <input type="text" id="lfLocation"
+                   placeholder="Where was it lost or found?"
+                   required>
+
+            <label for="lfDescription">Description *</label>
+            <textarea id="lfDescription"
+                      rows="4"
+                      placeholder="Colour, brand, and other details"
+                      required></textarea>
+
+            <p id="lfMessage" role="status"></p>
+
+            <div class="lf-actions">
+                <button type="button" class="lf-cancel"
+                        onclick="closeLostFoundModal()">
+                    Cancel
+                </button>
+
+                <button type="submit" class="lf-submit"
+                        id="lfSubmitBtn">
+                    Submit Report
+                </button>
+            </div>
+
+            <p class="lf-required">* Required fields</p>
+
+        </form>
+    </div>
+</div>
+        </div>
+
+        </div>
+        
 
         <!-- Events Section -->
         <div id="events" class="content-section">
@@ -1890,37 +2100,75 @@ function renderLostFoundSection(items) {
         </tr>
     `).join("");
 }
-
 function reportLostFoundItem() {
-    const name = prompt("Enter name of item:");
-    if (!name) return;
-
-    const description = prompt("Enter description and location where lost/found:");
-    if (!description) return;
-
-    const type = confirm("Is this an item you FOUND? (Cancel if you LOST it)")
-        ? "Found" : "Lost";
-
-    const params = new URLSearchParams({
-        itemName: name,
-        description,
-        status: type
-    });
-
-    fetch(`${API_BASE}/student/lostfound`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString()
-    })
-    .then(async response => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Report failed.");
-        alert(data.message || "Report submitted successfully!");
-        await loadStudentDashboard();
-    })
-    .catch(error => alert(error.message || "Could not submit report."));
+    openLostFoundModal();
 }
+
+function openLostFoundModal() {
+    document.getElementById("lostFoundModal").style.display = "flex";
+    document.getElementById("lfMessage").textContent = "";
+}
+
+function closeLostFoundModal() {
+    document.getElementById("lostFoundModal").style.display = "none";
+    document.getElementById("lostFoundForm").reset();
+    document.getElementById("lfMessage").textContent = "";
+}
+
+document.getElementById("lostFoundForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const status = document.getElementById("lfStatus").value;
+    const itemName = document.getElementById("lfItemName").value.trim();
+    const location = document.getElementById("lfLocation").value.trim();
+    const description = document.getElementById("lfDescription").value.trim();
+    const message = document.getElementById("lfMessage");
+    const submitButton = document.getElementById("lfSubmitBtn");
+
+    if (!itemName || !location || !description) {
+        message.textContent = "Please fill in all required fields.";
+        return;
+    }
+
+    submitButton.disabled = true;
+    message.textContent = "Submitting report...";
+
+    try {
+        const response = await fetch(`${API_BASE}/student/lostfound`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                itemName: itemName,
+                description: "Location: " + location + "\nDetails: " + description,
+                status: status
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to submit the report.");
+        }
+
+        message.textContent = "Report submitted successfully!";
+        await loadStudentDashboard();
+
+        setTimeout(function () {
+            closeLostFoundModal();
+        }, 1000);
+
+    } catch (error) {
+        message.textContent = error.message || "Something went wrong.";
+    } finally {
+        submitButton.disabled = false;
+    }
+});
+
+
+   
 
 
 /* -------------------- MESS MANAGEMENT -------------------- */
