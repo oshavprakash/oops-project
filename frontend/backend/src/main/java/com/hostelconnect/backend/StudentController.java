@@ -53,20 +53,24 @@ public class StudentController {
     // -------------------- ROOM DETAILS --------------------
 
     private Map<String, Object> room(String sid) {
-        List<Map<String, Object>> rows = jdbc.queryForList(
-            "SELECT a.allocationID, r.roomID, r.hostelID, " +
-            "h.name AS hostelName, r.roomType, r.capacity, " +
-            "r.occupancy, a.allocationDate " +
-            "FROM RoomAllocations a " +
-            "JOIN Rooms r ON r.roomID = a.roomID " +
-            "JOIN Hostels h ON h.hostelID = r.hostelID " +
-            "WHERE a.studentID = ? " +
-            "ORDER BY a.allocationDate DESC LIMIT 1",
-            sid
-        );
+    List<Map<String, Object>> rows = jdbc.queryForList(
+        "SELECT a.allocationID, a.roomID AS roomID, " +
+        "r.hostelID, h.name AS hostelName, " +
+        "r.roomType, r.capacity, r.occupancy, " +
+        "a.allocationDate " +
+        "FROM RoomAllocations a " +
+        "LEFT JOIN Rooms r ON r.roomID = a.roomID " +
+        "LEFT JOIN Hostels h ON h.hostelID = r.hostelID " +
+        "WHERE a.studentID = ? " +
+        "ORDER BY a.allocationDate DESC LIMIT 1",
+        sid
+    );
 
-        return rows.isEmpty() ? null : rows.get(0);
-    }
+    System.out.println("Room lookup studentID: " + sid);
+    System.out.println("Room lookup result: " + rows);
+
+    return rows.isEmpty() ? null : rows.get(0);
+}
 
     // -------------------- APPLICATIONS --------------------
 
