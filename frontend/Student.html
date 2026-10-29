@@ -882,62 +882,66 @@
         </div>
         
 
-        <!-- Fee Payment Section -->
-        <div id="fees" class="content-section">
-            <div class="flex-row" style="margin-bottom: 25px;">
-                <div>
-                    <h2>Fee Payment History</h2>
-                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Review your past hostel fee transactions.</p>
-                </div>
-            </div>
 
-            <div class="section-heading">PAID FEES</div>
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Amount Paid</th>
-                        <th>Payment Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>August 2026</td>
-                        <td>â‚¹9,200</td>
-                        <td>2026-08-05</td>
-                        <td>Completed</td>
-                    </tr>
-                    <tr>
-                        <td>July 2026</td>
-                        <td>â‚¹9,200</td>
-                        <td>2026-01-10</td>
-                        <td>Completed</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div ><span class="badge">DUE FEES</span></div>
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Amount Due</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>September 2026</td>
-                        <td>â‚¹9,200</td>
-                        <td>10th September 2026</td>
-                        <td>Pending</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div><span class="badge">TOTAL DUE: <span id="totalDueAmount">₹0</span></span></div>
-            <button class="action-btn" id = "payFeesButton" style="margin-top: 15px;" onclick="payDues()">Pay fees!</button>
+<!-- Fee Payment Section -->
+<div id="fees" class="content-section">
+    <div class="flex-row" style="margin-bottom: 25px;">
+        <div>
+            <h2>Fee Payment History</h2>
+            <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">
+                Review your past hostel fee transactions.
+            </p>
         </div>
+    </div>
+
+    <div class="section-heading">PAID FEES</div>
+
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Fee Type</th>
+                <th>Amount Paid</th>
+                <th>Payment Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="4">Loading payments...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div><span class="badge">DUE FEES</span></div>
+
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Fee Type</th>
+                <th>Amount Due</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="4">Loading dues...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div>
+        <span class="badge">
+            TOTAL DUE: <span id="totalDueAmount">₹0</span>
+        </span>
+    </div>
+
+    <button class="action-btn" id="payFeesButton"
+            style="margin-top: 15px;" type="button">
+        Pay fees!
+    </button>
+</div>
+
 
         <!-- Complaints Section -->
         
