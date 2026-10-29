@@ -300,7 +300,7 @@
             renderRooms(globalRooms);
             renderComplaints(complaints);
             renderInventory(data.inventory || []);
-            loadAnnouncements();
+        
         } catch (error) {
             console.error("Error loading warden dashboard:", error);
             if (String(error.message).includes("403") || String(error.message).includes("401")) {
@@ -568,63 +568,57 @@ async function updateComplaintStatus(complaintId, status) {
         alert("Failed to update complaint: " + error.message);
     }
 }
-    async function addInventoryItem(event) {
-        event.preventDefault();
+    
+async function addInventoryItem(e) {
+    e.preventDefault();
 
-        const itemName = document.getElementById("invItemName").value.trim();
-        const category = document.getElementById("invCategory").value.trim();
-        const quantity = Number(document.getElementById("invQuantity").value);
+    const itemName = document.getElementById("invItemName").value.trim();
+    const category = document.getElementById("invCategory").value.trim();
+    const quantity = Number(document.getElementById("invQuantity").value);
 
-        if (!itemName || !category || !Number.isInteger(quantity) || quantity < 0) {
-            alert("Enter an item name, category, and a valid non-negative quantity.");
+    if (!itemName || !category || !Number.isInteger(quantity) || quantity < 1) {
+        alert("Please enter a valid item name, category, and quantity.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/warden/inventory`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                itemName: itemName,
+                category: category,
+                quantity: quantity,
+                status: "Working"
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Failed to add inventory item.");
             return;
         }
 
-        try {
-            const data = await apiRequest("/warden/inventory", {
-                method: "POST",
-                body: JSON.stringify({
-                    itemName,
-                    category,
-                    quantity,
-                    status: "Working"
-                })
-            });
+        alert(data.message || "Inventory item added successfully!");
 
-            alert(data.message || "Inventory item added.");
-            document.getElementById("invItemName").value = "";
-            document.getElementById("invCategory").value = "";
-            document.getElementById("invQuantity").value = "10";
-            await loadWardenDashboard();
-        } catch (error) {
-            alert("Could not add inventory item: " + error.message);
-        }
+        document.getElementById("invItemName").value = "";
+        document.getElementById("invCategory").value = "";
+        document.getElementById("invQuantity").value = "10";
+
+        loadWardenDashboard();
+
+    } catch (error) {
+        console.error("Error adding inventory item:", error);
+        alert("Could not connect to the server. Please try again.");
     }
+}
 
-    async function loadAnnouncements() {
-        const list = document.getElementById("announcementList");
-        try {
-            // This endpoint is currently administrator-only, so the request may return 403.
-            const data = await apiRequest("/admin/dashboard");
-            const events = data.events || [];
 
-            if (!events.length) {
-                list.innerHTML = '<p style="color:#888;">No announcements posted yet.</p>';
-                return;
-            }
-
-            list.innerHTML = events.map(item => `
-                <div class="list-row">
-                    <div class="list-row-content">
-                        <h5>📢 ${escapeHtml(item.title || "Announcement")}</h5>
-                        <p>${escapeHtml(item.description || "")} · <small>Date: ${escapeHtml(item.date || "")} | Venue: ${escapeHtml(item.venue || "Campus")}</small></p>
-                    </div>
-                </div>`).join("");
-        } catch (error) {
-            console.warn("Announcements could not be loaded:", error.message);
-            list.innerHTML = '<p style="color:#888;">Announcements are temporarily unavailable.</p>';
-        }
-    }
+    
 
     function saveMenu() {
         const menu = {
