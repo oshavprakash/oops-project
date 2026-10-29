@@ -736,7 +736,7 @@
                 content.className = "list-row-content";
 
                 const title = document.createElement("h5");
-                title.textContent = eventItem["event name"] || "Untitled event";
+                title.textContent = eventItem.event_name || "Untitled event";
 
                 const description = document.createElement("p");
                 description.textContent = eventItem.description || "No description";
