@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -918,7 +918,7 @@
                 </tbody>
             </table>
             <div><span class="badge">Total Due: â‚¹9,200</span></div>
-            <button class="action-btn" style="margin-top: 15px;" onclick="alert('Redirecting to Secure Payment Gateway...')">Pay All Dues</button>
+            <button class="action-btn" id = "payFeesButton" style="margin-top: 15px;" onclick="payDues()">Pay fees!</button>
         </div>
 
         <!-- Complaints Section -->
@@ -1208,6 +1208,7 @@
 
 
     <script>
+        const API_BASE = "https://hostelconnect-backend-za3a.onrender.com/api";
         let studentData = null;
 
         function signOut() {
@@ -1235,7 +1236,10 @@
         }
 
         function loadStudentDashboard() {
-            fetch("api/student/dashboard")
+            fetch(`${API_BASE}/student/overview`, {
+                method: "GET",
+                credentials: "include"
+            })
                 .then(res => {
                     if (res.status === 401 || res.status === 403) {
                         window.location.href = "login1.html";
@@ -1492,25 +1496,39 @@
             }
         }
 
-        function payDues() {
-            let feeType = "Hostel Term Fee";
-            let amount = "9200.00";
+        
+    async function payDues() {
+        try {
+            const response = await fetch(
+                "https://hostelconnect-backend-za3a.onrender.com/api/student/pay-fee",
+                {
+                    method: "POST",
+                    credentials: "include"
+                }
+            );
 
-            let params = new URLSearchParams();
-            params.append("feeType", feeType);
-            params.append("amount", amount);
+            const data = await response.json();
 
-            fetch("api/student/pay-fee", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message || "Fee payment recorded successfully in database!");
-                loadStudentDashboard();
-            });
+            if (!response.ok) {
+                alert(data.message || "Could not update fee status.");
+                return;
+            }
+
+            const button = document.getElementById("payFeesButton");
+
+            if (button) {
+                button.textContent = "Paid!";
+                button.disabled = true;
+            }
+
+            alert("Fee status updated to Paid!");
+
+        } catch (error) {
+        console.error(error);
+        alert("Unable to contact the server.");
         }
+    }
+
 
         function submitComplaint() {
             const room = document.getElementById("complaintRoom").value.trim();
@@ -1529,8 +1547,9 @@
             params.append("category", type);
             params.append("description", fullDesc);
 
-            fetch("api/student/complaint", {
+            fetch(`${API_BASE}/student/complaints`, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString()
             })
@@ -1652,8 +1671,9 @@
             params.append("description", desc);
             params.append("status", type);
 
-            fetch("api/student/lost-found", {
+            fetch(`${API_BASE}/student/lostfound`, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString()
             })
@@ -1677,8 +1697,9 @@
             let params = new URLSearchParams();
             params.append("details", text);
 
-            fetch("api/student/roommate-preference", {
-                method: "POST",
+            fetch(`${API_BASE}/student/roommate/preference`, {
+                method: "PUT",
+                credentials: "include",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString()
             })
