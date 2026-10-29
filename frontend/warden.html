@@ -236,7 +236,8 @@
 </div>
 
 <script>
-    let globalRooms = [];
+    const API_BASE = "https://hostelconnect-backend-za3a.onrender.com/api";
+        let globalRooms = [];
 
     function showSection(sectionId) {
         document.querySelectorAll(".warden-section").forEach(s => s.classList.remove("active"));
@@ -248,8 +249,10 @@
         if (activeLink) activeLink.classList.add("active");
     }
 
-    function loadWardenDashboard() {
-        fetch("api/warden/dashboard")
+   function loadWardenDashboard() {
+    fetch(`${API_BASE}/warden/dashboard`, {
+        credentials: "include"
+    })
             .then(res => {
                 if (res.status === 401 || res.status === 403) {
                     window.location.href = "login1.html";
@@ -442,11 +445,14 @@
         let params = new URLSearchParams();
         params.append("applicationId", appId);
 
-        fetch("api/warden/approve-application", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
-        })
+       fetch(`${API_BASE}/warden/approve-application`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+})
         .then(res => res.json())
         .then(data => {
             alert(data.message || "Application approved!");
@@ -459,11 +465,14 @@
         let params = new URLSearchParams();
         params.append("applicationId", appId);
 
-        fetch("api/warden/reject-application", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
-        })
+        fetch(`${API_BASE}/warden/reject-application`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+})
         .then(res => res.json())
         .then(data => {
             alert(data.message || "Application rejected.");
@@ -483,11 +492,14 @@
         params.append("studentId", studentId);
         params.append("roomId", roomId);
 
-        fetch("api/warden/allocate-room", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
-        })
+       fetch(`${API_BASE}/warden/allocate-room`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+})
         .then(res => res.json())
         .then(data => {
             alert(data.message || "Room allocated successfully!");
@@ -501,11 +513,14 @@
         params.append("status", status);
         params.append("remarks", "Updated by Warden on " + new Date().toLocaleDateString());
 
-        fetch("api/warden/update-complaint", {
+         fetch(`${API_BASE}/warden/update-complaint`, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
-        })
+        credentials: "include",
+        headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+})
         .then(res => res.json())
         .then(data => {
             alert("Complaint updated to " + status);
@@ -522,11 +537,14 @@
         params.append("quantity", document.getElementById("invQuantity").value);
         params.append("status", "Working");
 
-        fetch("api/warden/inventory", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
-        })
+        fetch(`${API_BASE}/warden/inventory`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+})
         .then(res => res.json())
         .then(data => {
             alert(data.message || "Item added!");
@@ -537,7 +555,9 @@
     }
 
     function loadAnnouncements() {
-        fetch("api/admin/dashboard")
+        fetch(`${API_BASE}/admin/dashboard`, {
+    credentials: "include"
+})
             .then(res => res.json())
             .then(data => {
                 let list = document.getElementById("announcementList");
@@ -595,10 +615,14 @@
     }
 
     function signOut() {
-        fetch("api/logout", { method: "POST" })
-            .finally(() => {
-                window.location.href = "login1.html";
-            });
+        fetch(`${API_BASE}/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+});
     }
 
     function escapeHtml(str) {
