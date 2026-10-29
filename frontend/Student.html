@@ -1522,7 +1522,7 @@ async function submitRoomChangeApp() {
 
 
 
-function renderFeeSection(fees, apiTotalDue = 0) {
+function renderFeeSection(paidFees, dueFees, totalDue) {
     const tables = document.querySelectorAll("#fees .custom-table tbody");
 
     if (tables.length < 2) {
@@ -1536,66 +1536,47 @@ function renderFeeSection(fees, apiTotalDue = 0) {
     paidTable.innerHTML = "";
     dueTable.innerHTML = "";
 
-    let calculatedDue = 0;
-
-    fees.forEach(fee => {
-        const status = String(fee.status || "")
-            .trim()
-            .toLowerCase();
-
-        const amount = Number(fee.amount) || 0;
+    function addFeeRow(table, fee, status) {
         const row = document.createElement("tr");
 
-        const feeType = document.createElement("td");
-        feeType.textContent = fee.feeType || "Fee";
+        const values = [
+            fee.feeType || "Fee",
+            "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
+            fee.paymentDate
+                ? String(fee.paymentDate).slice(0, 10)
+                : "-",
+            status
+        ];
 
-        const feeAmount = document.createElement("td");
-        feeAmount.textContent = "₹" + amount.toLocaleString("en-IN");
+        values.forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
 
-        const paymentDate = document.createElement("td");
-        paymentDate.textContent = fee.paymentDate
-            ? String(fee.paymentDate).substring(0, 10)
-            : "-";
+        table.appendChild(row);
+    }
 
-        const feeStatus = document.createElement("td");
+    paidFees.forEach(fee => addFeeRow(paidTable, fee, "Completed"));
+    dueFees.forEach(fee => addFeeRow(dueTable, fee, "Pending"));
 
-        if (["paid", "success", "completed"].includes(status)) {
-            feeStatus.textContent = "Completed";
-            row.append(feeType, feeAmount, paymentDate, feeStatus);
-            paidTable.appendChild(row);
-
-        } else {
-            feeStatus.textContent = fee.status || "Unknown";
-            row.append(feeType, feeAmount, paymentDate, feeStatus);
-            dueTable.appendChild(row);
-
-            if (["pending", "due"].includes(status)) {
-                calculatedDue += amount;
-            }
-        }
-    });
-
-    if (paidTable.children.length === 0) {
+    if (paidFees.length === 0) {
         paidTable.innerHTML =
             '<tr><td colspan="4">No completed payments.</td></tr>';
     }
 
-    if (dueTable.children.length === 0) {
+    if (dueFees.length === 0) {
         dueTable.innerHTML =
             '<tr><td colspan="4">No pending dues.</td></tr>';
     }
 
-    const totalDueElement = document.getElementById("totalDueAmount");
-
-    if (totalDueElement) {
-        const totalDue = Number(apiTotalDue);
-        totalDueElement.textContent =
-            "₹" + (Number.isFinite(totalDue) ? totalDue : calculatedDue)
-                .toLocaleString("en-IN");
-    }
+    document.getElementById("totalDueAmount").textContent =
+        "₹" + (Number(totalDue) || 0).toLocaleString("en-IN");
 }
 
 async function loadStudentFees() {
+    console.log("loadStudentFees is running!");
+
     const url =
         "https://hostelconnect-backend-za3a.onrender.com/api/student/fees";
 
@@ -1606,17 +1587,19 @@ async function loadStudentFees() {
 
         const data = await response.json();
 
+        console.log("Fees API status:", response.status);
+        console.log("Fees API response:", data);
+
         if (!response.ok) {
             console.error("Failed to load fees:", data);
             return;
         }
 
-        const fees = [
-            ...(Array.isArray(data.paid) ? data.paid : []),
-            ...(Array.isArray(data.due) ? data.due : [])
-        ];
-
-        renderFeeSection(fees, data.totalDue);
+        renderFeeSection(
+            Array.isArray(data.paid) ? data.paid : [],
+            Array.isArray(data.due) ? data.due : [],
+            data.totalDue
+        );
 
     } catch (error) {
         console.error("Error loading student fees:", error);
