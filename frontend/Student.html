@@ -1446,10 +1446,13 @@
             let params = new URLSearchParams();
             params.append("details", pref);
 
-            fetch("api/student/roommate-preference", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
+          fetch("https://hostelconnect-backend-za3a.onrender.com/api/student/roommate/preference", {
+            method: "PUT",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params.toString()
             })
             .then(res => res.json())
             .then(data => {
