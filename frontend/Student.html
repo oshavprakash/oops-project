@@ -16,11 +16,11 @@
         .student-greeting { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #c894b7; }
         .student-greeting span { font-size: 0.75rem; text-transform: uppercase; color: #c894b7; display: block; margin-bottom: 4px; }
         .student-greeting h3 { font-size: 1.1rem; font-weight: normal; }
-        
+
         .nav-links { display: flex; flex-direction: column; gap: 8px; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccc; text-decoration: none; border-radius: 6px; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background-color: #c894b7; color: #261123; font-weight: bold; }
-        
+
         .sign-out { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #ff9999; text-decoration: none; border: 1px solid rgba(255, 153, 153, 0.2); border-radius: 6px; cursor: pointer; }
         .sign-out:hover { background-color: rgba(255, 153, 153, 0.1); }
 
@@ -43,7 +43,7 @@
 
         .section-heading { font-size: 0.85rem; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: bold; }
         .overview-box { padding: 0 20px; margin-bottom: 30px; }
-        
+
         .list-row { padding: 18px 0; border-bottom: 1px solid #f2e6f0; display: flex; justify-content: space-between; align-items: center; }
         .list-row:last-child { border-bottom: none; }
         .list-row-content h5 { font-size: 1rem; color: #3d1738; margin-bottom: 4px; }
@@ -72,7 +72,7 @@
         .flex-gap { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
 
         @media(max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; } }
-        
+
 
 
 #roommate {
@@ -831,7 +831,7 @@
             <div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
             <div class="card-box" style="margin-bottom: 30px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: center;">
-                    
+
 <div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
 
 <div class="card-box" style="margin-bottom: 30px;">
@@ -880,7 +880,7 @@
                 </tbody>
             </table>
         </div>
-        
+
 
 
 <!-- Fee Payment Section -->
@@ -936,14 +936,15 @@
         </span>
     </div>
 
-<button class="action-btn" id="payFeesButton"
-        style="margin-top: 15px;" type="button">
-    Pay fees!
-</button>
+    <button class="action-btn" id="payFeesButton"
+            style="margin-top: 15px;" type="button">
+        Pay fees!
+    </button>
+</div>
 
 
         <!-- Complaints Section -->
-        
+
 <div id="complaints" class="content-section">
 
     <h2>Room Complaints</h2>
@@ -1048,6 +1049,9 @@
                 <label for="dietPreference">Food Preference</label>
                 <select id="dietPreference">
                     <option value="VEG">VEG — Vegetarian only</option>
+                    <option value="NON_VEG">
+                        NON_VEG — Vegetarian + Non-Vegetarian
+                    </option>
                     <option value="NON_VEG">NON_VEG — Vegetarian + Non-Vegetarian</option>
                 </select>
             </div>
@@ -1071,6 +1075,8 @@
             </div>
         </div>
 
+        <button class="save-food-preferences"
+                type="button"
         <button class="save-food-preferences" type="button"
                 onclick="saveFoodPreferences()">
             Save Preferences
@@ -1083,6 +1089,7 @@
     <div class="mess-menu">
         <div class="mess-menu-header">
             <div>
+                <h3>Mess Menu</h3>
                 <h3>Today's Menu</h3>
                 <p id="messDate">Loading date...</p>
             </div>
@@ -1090,6 +1097,7 @@
             <input type="date" id="messMenuDate"
                    aria-label="Choose menu date">
 
+            <select id="mealFilter" aria-label="Filter by meal">
             <select id="mealFilter" onchange="displayMessMenu()"
                     aria-label="Filter by meal">
                 <option value="all">All Meals</option>
@@ -1107,6 +1115,30 @@
 </div>
 <!-- End Mess Section -->
 
+
+    <div class="mess-menu">
+
+        <div class="mess-menu-header">
+            <div>
+                <h3>Today's Menu</h3>
+                <p id="messDate"></p>
+            </div>
+            
+<input type="date" id="messMenuDate" aria-label="Choose menu date">
+
+            <select id="mealFilter" onchange="displayMessMenu()">
+                <option value="all">All Meals</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="snacks">Snacks</option>
+                <option value="dinner">Dinner</option>
+            </select>
+        </div>
+
+        <div id="messMenuContainer">
+        </div>
+
+    </div>
 
 
 
@@ -1224,7 +1256,7 @@
 
 
 
-   
+
 <script>
 const API_BASE = "https://hostelconnect-backend-za3a.onrender.com/api";
 let studentData = null;
@@ -1669,7 +1701,6 @@ async function loadStudentFees() {
             Array.isArray(data.due) ? data.due : [],
             data.totalDue
         );
-        
     } catch (error) {
         console.error("Error loading student fees:", error);
     }
@@ -1840,7 +1871,7 @@ function renderEventsSection(events) {
             </div>
         `;
     }).join("");
-    
+
 }
 
 /* -------------------- LOST AND FOUND -------------------- */
