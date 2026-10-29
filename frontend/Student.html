@@ -1313,43 +1313,35 @@
         </form>
     </div>
 </div>
-    
-        
 
         <!-- Events Section -->
-        <div id="events" class="content-section">
-            <div class="flex-row" style="margin-bottom: 25px;">
-                <div>
-                    <h2>Hostel Events & Activities</h2>
-                    <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">Browse upcoming cultural events, sports tournaments, and announced meetings.</p>
-                </div>
-                <div><span class="badge event" id="eventCountBadge">
-                       0 EVENTS THIS MONTH</span></div>
-            </div>
+<div id="events" class="content-section">
 
-            <div class="section-heading">ANNOUNCED EVENTS</div>
-            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-                <div class="card-box">
-                    <div class="flex-gap"><span class="badge event">CULTURAL</span><h4 style="color: #3d1738; font-size: 1.1rem;">Annual Hostel Freshers' Night</h4></div>
-                    <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">ðŸ“… Date: 15th October 2026 | â° Time: 6:00 PM onwards</p>
-                    <p style="font-size: 0.85rem; color: #555;">ðŸ“ Venue: Main Auditorium & Open Air Theatre</p>
-                </div>
-
-                <div class="card-box">
-                    <div class="flex-gap"><span class="badge event">SPORTS</span><h4 style="color: #3d1738; font-size: 1.1rem;">Inter-Block Badminton Championship</h4></div>
-                    <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">ðŸ“… Date: 22nd October 2026 | â° Time: 4:30 PM</p>
-                    <p style="font-size: 0.85rem; color: #555;">ðŸ“ Venue: Hostel Indoor Sports Complex</p>
-                </div>
-
-                <div class="card-box">
-                    <div class="flex-gap"><span class="badge event">MEETING</span><h4 style="color: #3d1738; font-size: 1.1rem;">Monthly Warden & Student Council Meet</h4></div>
-                    <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">ðŸ“… Date: 28th October 2026 | â° Time: 7:00 PM</p>
-                    <p style="font-size: 0.85rem; color: #555;">ðŸ“ Venue: Block A Common Hall</p>
-                </div>
-            </div>
+    <div class="flex-row" style="margin-bottom: 25px;">
+        <div>
+            <h2>Hostel Events & Activities</h2>
+            <p style="margin-top: 5px; color: #777; font-size: 0.9rem;">
+                Browse upcoming cultural events, sports tournaments, and announced meetings.
+            </p>
         </div>
 
+        <div>
+            <span class="badge event" id="eventCountBadge">
+                0 EVENTS THIS MONTH
+            </span>
+        </div>
+    </div>
 
+    <div class="section-heading">ANNOUNCED EVENTS</div>
+
+    <!-- JavaScript inserts backend events here -->
+    <div id="eventsContainer"
+         style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+        <p style="color: #777;">Loading events...</p>
+    </div>
+
+</div>
+<!-- End Events Section -->
 
 
 
