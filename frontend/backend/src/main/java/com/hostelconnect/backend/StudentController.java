@@ -53,8 +53,8 @@ public class StudentController {
 
  private Map<String, Object> room(String sid) {
     List<Map<String, Object>> rows = jdbc.queryForList(
-        "SELECT a.allocationID, a.roomID AS roomID, " +
-        "r.roomType, r.capacity, r.occupancy, " +
+        "SELECT a.allocationID, r.roomID AS roomID, " +
+        "r.roomType, r.capacity, r.occupancy, r.status AS roomStatus, " +
         "a.allocationDate " +
         "FROM RoomAllocations a " +
         "LEFT JOIN Rooms r ON r.roomID = a.roomID " +
@@ -130,10 +130,12 @@ public class StudentController {
             Map<String, Object> result = new LinkedHashMap<>();
 
             // Student name
-            result.put("name", jdbc.queryForObject(
+            String studentName = jdbc.queryForObject(
                 "SELECT name FROM Students WHERE studentID = ?",
                 String.class, sid
-            ));
+            );
+            result.put("name", studentName);
+            result.put("student", Map.of("name", studentName));
 
             // Room information
             Map<String, Object> roomInfo = room(sid);
@@ -199,8 +201,9 @@ public class StudentController {
             ));
 
             // Recent complaints
-            result.put("recentComplaints",
-                complaints(sid, null, 3));
+            List<Map<String, Object>> recentComplaints = complaints(sid, null, 3);
+            result.put("recentComplaints", recentComplaints);
+            result.put("complaints", recentComplaints);
 
             return ResponseEntity.ok(result);
 
