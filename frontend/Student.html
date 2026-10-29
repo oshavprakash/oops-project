@@ -755,8 +755,8 @@
             <div class="overview-stats-grid">
                 <div class="overview-card">
                     <h4>Room</h4>
-                    <div class="card-main-val">C-305</div>
-                    <div class="card-sub-val">C Block Â· 2-sharing</div>
+                    <div class="card-main-val">Loading...</div>
+                    <div class="card-sub-val">Loading allotted room</div>
                 </div>
                 <div class="overview-card">
                     <h4>Fee status</h4>
@@ -764,38 +764,24 @@
                     <div class="card-sub-val">Mess Fee â€” Aug 2026</div>
                 </div>
                 <div class="overview-card">
-                    <h4>Open complaints</h4>
-                    <div class="card-main-val">2</div>
-                    <div class="card-sub-val">across hostel</div>
-                </div>
-                <div class="overview-card">
-                    <h4>Upcoming events</h4>
-                    <div class="card-main-val">3</div>
-                    <div class="card-sub-val">this month</div>
+                    <h4>Events</h4>
+                    <div class="card-main-val" id="overviewEventCount">Loading...</div>
+                    <div class="card-sub-val">events available</div>
                 </div>
             </div>
 
-            <div class="section-heading">RECENT COMPLAINTS</div>
-            <div class="overview-box">
+            <div class="section-heading">MY COMPLAINTS &amp; PROGRESS</div>
+            <div class="overview-box" id="overviewComplaintsBox">
                 <div class="list-row">
-                    <div class="list-row-content"><h5>Leaking bathroom tap</h5><p>C-305 Â· 2026-08-01</p></div>
-                    <div><span class="badge progress">PROGRESS</span></div>
-                </div>
-                <div class="list-row">
-                    <div class="list-row-content"><h5>Wi-Fi not working in room</h5><p>A-104 Â· 2026-08-03</p></div>
-                    <div><span class="badge open">OPEN</span></div>
-                </div>
-                <div class="list-row">
-                    <div class="list-row-content"><h5>Broken cupboard hinge</h5><p>A-110 Â· 2026-07-20</p></div>
-                    <div><span class="badge resolved">RESOLVED</span></div>
+                    <div class="list-row-content"><h5>Loading your complaints...</h5><p>Your complaint updates will appear here.</p></div>
                 </div>
             </div>
 
-            <div class="section-heading">THIS WEEK'S MESS MENU</div>
-            <div class="overview-box">
-                <div class="list-row"><div class="list-row-content"><h5>Monday</h5><p>Chapati, Dal, Mixed Veg, Rice, Curd</p></div></div>
-                <div class="list-row"><div class="list-row-content"><h5>Tuesday</h5><p>Idli, Sambar, Chutney, Egg Curry</p></div></div>
-                <div class="list-row"><div class="list-row-content"><h5>Wednesday</h5><p>Pulao, Raita, Paneer Curry, Papad</p></div></div>
+            <div class="section-heading">TODAY'S MESS MENU</div>
+            <div class="overview-box" id="overviewMessMenuBox">
+                <div class="list-row">
+                    <div class="list-row-content"><h5>Loading today's menu...</h5><p>Menu and meal timings will appear here.</p></div>
+                </div>
             </div>
         </div>
 
@@ -813,8 +799,8 @@
             <div class="overview-stats-grid" style="margin-bottom: 30px;">
                 <div class="overview-card">
                     <h4>Room Number</h4>
-                    <div class="card-main-val">C-305</div>
-                    <div class="card-sub-val">Block C</div>
+                    <div class="card-main-val" id="roomPageRoomNumber">Loading...</div>
+                    <div class="card-sub-val" id="roomPageBlock">Loading allotted room</div>
                 </div>
                 <div class="overview-card">
                     <h4>Accommodation</h4>
@@ -1328,16 +1314,6 @@ async function loadStudentDashboard() {
             }
         }
 
-        if (cards.length > 2) {
-            cards[2].innerText = (data.complaints || []).filter(c =>
-                (c.status || "").toLowerCase() !== "resolved"
-            ).length;
-        }
-
-        if (cards.length > 3) {
-            cards[3].innerText = (data.events || []).length;
-        }
-
         renderOverviewComplaints(data.complaints || []);
         renderRoomSection(data);
         renderLostFoundSection(data.lostFound || []);
@@ -1351,16 +1327,16 @@ async function loadStudentDashboard() {
 }
 
 function renderOverviewComplaints(complaints) {
-    const boxes = document.querySelectorAll("#overview .overview-box");
-    if (!boxes.length) return;
+    const box = document.getElementById("overviewComplaintsBox");
+    if (!box) return;
 
     if (!complaints.length) {
-        boxes[0].innerHTML =
+        box.innerHTML =
             '<div style="padding:15px;color:#888;">No complaints filed yet.</div>';
         return;
     }
 
-    boxes[0].innerHTML = complaints.slice(0, 3).map(c => {
+    box.innerHTML = complaints.slice(0, 5).map(c => {
         const status = (c.status || "Pending").toLowerCase();
         const badge = status === "resolved"
             ? "resolved"
@@ -1383,43 +1359,58 @@ function renderOverviewComplaints(complaints) {
 }
 
 function renderOverviewMessMenu() {
-    const boxes = document.querySelectorAll("#overview .overview-box");
-    if (boxes.length < 2) return;
+    const box = document.getElementById("overviewMessMenuBox");
+    if (!box) return;
 
-    const defaults = {
-        monday: "Chapati, Dal Tadka, Seasonal Veg, Rice",
-        tuesday: "Idli, Medu Vada, Sambar, Chutney",
-        wednesday: "Veg Pulao, Paneer Butter Masala, Raita"
+    const groups = {
+        BREAKFAST: "Breakfast",
+        LUNCH: "Lunch",
+        SNACKS: "Snacks",
+        DINNER: "Dinner"
     };
+    const timingMap = {};
+    currentMealTimings.forEach(timing => {
+        const key = String(timing.meal_type || timing.mealType || "").toUpperCase();
+        timingMap[key] = timing;
+    });
 
-    let menu = defaults;
-
-    try {
-        menu = {
-            ...defaults,
-            ...JSON.parse(localStorage.getItem("hostelMenu") || "{}")
-        };
-    } catch (error) {
-        console.warn("Using default overview menu.");
+    if (!currentMessMenu.length) {
+        box.innerHTML = '<div class="list-row"><div class="list-row-content"><h5>No menu available</h5><p>The warden has not published menu items for this date.</p></div></div>';
+        return;
     }
 
-    boxes[1].innerHTML = `
-        <div class="list-row"><div class="list-row-content">
-            <h5>Monday</h5><p>${escapeHtml(menu.monday)}</p>
-        </div></div>
-        <div class="list-row"><div class="list-row-content">
-            <h5>Tuesday</h5><p>${escapeHtml(menu.tuesday)}</p>
-        </div></div>
-        <div class="list-row"><div class="list-row-content">
-            <h5>Wednesday</h5><p>${escapeHtml(menu.wednesday)}</p>
-        </div></div>
-    `;
+    box.innerHTML = Object.entries(groups).map(([key, label]) => {
+        const items = currentMessMenu.filter(item =>
+            String(item.meal_type || item.mealType || "").toUpperCase() === key
+        );
+        if (!items.length) return "";
+
+        const timing = timingMap[key];
+        const start = timing?.start_time || timing?.startTime || "";
+        const end = timing?.end_time || timing?.endTime || "";
+        const time = start && end ? `${escapeHtml(start)} – ${escapeHtml(end)}` : "Timing not announced";
+        const food = items.map(item =>
+            escapeHtml(item.item_name || item.itemName || "Food item")
+        ).join(", ");
+
+        return `<div class="list-row"><div class="list-row-content"><h5>${label} <span style="font-weight:normal;color:#987185;">· ${time}</span></h5><p>${food}</p></div></div>`;
+    }).join("") || '<div class="list-row"><div class="list-row-content"><h5>No menu available</h5><p>The warden has not published menu items for this date.</p></div></div>';
 }
 
 function renderRoomSection(data) {
     const room = data.room;
     const roommates = data.roommates || [];
     const app = data.application;
+
+    const roomPageNumber = document.getElementById("roomPageRoomNumber");
+    const roomPageBlock = document.getElementById("roomPageBlock");
+    if (room?.roomID) {
+        if (roomPageNumber) roomPageNumber.innerText = room.roomID;
+        if (roomPageBlock) roomPageBlock.innerText = room.hostelName || "Allotted room";
+    } else {
+        if (roomPageNumber) roomPageNumber.innerText = "Not Allocated";
+        if (roomPageBlock) roomPageBlock.innerText = "No room allotment found";
+    }
 
     const cards = document.querySelectorAll(
         "#room .overview-card .card-main-val"
@@ -1778,7 +1769,10 @@ async function loadEvents() {
 
         const events = await response.json();
 
-        renderEventsSection(Array.isArray(events) ? events : []);
+        const eventList = Array.isArray(events) ? events : [];
+        const overviewEventCount = document.getElementById("overviewEventCount");
+        if (overviewEventCount) overviewEventCount.textContent = String(eventList.length);
+        renderEventsSection(eventList);
 
     } catch (error) {
         console.error("Could not load events:", error);
@@ -2154,10 +2148,13 @@ async function loadMessData() {
         }
 
         renderMessMenu();
+        renderOverviewMessMenu();
 
     } catch (error) {
         console.error("Mess loading error:", error);
         container.textContent = error.message + " Please try again later.";
+        const overviewBox = document.getElementById("overviewMessMenuBox");
+        if (overviewBox) overviewBox.innerHTML = '<div class="list-row"><div class="list-row-content"><h5>Menu unavailable</h5><p>Could not load the current menu and meal timings.</p></div></div>';
     }
 }
 
@@ -2272,6 +2269,7 @@ document.addEventListener("DOMContentLoaded", function () {
     loadStudentDashboard();
     loadStudentFees();
     loadEvents();
+    loadMessData();
 
 
     const dateInput = document.getElementById("messMenuDate");
