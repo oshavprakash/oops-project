@@ -132,7 +132,21 @@ public class StudentController {
             ));
 
             // Room information
-            result.put("room", room(sid));
+            Map<String, Object> roomInfo = room(sid);
+            result.put("room", roomInfo);
+            // Latest hostel application
+            List<Map<String, Object>> applications = jdbc.queryForList(
+                "SELECT applicationID, status, appliedDate, preferenceDescription " +
+                "FROM Applications " +
+                "WHERE studentID = ? " +
+                "ORDER BY appliedDate DESC LIMIT 1",
+                sid
+            );
+
+            result.put(
+                "application",
+            applications.isEmpty() ? null : applications.get(0)
+            );
 
             // Total pending fees
             BigDecimal due = jdbc.queryForObject(
