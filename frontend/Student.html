@@ -831,15 +831,21 @@
             <div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
             <div class="card-box" style="margin-bottom: 30px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: center;">
-                    <select style="padding: 12px; border: 1px solid #ead6e4; border-radius: 6px; font-size: 0.9rem; background: white; color: #3d1738; outline: none;">
-                        <option>A Block</option>
-                        <option>B Block</option>
-                        <option selected>C Block</option>
+                    <select id="requestedBlock" style="padding:12px; border:1px solid #ead6e4; border-radius:6px;">
+                        <option value="A Block">A Block</option>
+                        <option value="B Block">B Block</option>
+                        <option value="C Block">C Block</option>
                     </select>
-                    <select style="padding: 12px; border: 1px solid #ead6e4; border-radius: 6px; font-size: 0.9rem; background: white; color: #3d1738; outline: none;" disabled>
-                        <option selected>2-Sharing Room</option>
+
+                    <select id="requestedRoomType"style="padding:12px; border:1px solid #ead6e4; border-radius:6px;">
+                        <option value="2-Sharing">2-Sharing Room</option>
                     </select>
-                    <button class="action-btn" onclick="alert('Room application submitted successfully!')">Submit application</button>
+
+                    <button class="action-btn" onclick="submitRoomChangeApp()">
+                        Submit application
+                    </button>
+
+                    <p id="roomApplicationMessage" style="margin-top:10px;"></p>
                 </div>
             </div>
 
