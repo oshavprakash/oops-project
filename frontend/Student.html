@@ -1736,31 +1736,61 @@ async function loadEvents() {
 }
 
 
-        function renderEventsSection(events) {
-            let container = document.querySelector("#events .section-heading + div");
-            if (!container) return;
+        
+function renderEventsSection(events) {
+    const container = document.querySelector(
+        "#events .section-heading + div"
+    );
 
-            if (events.length === 0) {
-                container.innerHTML = '<div class="card-box"><p style="color:#888;">No upcoming hostel events scheduled yet.</p></div>';
-                return;
-            }
+    if (!container) {
+        console.error("Events container was not found.");
+        return;
+    }
 
-            let html = "";
-            events.forEach(e => {
-                html += `
-                    <div class="card-box">
-                        <div class="flex-gap">
-                            <span class="badge event">ANNOUNCEMENT</span>
-                            <h4 style="color: #3d1738; font-size: 1.1rem;">${escapeHtml(e.title || "Hostel Event")}</h4>
-                        </div>
-                        <p style="font-size: 0.85rem; color: #777; margin-bottom: 4px;">📅 Date: <strong>${escapeHtml(e.date || "")}</strong> | ⏰ Time: ${escapeHtml(e.time || "TBA")}</p>
-                        <p style="font-size: 0.85rem; color: #555;">📍 Venue: ${escapeHtml(e.venue || "Hostel Main Block")}</p>
-                        <p style="font-size: 0.85rem; color: #666; margin-top: 6px;">${escapeHtml(e.description || "")}</p>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
+    if (!Array.isArray(events) || events.length === 0) {
+        container.innerHTML =
+            '<div class="card-box"><p style="color:#888;">No upcoming hostel events scheduled yet.</p></div>';
+        return;
+    }
+
+    let html = "";
+
+    events.forEach(e => {
+        const title = e.title ?? e["event name"] ?? "Hostel Event";
+        const date = e.date ?? e.event_date ?? "";
+        const time = e.time ?? e["event time"] ?? "TBA";
+        const venue = e.venue ?? "Hostel Main Block";
+        const description = e.description ?? "";
+
+        html += `
+            <div class="card-box">
+                <div class="flex-gap">
+                    <span class="badge event">ANNOUNCEMENT</span>
+                    <h4 style="color:#3d1738;font-size:1.1rem;">
+                        ${escapeHtml(String(title))}
+                    </h4>
+                </div>
+
+                <p style="font-size:0.85rem;color:#777;margin-bottom:4px;">
+                    📅 Date: <strong>${escapeHtml(String(date))}</strong>
+                    | ⏰ Time: ${escapeHtml(String(time))}
+                </p>
+
+                <p style="font-size:0.85rem;color:#555;">
+                    📍 Venue: ${escapeHtml(String(venue))}
+                </p>
+
+                <p style="font-size:0.85rem;color:#666;margin-top:6px;">
+                    ${escapeHtml(String(description))}
+                </p>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+```
+
 
         function renderLostFoundSection(items) {
             let tbody = document.querySelector("#lostfound .custom-table tbody");
