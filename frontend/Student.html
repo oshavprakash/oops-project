@@ -1786,20 +1786,94 @@ async function loadEvents() {
 }
 
 function renderEventsSection(events) {
-    const container = document.querySelector("#events .section-heading + div");
-    if (!container) return;
+    const container = document.querySelector(
+        "#events .section-heading + div"
+    );
 
-    if (!Array.isArray(events) || !events.length) {
-        container.innerHTML =
-            '<div class="card-box"><p style="color:#888;">No upcoming hostel events scheduled yet.</p></div>';
+    const countBadge = document.getElementById("eventCountBadge");
+
+    if (!container) {
+        console.error("Events container not found");
         return;
     }
 
-    container.innerHTML = events.map(e => {
-        const title = e.title ?? e["event name"] ?? "Hostel Event";
-        const date = e.date ?? e.event_date ?? "";
-        const time = e.time ?? e["event time"] ?? "TBA";
-        const venue = e.venue ?? "Hostel Main Block";
+    // Count events in the current month
+    const now = new Date();
+
+    const thisMonthCount = events.filter(event => {
+        const rawDate = event.event_date ?? event.date;
+        if (!rawDate) return false;
+
+        const datePart = String(rawDate).split("T")[0];
+        const [year, month] = datePart.split("-").map(Number);
+
+        return year === now.getFullYear()
+            && month === now.getMonth() + 1;
+    }).length;
+
+    if (countBadge) {
+        countBadge.textContent =
+            `${thisMonthCount} ${thisMonthCount === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
+    }
+
+    if (!events.length) {
+        container.innerHTML =
+            '<div class="card-box">No upcoming hostel events scheduled yet.</div>';
+        return;
+    }
+
+    container.innerHTML = events.map(event => {
+        const title =
+            event.event_name ??
+            event["event name"] ??
+            event.title ??
+            "Hostel Event";
+
+        const rawDate = event.event_date ?? event.date ?? "";
+        const rawTime =
+            event.event_time ??
+            event["event time"] ??
+            event.time ??
+            "";
+
+        let formattedDate = "Date to be announced";
+
+        if (rawDate) {
+            const [year, month, day] =
+                String(rawDate).split("T")[0].split("-").map(Number);
+
+            if (year && month && day) {
+                formattedDate = new Date(year, month - 1, day)
+                    .toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    });
+            }
+        }
+
+        let formattedTime = "Time to be announced";
+
+        if (rawTime) {
+            const match = String(rawTime).match(/(\d{1,2}):(\d{2})/);
+
+            if (match) {
+                const hours = Number(match[1]);
+                const minutes = Number(match[2]);
+
+                if (hours <= 23 && minutes <= 59) {
+                    formattedTime = new Date(2000, 0, 1, hours, minutes)
+                        .toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true
+                        });
+                }
+            }
+        }
+
+        const venue = event.venue ?? "Not announced";
+        const description = event.description ?? "";
 
         return `
             <div class="card-box">
@@ -1809,22 +1883,23 @@ function renderEventsSection(events) {
                         ${escapeHtml(String(title))}
                     </h4>
                 </div>
-                <p style="font-size:.85rem;color:#777;margin-bottom:4px;">
-                    📅 Date: <strong>${escapeHtml(String(date))}</strong>
-                    | ⏰ Time: ${escapeHtml(String(time))}
+
+                <p style="font-size:0.85rem;color:#777;margin-bottom:4px;">
+                    📅 Date: <strong>${escapeHtml(formattedDate)}</strong>
+                    | ⏰ Time: <strong>${escapeHtml(formattedTime)}</strong>
                 </p>
-                <p style="font-size:.85rem;color:#555;">
+
+                <p style="font-size:0.85rem;color:#555;">
                     📍 Venue: ${escapeHtml(String(venue))}
                 </p>
-                <p style="font-size:.85rem;color:#666;margin-top:6px;">
-                    ${escapeHtml(String(e.description ?? ""))}
+
+                <p style="font-size:0.85rem;color:#666;margin-top:6px;">
+                    ${escapeHtml(String(description))}
                 </p>
             </div>
         `;
     }).join("");
-
 }
-
 /* -------------------- LOST AND FOUND -------------------- */
 
 function renderLostFoundSection(items) {
