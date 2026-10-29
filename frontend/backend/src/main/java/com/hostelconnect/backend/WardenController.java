@@ -65,10 +65,17 @@ public class WardenController {
                 .body(Map.of("error", "Warden record not found"));
         }
 
-        List<Map<String, Object>> applications =
-            jdbcTemplate.queryForList(
-                "SELECT * FROM Applications ORDER BY appliedDate DESC"
-            );
+       List<Map<String, Object>> applications =
+    jdbcTemplate.queryForList(
+        "SELECT a.*, s.name AS studentName, " +
+        "       ra.roomID AS allocatedRoomID, " +
+        "       CASE WHEN ra.allocationID IS NOT NULL " +
+        "            THEN TRUE ELSE FALSE END AS allocated " +
+        "FROM Applications a " +
+        "LEFT JOIN Students s ON a.studentID = s.studentID " +
+        "LEFT JOIN RoomAllocations ra ON a.studentID = ra.studentID " +
+        "ORDER BY a.appliedDate DESC"
+    );
 
         List<Map<String, Object>> rooms =
             jdbcTemplate.queryForList(
