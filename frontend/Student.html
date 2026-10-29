@@ -1669,28 +1669,12 @@ async function loadStudentFees() {
             Array.isArray(data.due) ? data.due : [],
             data.totalDue
         );
-        updatePayFeesButton(data.totalDue);
+        
     } catch (error) {
         console.error("Error loading student fees:", error);
     }
 }
-function updatePayFeesButton(totalDue) {
-    const button = document.getElementById("payFeesButton");
 
-    if (!button) return;
-
-    if (Number(totalDue) > 0) {
-        button.disabled = false;
-        button.textContent = "Pay Fees";
-        button.style.opacity = "1";
-        button.style.cursor = "pointer";
-    } else {
-        button.disabled = true;
-        button.textContent = "No Pending Fees";
-        button.style.opacity = "0.6";
-        button.style.cursor = "not-allowed";
-    }
-}
 /* -------------------- COMPLAINTS -------------------- */
 
 function submitComplaint() {
