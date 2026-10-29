@@ -1572,18 +1572,12 @@ function renderRoomSection(data) {
     const roommates = data.roommates || [];
     const app = data.application;
 
-    // Get the actual application status
-    const status = String(app?.status || "Pending").trim().toLowerCase();
-
     const roomPageNumber = document.getElementById("roomPageRoomNumber");
     const roomPageBlock = document.getElementById("roomPageBlock");
-
     if (room?.roomID) {
         if (roomPageNumber) roomPageNumber.innerText = room.roomID;
-        if (roomPageBlock) {
-            roomPageBlock.innerText =
-                `${room.roomType || "Allotted room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
-        }
+        if (roomPageBlock) roomPageBlock.innerText =
+            `${room.roomType || "Allotted room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
     } else {
         if (roomPageNumber) roomPageNumber.innerText = "Not Allocated";
         if (roomPageBlock) roomPageBlock.innerText = "No room allotment found";
@@ -1592,7 +1586,6 @@ function renderRoomSection(data) {
     const cards = document.querySelectorAll(
         "#room .overview-card .card-main-val"
     );
-
     const subtitles = document.querySelectorAll(
         "#room .overview-card .card-sub-val"
     );
@@ -1600,12 +1593,8 @@ function renderRoomSection(data) {
     if (cards.length) {
         if (room?.roomID) {
             cards[0].innerText = room.roomID;
-
-            if (subtitles[0]) {
-                subtitles[0].innerText =
-                    `${room.roomType || "Room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
-            }
-
+            if (subtitles[0]) subtitles[0].innerText =
+                `${room.roomType || "Room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
             if (cards[1]) cards[1].innerText = room.roomType || "Standard";
 
             if (cards[2]) {
@@ -1614,32 +1603,45 @@ function renderRoomSection(data) {
             }
         } else {
             cards[0].innerText = "Not Allocated";
-
-            // Display the actual application status
-            if (subtitles[0]) {
-                if (status === "approved") {
-                    subtitles[0].innerText = "Application Approved";
-                } else if (status === "rejected") {
-                    subtitles[0].innerText = "Application Rejected";
-                } else {
-                    subtitles[0].innerText = "Application Pending";
-                }
-            }
-
+            if (subtitles[0]) subtitles[0].innerText = "Application Approved";
             if (cards[1]) cards[1].innerText = "Standard";
 
             if (cards[2]) {
-                if (status === "approved") {
-                    cards[2].innerText = "Approved";
-                    cards[2].style.color = "#27ae60";
-                } else if (status === "rejected") {
-                    cards[2].innerText = "Rejected";
-                    cards[2].style.color = "#e74c3c";
-                } else {
-                    cards[2].innerText = "Pending";
-                    cards[2].style.color = "#e67e22";
-                }
+                cards[2].innerText = "Pending";
+                cards[2].style.color = "#e67e22";
             }
+        }
+    }
+
+    const roommateBox = document.querySelector("#room .card-box.flex-row");
+
+    if (roommateBox) {
+        if (!roommates.length) {
+            roommateBox.innerHTML = `
+                <div>
+                    <h4 style="color:#3d1738;margin-bottom:4px;">
+                        No Roommates Assigned Yet
+                    </h4>
+                    <p style="font-size:.85rem;color:#777;">
+                        Roommate details will appear here after allocation.
+                    </p>
+                </div>
+            `;
+        } else {
+            const mates = roommates.map(m => `
+                <div style="margin-bottom:10px;">
+                    <h4 style="color:#3d1738;margin-bottom:2px;">
+                        ${escapeHtml(m.name || "")}
+                    </h4>
+                    <p style="font-size:.85rem;color:#777;">
+                        Student ID: ${escapeHtml(m.studentID || "")}
+                        · Email: ${escapeHtml(m.email || "")}
+                    </p>
+                </div>
+            `).join("");
+
+            roommateBox.innerHTML =
+                `<div>${mates}</div><div><span class="badge event">ROOM ALLOTMENT</span></div>`;
         }
     }
 
