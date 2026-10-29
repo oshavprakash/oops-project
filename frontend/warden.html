@@ -496,29 +496,70 @@
         }
     }
 
-    async function allocateRoomToStudent(studentId) {
-        const select = document.getElementById("selRoom_" + studentId);
 
-        if (!select || !select.value) {
-            alert("Please select an available room.");
-            return;
+async function allocateRoomToStudent(studentId) {
+    const select = document.getElementById("selRoom_" + studentId);
+
+    if (!select || !select.value) {
+        alert("Please select an available room.");
+        return;
+    }
+
+    // Find the Allocate button in the same row as this student's room selector
+    const buttons = document.querySelectorAll("button");
+    let allocateButton = null;
+
+    buttons.forEach(button => {
+        if (
+            button.getAttribute("onclick") ===
+            `allocateRoomToStudent('${studentId}')`
+        ) {
+            allocateButton = button;
+        }
+    });
+
+    try {
+        if (allocateButton) {
+            allocateButton.disabled = true;
+            allocateButton.textContent = "Allocating...";
         }
 
-        try {
-            const data = await apiRequest("/warden/allocate-room", {
-                method: "POST",
-                body: JSON.stringify({
-                    studentID: studentId,
-                    roomID: select.value
-                })
-            });
+        const data = await apiRequest("/warden/allocate-room", {
+            method: "POST",
+            body: JSON.stringify({
+                studentID: studentId,
+                roomID: select.value
+            })
+        });
 
-            alert(data.message || "Room allocated successfully.");
-            await loadWardenDashboard();
-        } catch (error) {
-            alert("Could not allocate room: " + error.message);
+        if (allocateButton) {
+            allocateButton.textContent = "Allocated";
+            allocateButton.style.backgroundColor = "#28a745";
+            allocateButton.style.color = "#ffffff";
+            allocateButton.style.borderColor = "#28a745";
+            allocateButton.disabled = true;
+            allocateButton.style.cursor = "default";
+        }
+
+        select.disabled = true;
+
+        alert(data.message || "Room allocated successfully.");
+
+        await loadWardenDashboard();
+
+    } catch (error) {
+        alert("Could not allocate room: " + error.message);
+
+        if (allocateButton) {
+            allocateButton.disabled = false;
+            allocateButton.textContent = "Allocate";
+            allocateButton.style.backgroundColor = "";
+            allocateButton.style.color = "";
+            allocateButton.style.borderColor = "";
         }
     }
+}
+
 
     // ---------------- COMPLAINTS ----------------
 
