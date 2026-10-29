@@ -1529,9 +1529,8 @@ async function loadStudentFees() {
         credentials: "include"
       });
 
-      console.log("Fees API status:", response.status);
-
       const data = await response.json();
+      console.log("Fees API status:", response.status);
       console.log("Fees API response:", data);
 
 
