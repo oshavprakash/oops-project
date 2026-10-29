@@ -28,6 +28,8 @@ public class LoginController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    // ---------------- LOGIN ----------------
+
     @PostMapping(
         value = "/login",
         consumes = "application/x-www-form-urlencoded"
@@ -82,7 +84,7 @@ public class LoginController {
 
             String role = user.role().trim().toLowerCase();
 
-            // Store the authenticated user's identity in the session.
+            // Save the authenticated user's identity in the session.
             session.setAttribute("userID", user.userID());
             session.setAttribute("userRole", role);
 
@@ -110,6 +112,28 @@ public class LoginController {
                 ));
         }
     }
+
+    // ---------------- SESSION CHECK ----------------
+    // Temporary debugging endpoint to verify whether the login
+    // session is preserved between requests.
+
+    @GetMapping("/session-check")
+    public ResponseEntity<Map<String, Object>> sessionCheck(
+            HttpSession session) {
+
+        Object userId = session.getAttribute("userID");
+        Object userRole = session.getAttribute("userRole");
+
+        return ResponseEntity.ok(Map.of(
+            "sessionId", session.getId(),
+            "userID", userId == null
+                ? "MISSING" : userId.toString(),
+            "userRole", userRole == null
+                ? "MISSING" : userRole.toString()
+        ));
+    }
+
+    // ---------------- USER RECORD ----------------
 
     private record User(
         String userID,
