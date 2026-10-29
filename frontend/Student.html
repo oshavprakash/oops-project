@@ -1729,12 +1729,31 @@ async function loadStudentFees() {
             let params = new URLSearchParams();
             params.append("details", text);
 
-            fetch(`${API_BASE}/student/roommate/preference`, {
-                method: "PUT",
-                credentials: "include",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            })
+           
+    fetch("https://hostelconnect-backend-za3a.onrender.com/api/student/roommate/preference", {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            preferenceDetails: params.get("preferenceDetails")
+        })
+    })
+    .then(async response => {
+        const data = await response.json();
+    
+        if (!response.ok) {
+            throw new Error(data.message || "Failed to save preferences");
+        }
+    
+        alert(data.message || "Preferences saved successfully");
+    })
+    .catch(error => {
+        console.error("Roommate preference error:", error);
+        alert("Could not save preferences: " + error.message);
+    });
+    
             .then(res => res.json())
             .then(data => {
                 if (status) status.innerText = data.message || "Preferences saved and shared with warden office!";
