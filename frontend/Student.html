@@ -2068,6 +2068,7 @@ function renderEventsSection(events) {
 /* -------------------- LOST AND FOUND -------------------- */
 
 function renderLostFoundSection(items) {
+    
     const tbody = document.querySelector("#lostfound .custom-table tbody");
     if (!tbody) return;
 
@@ -2099,6 +2100,24 @@ function renderLostFoundSection(items) {
             </td>
         </tr>
     `).join("");
+}
+async function loadLostFoundItems() {
+    try {
+        const response = await fetch(`${API_BASE}/student/lostfound`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to load Lost & Found items.");
+        }
+
+        const items = await response.json();
+        renderLostFoundSection(items);
+
+    } catch (error) {
+        console.error("Error loading Lost & Found items:", error);
+    }
 }
 function reportLostFoundItem() {
     openLostFoundModal();
