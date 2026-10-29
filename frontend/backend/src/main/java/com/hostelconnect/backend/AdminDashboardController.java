@@ -45,18 +45,15 @@ public class AdminDashboardController {
         // Total number of rooms
         long totalRooms = rooms.size();
 
-        // Count rooms that have reached full capacity
-        long occupiedRooms = rooms.stream()
-            .filter(room -> {
-                Object occupancy = room.get("occupancy");
-                Object capacity = room.get("capacity");
+     // Count rooms that have at least one occupant
+      long occupiedRooms = rooms.stream()
+        .filter(room -> {
+            Object occupancy = room.get("occupancy");
 
-                return occupancy instanceof Number
-                    && capacity instanceof Number
-                    && ((Number) occupancy).intValue()
-                        >= ((Number) capacity).intValue();
-            })
-            .count();
+        return occupancy instanceof Number
+            && ((Number) occupancy).intValue() > 0;
+    })
+    .count();
 
         // Fetch fee payment records
         List<Map<String, Object>> fees = jdbcTemplate.queryForList(
