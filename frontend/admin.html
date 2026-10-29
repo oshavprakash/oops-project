@@ -367,6 +367,68 @@
     <div id="fees" class="page">
         <div class="heading-small">ADMIN DASHBOARD</div>
         <h1>Fee Monitor</h1>
+        <!-- ASSIGN FEE FORM -->
+<div class="card" style="margin-bottom:30px;">
+
+    <h2 style="color:#38133c; font-size:18px;">
+        Assign Fee to Student
+    </h2>
+
+    <form id="assignFeeForm">
+
+        <div style="margin-bottom:15px;">
+            <label for="feeStudent"
+                   style="display:block; margin-bottom:8px;">
+                Select Student
+            </label>
+
+            <select id="feeStudent"
+                    required
+                    style="width:100%; padding:12px; border:1px solid #ead6e4; border-radius:6px;">
+                <option value="">Loading students...</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label for="feeType"
+                   style="display:block; margin-bottom:8px;">
+                Fee Type
+            </label>
+
+            <select id="feeType"
+                    required
+                    style="width:100%; padding:12px; border:1px solid #ead6e4; border-radius:6px;">
+                <option value="">Select fee type</option>
+                <option value="Hostel Fee">Hostel Fee</option>
+                <option value="Mess Fee">Mess Fee</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:18px;">
+            <label for="feeAmount"
+                   style="display:block; margin-bottom:8px;">
+                Amount (₹)
+            </label>
+
+            <input type="number"
+                   id="feeAmount"
+                   min="0.01"
+                   max="99999999.99"
+                   step="0.01"
+                   required
+                   placeholder="Enter amount"
+                   style="width:100%; padding:12px; border:1px solid #ead6e4; border-radius:6px;">
+        </div>
+
+        <button type="submit">Assign Fee</button>
+
+        <p id="assignFeeMessage"
+           role="status"
+           style="margin-top:12px;"></p>
+
+    </form>
+</div>
 
         <div class="card-container">
             <div class="card">
@@ -434,7 +496,118 @@
             menuItem.classList.add("active");
         }
     }
+    // LOAD STUDENTS INTO THE FEE ASSIGNMENT DROPDOWN
+function loadFeeStudents() {
 
+    const dropdown = document.getElementById("feeStudent");
+
+    fetch("https://hostelconnect-backend-za3a.onrender.com/api/admin/students", {
+        credentials: "include"
+    })
+    .then(async response => {
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Could not load students");
+        }
+
+        return data;
+    })
+    .then(students => {
+
+        dropdown.innerHTML =
+            '<option value="">Select student</option>';
+
+        if (students.length === 0) {
+            dropdown.innerHTML =
+                '<option value="">No students available</option>';
+            return;
+        }
+
+        students.forEach(student => {
+
+            const option = document.createElement("option");
+
+            option.value = student.studentID;
+            option.textContent =
+                student.name + " (" + student.studentID + ")";
+
+            dropdown.appendChild(option);
+        });
+    })
+    .catch(error => {
+
+        console.error("Student loading error:", error);
+
+        dropdown.innerHTML =
+            '<option value="">Could not load students</option>';
+    });
+}
+
+
+// SUBMIT ASSIGNED FEE
+document.getElementById("assignFeeForm")
+    .addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+        const message =
+            document.getElementById("assignFeeMessage");
+
+        const studentID =
+            document.getElementById("feeStudent").value;
+
+        const feeType =
+            document.getElementById("feeType").value;
+
+        const amount =
+            document.getElementById("feeAmount").value;
+
+        message.style.color = "#38133c";
+        message.textContent = "Assigning fee...";
+
+        fetch("https://hostelconnect-backend-za3a.onrender.com/api/admin/assign-fee", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentID: studentID,
+                feeType: feeType,
+                amount: amount
+            })
+        })
+        .then(async response => {
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to assign fee");
+            }
+
+            return data;
+        })
+        .then(data => {
+
+            message.style.color = "green";
+            message.textContent = data.message;
+
+            document.getElementById("feeAmount").value = "";
+            document.getElementById("feeType").value = "";
+            document.getElementById("feeStudent").value = "";
+
+            // Refresh the fee history and statistics.
+            loadAdminDashboard();
+        })
+        .catch(error => {
+
+            message.style.color = "red";
+            message.textContent = error.message;
+
+            console.error("Fee assignment error:", error);
+        });
+    });
 
     // LOAD ADMIN DASHBOARD DATA
     function loadAdminDashboard() {
@@ -637,9 +810,10 @@
 
 
     // LOAD DASHBOARD WHEN PAGE OPENS
-    document.addEventListener("DOMContentLoaded", function() {
-        loadAdminDashboard();
-    });
+   document.addEventListener("DOMContentLoaded", function() {
+    loadAdminDashboard();
+    loadFeeStudents();
+});
 
 </script>
 
