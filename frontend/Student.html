@@ -1821,92 +1821,116 @@ async function submitRoomChangeApp() {
 
 /* -------------------- FEES -------------------- */
 
+
+
 function renderFeeSection(paidFees, dueFees, totalDue) {
-    console.log("=== FEE RENDER START ===");
-    console.log("Paid fees received:", paidFees);
-    console.log("Due fees received:", dueFees);
-    console.log("Paid count:", paidFees.length);
-    console.log("Due count:", dueFees.length);
-
     const section = document.getElementById("fees");
+    if (!section) return;
 
-    if (!section) {
-        console.error("ERROR: No element with id='fees' found.");
-        return;
-    }
-
-    const tables = section.querySelectorAll("table.custom-table tbody");
-
-    console.log("Fee table bodies found:", tables.length);
+    const tables = section.querySelectorAll(
+        "table.custom-table tbody"
+    );
 
     if (tables.length < 2) {
-        console.error("ERROR: Expected 2 fee tables, found:", tables.length);
+        console.error("Fee tables could not be found.");
         return;
     }
 
     const paidTable = tables[0];
     const dueTable = tables[1];
 
+    // Render paid fees
     paidTable.replaceChildren();
-    dueTable.replaceChildren();
 
     paidFees.forEach(fee => {
-        const row = document.createElement("tr");
+        const row = paidTable.insertRow();
 
-        [
-            fee.feeType || "Fee",
-            "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
-            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-",
-            "Completed"
-        ].forEach(value => {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            row.appendChild(cell);
-        });
-
-        paidTable.appendChild(row);
+        row.insertCell().textContent = fee.feeType || "Fee";
+        row.insertCell().textContent = "₹" + fee.amount;
+        row.insertCell().textContent =
+            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-";
+        row.insertCell().textContent = "Paid";
     });
+
+    // Render pending fees
+    dueTable.replaceChildren();
 
     dueFees.forEach(fee => {
-        const row = document.createElement("tr");
+        const row = dueTable.insertRow();
 
-        [
-            fee.feeType || "Fee",
-            "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
-            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-",
-            "Pending"
-        ].forEach(value => {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            row.appendChild(cell);
+        row.insertCell().textContent = fee.feeType || "Fee";
+        row.insertCell().textContent = "₹" + fee.amount;
+        row.insertCell().textContent =
+            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-";
+
+        const statusCell = row.insertCell();
+        const payButton = document.createElement("button");
+
+        payButton.type = "button";
+        payButton.textContent = "Pay Fees";
+        payButton.className = "lf-submit";
+        payButton.disabled = false;
+
+        payButton.addEventListener("click", async () => {
+            if (!fee.paymentID) {
+                alert("Payment ID is missing for this fee.");
+                return;
+            }
+
+            payButton.disabled = true;
+            payButton.textContent = "Processing...";
+
+            try {
+                const response = await fetch(
+                    `${API_BASE}/student/pay-fee`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            paymentID: fee.paymentID
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || result.success !== true) {
+                    throw new Error(
+                        result.message || "Payment could not be completed."
+                    );
+                }
+
+                // Refresh the tables using the updated database status.
+                await loadStudentFees();
+
+                alert("Fee marked as Paid successfully!");
+
+            } catch (error) {
+                console.error("Fee payment error:", error);
+
+                alert(error.message || "Unable to update fee status.");
+
+                payButton.disabled = false;
+                payButton.textContent = "Pay Fees";
+            }
         });
 
-        dueTable.appendChild(row);
+        statusCell.appendChild(payButton);
     });
 
-    if (paidFees.length === 0) {
-        paidTable.innerHTML =
-            '<tr><td colspan="4">No completed payments.</td></tr>';
-    }
-
-    if (dueFees.length === 0) {
-        dueTable.innerHTML =
-            '<tr><td colspan="4">No pending dues.</td></tr>';
-    }
-
+    // Update total due
     const totalElement = document.getElementById("totalDueAmount");
 
     if (totalElement) {
         totalElement.textContent =
-            "₹" + (Number(totalDue) || 0).toLocaleString("en-IN");
-    } else {
-        console.error("ERROR: totalDueAmount element not found.");
+            "₹" + Number(totalDue || 0).toFixed(2);
     }
-
-    console.log("Paid rows after rendering:", paidTable.rows.length);
-    console.log("Paid table HTML after rendering:", paidTable.innerHTML);
-    console.log("=== FEE RENDER END ===");
 }
+
+
 
 async function loadStudentFees() {
     try {
