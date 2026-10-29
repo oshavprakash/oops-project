@@ -1567,25 +1567,35 @@ function renderOverviewMessMenu() {
 }
 
 
+
 function renderRoomSection(data) {
     const room = data.room;
     const roommates = data.roommates || [];
     const app = data.application;
 
+    // Room details
     const roomPageNumber = document.getElementById("roomPageRoomNumber");
     const roomPageBlock = document.getElementById("roomPageBlock");
+
     if (room?.roomID) {
         if (roomPageNumber) roomPageNumber.innerText = room.roomID;
-        if (roomPageBlock) roomPageBlock.innerText =
-            `${room.roomType || "Allotted room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
+
+        if (roomPageBlock) {
+            roomPageBlock.innerText =
+                `${room.roomType || "Allotted room"}${
+                    room.capacity != null ? " · Capacity " + room.capacity : ""
+                }`;
+        }
     } else {
         if (roomPageNumber) roomPageNumber.innerText = "Not Allocated";
         if (roomPageBlock) roomPageBlock.innerText = "No room allotment found";
     }
 
+    // Room overview cards
     const cards = document.querySelectorAll(
         "#room .overview-card .card-main-val"
     );
+
     const subtitles = document.querySelectorAll(
         "#room .overview-card .card-sub-val"
     );
@@ -1593,9 +1603,17 @@ function renderRoomSection(data) {
     if (cards.length) {
         if (room?.roomID) {
             cards[0].innerText = room.roomID;
-            if (subtitles[0]) subtitles[0].innerText =
-                `${room.roomType || "Room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
-            if (cards[1]) cards[1].innerText = room.roomType || "Standard";
+
+            if (subtitles[0]) {
+                subtitles[0].innerText =
+                    `${room.roomType || "Room"}${
+                        room.capacity != null ? " · Capacity " + room.capacity : ""
+                    }`;
+            }
+
+            if (cards[1]) {
+                cards[1].innerText = room.roomType || "Standard";
+            }
 
             if (cards[2]) {
                 cards[2].innerText = "Confirmed";
@@ -1603,17 +1621,34 @@ function renderRoomSection(data) {
             }
         } else {
             cards[0].innerText = "Not Allocated";
-            if (subtitles[0]) subtitles[0].innerText = "Application Approved";
-            if (cards[1]) cards[1].innerText = "Standard";
+
+            if (subtitles[0]) {
+                subtitles[0].innerText = app
+                    ? `Application ${app.status || "Pending"}`
+                    : "No application found";
+            }
+
+            if (cards[1]) {
+                cards[1].innerText = "Standard";
+            }
 
             if (cards[2]) {
-                cards[2].innerText = "Pending";
-                cards[2].style.color = "#e67e22";
+                const status = String(app?.status || "Pending").trim();
+                cards[2].innerText = status;
+
+                const normalizedStatus = status.toLowerCase();
+                cards[2].style.color =
+                    normalizedStatus === "approved" ? "#27ae60" :
+                    normalizedStatus === "rejected" ? "#e74c3c" :
+                    "#e67e22";
             }
         }
     }
 
-    var roommateBox = document.querySelector("#room .card-box.flex-row");
+    // Roommate details
+    const roommateBox = document.querySelector(
+        "#room .card-box.flex-row"
+    );
 
     if (roommateBox) {
         if (!roommates.length) {
@@ -1640,33 +1675,56 @@ function renderRoomSection(data) {
                 </div>
             `).join("");
 
-            roommateBox.innerHTML =
-                `<div>${mates}</div><div><span class="badge event">ROOM ALLOTMENT</span></div>`;
-            }
-    
+            roommateBox.innerHTML = `
+                <div>${mates}</div>
+                <div>
+                    <span class="badge event">ROOM ALLOTMENT</span>
+                </div>
+            `;
+        }
+    } // Correctly closes if (roommateBox)
 
+    // Application table
     const tbody = document.querySelector("#room .custom-table tbody");
 
     if (tbody) {
         if (!app) {
-            tbody.innerHTML =
-                '<tr><td colspan="4" style="text-align:center;padding:15px;color:#888;">No application record found.</td></tr>';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4"
+                        style="text-align:center;padding:15px;color:#888;">
+                        No application record found.
+                    </td>
+                </tr>
+            `;
         } else {
-            const status = (app.status || "Pending").toLowerCase();
-            const badge = status === "approved"
-                ? "paid" : status === "rejected" ? "open" : "progress";
+            const status = String(app.status || "Pending").trim();
+            const normalizedStatus = status.toLowerCase();
+
+            const badge =
+                normalizedStatus === "approved" ? "paid" :
+                normalizedStatus === "rejected" ? "open" :
+                "progress";
 
             tbody.innerHTML = `
                 <tr>
                     <td>#${escapeHtml(app.applicationID ?? "")}</td>
-                    <td>Hostel Registration (${escapeHtml(app.preferenceDescription || "Standard")})</td>
+                    <td>
+                        Hostel Registration
+                        (${escapeHtml(app.preferenceDescription || "Standard")})
+                    </td>
                     <td>${escapeHtml(app.appliedDate || "")}</td>
-                    <td><span class="badge ${badge}">${escapeHtml(app.status || "Pending")}</span></td>
+                    <td>
+                        <span class="badge ${badge}">
+                            ${escapeHtml(status)}
+                        </span>
+                    </td>
                 </tr>
             `;
         }
     }
 }
+
 
 async function submitRoomChangeApp() {
     const block = document.getElementById("requestedBlock")?.value || "";
