@@ -859,6 +859,40 @@
     }
 }
 
+/* Temporary fix: make Events cards visible */
+#eventsContainer {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 50px;
+    overflow: visible !important;
+}
+
+#eventsContainer .card-box {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    height: auto !important;
+    min-height: 100px;
+    padding: 16px !important;
+    margin-bottom: 10px;
+    color: #333 !important;
+    background: #fff !important;
+    border: 1px solid #ddd !important;
+    border-radius: 10px;
+}
+
+#eventsContainer .card-box h4,
+#eventsContainer .card-box p,
+#eventsContainer .card-box span {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
     </style>
 </head>
 <body>
