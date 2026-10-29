@@ -2008,6 +2008,16 @@ function displayComplaints() {
 /* -------------------- EVENTS -------------------- */
 
 async function loadEvents() {
+    console.log("Events received from backend:", events);
+console.log("Container before rendering:", document.getElementById("eventsContainer"));
+
+renderEventsSection(events);
+
+console.log(
+"Container after rendering:",
+document.getElementById("eventsContainer")?.innerHTML
+);
+
     const container = document.getElementById("eventsContainer");
 
     try {
@@ -2036,6 +2046,15 @@ async function loadEvents() {
     }
 }
 function renderEventsSection(events) {
+    console.log("renderEventsSection() is running!");
+    console.log("=== RENDER EVENTS START ===");
+    console.log("Events received:", events);
+
+    const container = document.getElementById("eventsContainer");
+    const countBadge = document.getElementById("eventCountBadge");
+
+    console.log("Events container:", container);
+    console.log("Count badge:", countBadge);
     const container = document.getElementById("eventsContainer");
     const countBadge = document.getElementById("eventCountBadge");
 
