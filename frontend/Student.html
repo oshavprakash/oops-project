@@ -1464,8 +1464,13 @@
             let paidTable = tables[0];
             let dueTable = tables.length > 1 ? tables[1] : null;
 
-            let paidFees = fees.filter(f => (f.status || "").toLowerCase() === "success");
-            let pendingFees = fees.filter(f => (f.status || "").toLowerCase() === "pending");
+            let paidFees = fees.filter(f =>
+             ["paid", "success"].includes((f.status || "").toLowerCase())
+             );
+
+             let pendingFees = fees.filter(f =>
+             (f.status || "").toLowerCase() === "pending"
+             );
 
             if (paidFees.length === 0) {
                 paidTable.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#888;">No completed payments yet.</td></tr>';
