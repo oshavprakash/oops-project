@@ -334,7 +334,16 @@ public ResponseEntity<?> getEvents(HttpSession session) {
         ORDER BY created_at DESC
         """;
 
+    try {
     return ResponseEntity.ok(jdbcTemplate.queryForList(sql));
+} catch (Exception e) {
+    e.printStackTrace();
+    return ResponseEntity.status(500).body(
+        Map.of("error", e.getMessage() == null
+            ? "Unknown database error"
+            : e.getMessage())
+    );
+}
 }
 
     // POST: Create an event. Warden login is required.
@@ -379,15 +388,24 @@ public ResponseEntity<?> createEvent(
         VALUES (?, ?, ?, ?, ?, ?)
         """;
 
+    try {
     jdbcTemplate.update(
-            sql,
-            eventName,
-            description,
-            eventDate,
-            eventTime,
-            venue,
-            wardenId
+        sql,
+        eventName,
+        description,
+        eventDate,
+        eventTime,
+        venue,
+        wardenId
     );
+} catch (Exception e) {
+    e.printStackTrace();
+    return ResponseEntity.status(500).body(
+        Map.of("error", e.getMessage() == null
+            ? "Unknown database error"
+            : e.getMessage())
+    );
+}
 
     return ResponseEntity.ok(
             Map.of(
