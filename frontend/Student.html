@@ -915,15 +915,6 @@
 
 
 
-
-
-/* Fee payment selection modal */
-.fee-choice-list { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
-.fee-choice { display:flex !important; align-items:center; gap:12px; margin:0 !important; padding:14px; border:1px solid #e3d7d4; border-radius:10px; background:#fffdf9; cursor:pointer; }
-.fee-choice input { width:auto !important; margin:0; accent-color:#542F3F; }
-.fee-choice span { display:flex; flex-direction:column; gap:5px; }
-.fee-choice strong { color:#542F3F; }
-.fee-choice small { color:#777; font-size:12px; }
     </style>
 </head>
 <body>
@@ -1024,8 +1015,8 @@
                 </div>
             </div>
 
-            
-    
+
+
 <div class="section-heading">APPLY FOR HOSTEL / ROOM CHANGE</div>
 
 <div class="card-box" style="margin-bottom: 30px;">
@@ -1092,13 +1083,12 @@
                 <th>Fee Type</th>
                 <th>Amount Paid</th>
                 <th>Payment Date</th>
-                <th>Payment Time</th>
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td colspan="5">Loading payments...</td>
+                <td colspan="4">Loading payments...</td>
             </tr>
         </tbody>
     </table>
@@ -1131,29 +1121,6 @@
             style="margin-top: 15px;" type="button">
         Pay fees!
     </button>
-
-    <!-- Pay Due Fees Modal -->
-    <div id="feePaymentModal" class="lf-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="feePaymentTitle">
-        <div class="lf-modal">
-            <div class="lf-modal-header">
-                <div>
-                    <h2 id="feePaymentTitle">Pay Due Fees</h2>
-                    <p>Select which fee you want to pay.</p>
-                </div>
-                <button type="button" class="lf-close" onclick="closeFeePaymentModal()" aria-label="Close">&times;</button>
-            </div>
-            <div class="fee-choice-list">
-                <label class="fee-choice"><input type="radio" name="feeChoice" value="hostel" checked> <span><strong>Hostel Fee</strong><small id="hostelDueChoice">Amount due: ₹0</small></span></label>
-                <label class="fee-choice"><input type="radio" name="feeChoice" value="mess"> <span><strong>Mess Fee</strong><small id="messDueChoice">Amount due: ₹0</small></span></label>
-                <label class="fee-choice"><input type="radio" name="feeChoice" value="both"> <span><strong>Both Fees</strong><small id="bothDueChoice">Amount due: ₹0</small></span></label>
-            </div>
-            <p id="feePaymentMessage" role="status" style="font-size:13px;color:#777;margin-top:14px;">This screen is a payment selection preview.</p>
-            <div class="lf-actions">
-                <button type="button" class="lf-cancel" onclick="closeFeePaymentModal()">Cancel</button>
-                <button type="button" class="lf-submit" id="confirmFeePaymentButton" onclick="confirmFeePayment()">Pay Fee</button>
-            </div>
-        </div>
-    </div>
 </div>
 
 
@@ -1319,7 +1286,7 @@
 
             <div class="section-heading">RECENT ITEMS LISTED</div>
             <table class="custom-table">
-                
+
                 <thead>
                     <tr>
                         <th>Item Details</th>
@@ -1406,6 +1373,7 @@
         </form>
     </div>
 </div>
+
 </div>
         <!-- Events Section -->
 <div id="events" class="content-section">
@@ -1851,69 +1819,6 @@ async function submitRoomChangeApp() {
     }
 }
 
-/* -------------------- FEE PAYMENT MODAL -------------------- */
-let latestDueFees = [];
-let latestPaidFees = [];
-
-function feeTypeGroup(fee) {
-    const type = String(fee.feeType || fee.fee_type || "").toLowerCase();
-    if (type.includes("mess")) return "mess";
-    if (type.includes("hostel")) return "hostel";
-    return "other";
-}
-
-function openFeePaymentModal() {
-    const modal = document.getElementById("feePaymentModal");
-    if (!modal) return;
-    const hostelDue = latestDueFees.filter(f => feeTypeGroup(f) === "hostel").reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
-    const messDue = latestDueFees.filter(f => feeTypeGroup(f) === "mess").reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
-    const otherDue = latestDueFees.filter(f => feeTypeGroup(f) === "other").reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
-    const money = amount => "₹" + amount.toLocaleString("en-IN");
-    document.getElementById("hostelDueChoice").textContent = "Amount due: " + money(hostelDue);
-    document.getElementById("messDueChoice").textContent = "Amount due: " + money(messDue);
-    document.getElementById("bothDueChoice").textContent = "Amount due: " + money(hostelDue + messDue + otherDue);
-    document.getElementById("feePaymentMessage").textContent = "Choose Hostel Fee, Mess Fee, or Both Fees.";
-    modal.style.display = "flex";
-}
-
-function closeFeePaymentModal() {
-    const modal = document.getElementById("feePaymentModal");
-    if (modal) modal.style.display = "none";
-}
-
-function confirmFeePayment() {
-    const choice = document.querySelector('input[name="feeChoice"]:checked')?.value || "hostel";
-    const selected = latestDueFees.filter(f => {
-        const group = feeTypeGroup(f);
-        if (choice === "both") return true;
-        return group === choice;
-    });
-
-    if (!selected.length) {
-        alert("There are no due fees for this selection.");
-        closeFeePaymentModal();
-        return;
-    }
-
-    const label = choice === "both" ? "Hostel and Mess fees" : choice === "mess" ? "Mess fee" : "Hostel fee";
-    const paidAt = new Date();
-    const selectedSet = new Set(selected);
-
-    // Update the visible fee history after the user acknowledges the popup.
-    alert(`${label} paid successfully!`);
-    latestPaidFees = latestPaidFees.concat(selected.map(fee => ({
-        ...fee,
-        status: "Paid",
-        paymentDate: paidAt.toISOString(),
-        paymentTime: paidAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
-    })));
-    latestDueFees = latestDueFees.filter(fee => !selectedSet.has(fee));
-
-    const totalDue = latestDueFees.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0);
-    renderFeeSection(latestPaidFees, latestDueFees, totalDue);
-    closeFeePaymentModal();
-}
-
 /* -------------------- FEES -------------------- */
 
 function renderFeeSection(paidFees, dueFees, totalDue) {
@@ -1948,15 +1853,10 @@ function renderFeeSection(paidFees, dueFees, totalDue) {
     paidFees.forEach(fee => {
         const row = document.createElement("tr");
 
-        const paidDateValue = fee.paymentDate || fee.paidAt || fee.createdAt;
-        const paidDate = paidDateValue ? new Date(paidDateValue) : null;
-        const dateText = paidDate && !isNaN(paidDate) ? paidDate.toLocaleDateString("en-IN") : "-";
-        const timeText = fee.paymentTime || fee.paidTime || (paidDate && !isNaN(paidDate) && /T|Z|\\d{2}:\\d{2}/.test(String(paidDateValue)) ? paidDate.toLocaleTimeString("en-IN", {hour:"2-digit", minute:"2-digit"}) : "-");
         [
             fee.feeType || "Fee",
             "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
-            dateText,
-            timeText,
+            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-",
             "Completed"
         ].forEach(value => {
             const cell = document.createElement("td");
@@ -1973,7 +1873,7 @@ function renderFeeSection(paidFees, dueFees, totalDue) {
         [
             fee.feeType || "Fee",
             "₹" + (Number(fee.amount) || 0).toLocaleString("en-IN"),
-            fee.dueDate ? String(fee.dueDate).slice(0, 10) : "-",
+            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-",
             "Pending"
         ].forEach(value => {
             const cell = document.createElement("td");
@@ -1986,7 +1886,7 @@ function renderFeeSection(paidFees, dueFees, totalDue) {
 
     if (paidFees.length === 0) {
         paidTable.innerHTML =
-            '<tr><td colspan="5">No completed payments.</td></tr>';
+            '<tr><td colspan="4">No completed payments.</td></tr>';
     }
 
     if (dueFees.length === 0) {
@@ -2020,10 +1920,11 @@ async function loadStudentFees() {
 
         const data = await response.json();
 
-        latestPaidFees = Array.isArray(data.paid) ? data.paid : [];
-        latestDueFees = Array.isArray(data.due) ? data.due : [];
-        const totalDue = data.totalDue ?? latestDueFees.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0);
-        renderFeeSection(latestPaidFees, latestDueFees, totalDue);
+        renderFeeSection(
+            Array.isArray(data.paid) ? data.paid : [],
+            Array.isArray(data.due) ? data.due : [],
+            data.totalDue
+        );
     } catch (error) {
         console.error("Error loading student fees:", error);
     }
@@ -2192,17 +2093,14 @@ async function loadEvents() {
             container.innerHTML =
                 '<p style="color:#b00020;">Unable to load events. Please try again later.</p>';
         }
-        const overviewCount = document.getElementById("overviewEventCount");
-        if (overviewCount) overviewCount.textContent = "—";
     }
 }
 
-    
+
 
 function renderEventsSection(events) {
     const container = document.getElementById("eventsContainer");
     const countBadge = document.getElementById("eventCountBadge");
-    const overviewCount = document.getElementById("overviewEventCount");
 
     if (!container) {
         console.error("Events container not found");
@@ -2211,13 +2109,9 @@ function renderEventsSection(events) {
 
     if (!Array.isArray(events)) {
         container.innerHTML = "<p>Could not load events.</p>";
-        const overviewCount = document.getElementById("overviewEventCount");
-        if (overviewCount) overviewCount.textContent = "—";
         console.error("Invalid events response:", events);
         return;
     }
-
-    if (overviewCount) overviewCount.textContent = String(events.length);
 
     const now = new Date();
 
@@ -2471,7 +2365,7 @@ document.getElementById("lostFoundForm").addEventListener("submit", async functi
 });
 
 
-   
+
 
 
 /* -------------------- MESS MANAGEMENT -------------------- */
@@ -2735,8 +2629,8 @@ function escapeHtml(value) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const payBtn = document.getElementById("payFeesButton");
-    if (payBtn) payBtn.addEventListener("click", openFeePaymentModal);
+    const payBtn = document.querySelector("#fees .action-btn");
+    if (payBtn) payBtn.onclick = null;
 
     const roomAppBtn = document.querySelector("#room .action-btn");
     if (roomAppBtn) roomAppBtn.onclick = submitRoomChangeApp;
