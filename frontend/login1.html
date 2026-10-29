@@ -160,13 +160,15 @@
             loginButton.textContent = "Logging in...";
 
             try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: params.toString()
-                });
+            
+          const response = await fetch(API_URL, {
+             method: "POST",
+             credentials: "include",
+             headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+             },
+             body: params.toString()
+             });
 
                 const data = await response.json();
 
