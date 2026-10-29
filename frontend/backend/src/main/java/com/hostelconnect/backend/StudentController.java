@@ -52,7 +52,7 @@ public class StudentController {
 
     // -------------------- ROOM DETAILS --------------------
 
-    private Map<String, Object> room(String sid) {
+ private Map<String, Object> room(String sid) {
     List<Map<String, Object>> rows = jdbc.queryForList(
         "SELECT a.allocationID, a.roomID AS roomID, " +
         "r.roomType, r.capacity, r.occupancy, " +
