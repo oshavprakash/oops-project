@@ -1027,6 +1027,8 @@
         <!-- Mess Section -->
 
 
+
+<!-- Mess Section -->
 <div id="mess" class="content-section">
     <h2>Mess Schedule</h2>
 
@@ -1047,9 +1049,7 @@
                 <label for="dietPreference">Food Preference</label>
                 <select id="dietPreference">
                     <option value="VEG">VEG — Vegetarian only</option>
-                    <option value="NON_VEG">
-                        NON_VEG — Vegetarian + Non-Vegetarian
-                    </option>
+                    <option value="NON_VEG">NON_VEG — Vegetarian + Non-Vegetarian</option>
                 </select>
             </div>
 
@@ -1072,24 +1072,27 @@
             </div>
         </div>
 
-        <button class="save-food-preferences"
-                type="button"
+        <button class="save-food-preferences" type="button"
                 onclick="saveFoodPreferences()">
             Save Preferences
         </button>
 
         <p id="foodPreferenceStatus" role="status"></p>
     </div>
+
+    <!-- This menu must stay INSIDE the mess section -->
+    <div class="mess-menu">
         <div class="mess-menu-header">
             <div>
-                <h3>Mess Menu</h3>
+                <h3>Today's Menu</h3>
                 <p id="messDate">Loading date...</p>
             </div>
 
             <input type="date" id="messMenuDate"
                    aria-label="Choose menu date">
 
-            <select id="mealFilter" aria-label="Filter by meal">
+            <select id="mealFilter" onchange="displayMessMenu()"
+                    aria-label="Filter by meal">
                 <option value="all">All Meals</option>
                 <option value="breakfast">Breakfast</option>
                 <option value="lunch">Lunch</option>
@@ -1103,31 +1106,8 @@
         </div>
     </div>
 </div>
+<!-- End Mess Section -->
 
-
-    <div class="mess-menu">
-
-        <div class="mess-menu-header">
-            <div>
-                <h3>Today's Menu</h3>
-                <p id="messDate"></p>
-            </div>
-            
-<input type="date" id="messMenuDate" aria-label="Choose menu date">
-
-            <select id="mealFilter" onchange="displayMessMenu()">
-                <option value="all">All Meals</option>
-                <option value="breakfast">Breakfast</option>
-                <option value="lunch">Lunch</option>
-                <option value="snacks">Snacks</option>
-                <option value="dinner">Dinner</option>
-            </select>
-        </div>
-
-        <div id="messMenuContainer">
-        </div>
-
-    </div>
 
 
 
