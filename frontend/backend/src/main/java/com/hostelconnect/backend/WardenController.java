@@ -1,7 +1,6 @@
 
 package com.hostelconnect.backend;
 
-import java.util.UUID;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/warden")
@@ -26,25 +26,28 @@ public class WardenController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-   private String getWardenId(HttpSession session) {
-    String role = (String) session.getAttribute("userRole");
-    Object id = session.getAttribute("userID");
+    // Check that the logged-in user is a warden.
+    private String getWardenId(HttpSession session) {
+        String role = (String) session.getAttribute("userRole");
+        Object id = session.getAttribute("userID");
 
-    System.out.println("Session ID: " + session.getId());
-    System.out.println("Session role: " + role);
-    System.out.println("Session userID: " + id);
+        System.out.println("Session ID: " + session.getId());
+        System.out.println("Session role: " + role);
+        System.out.println("Session userID: " + id);
 
-    if (!"warden".equalsIgnoreCase(role) || id == null) {
-        return null;
+        if (!"warden".equalsIgnoreCase(role) || id == null) {
+            return null;
+        }
+
+        return id.toString();
     }
-
-    return id.toString();
-}
 
     private ResponseEntity<?> forbidden() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(Map.of("error", "Warden access required"));
     }
+
+    // ---------------- DASHBOARD ----------------
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> dashboard(HttpSession session) {
@@ -91,14 +94,18 @@ public class WardenController {
         ));
     }
 
+    // ---------------- APPLICATIONS ----------------
+
     @PostMapping("/approve-application")
     public ResponseEntity<?> approveApplication(
             @RequestBody Map<String, Object> body,
             HttpSession session) {
+
         String wardenId = getWardenId(session);
         if (wardenId == null) return forbidden();
 
         Object applicationId = body.get("applicationID");
+
         if (applicationId == null) {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", "applicationID is required"));
@@ -123,10 +130,12 @@ public class WardenController {
     public ResponseEntity<?> rejectApplication(
             @RequestBody Map<String, Object> body,
             HttpSession session) {
+
         String wardenId = getWardenId(session);
         if (wardenId == null) return forbidden();
 
         Object applicationId = body.get("applicationID");
+
         if (applicationId == null) {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", "applicationID is required"));
@@ -147,11 +156,14 @@ public class WardenController {
         );
     }
 
+    // ---------------- ROOM ALLOCATION ----------------
+
     @PostMapping("/allocate-room")
     @Transactional
     public ResponseEntity<?> allocateRoom(
             @RequestBody Map<String, Object> body,
             HttpSession session) {
+
         String wardenId = getWardenId(session);
         if (wardenId == null) return forbidden();
 
@@ -198,7 +210,8 @@ public class WardenController {
 
         Integer existing = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM RoomAllocations WHERE studentID = ?",
-            Integer.class, studentId
+            Integer.class,
+            studentId
         );
 
         if (existing != null && existing > 0) {
@@ -207,21 +220,21 @@ public class WardenController {
             );
         }
 
-       String allocationId = "AL" +
-    java.util.UUID.randomUUID()
-        .toString()
-        .replace("-", "")
-        .substring(0, 8)
-        .toUpperCase();
+        String allocationId = "AL" +
+            UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 8)
+                .toUpperCase();
 
-
-jdbcTemplate.update(
-    "INSERT INTO RoomAllocations (allocationID, studentID, roomID, allocationDate) " +
-    "VALUES (?, ?, ?, CURRENT_DATE)",
-    allocationId,
-    studentId,
-    roomId
-);
+        jdbcTemplate.update(
+            "INSERT INTO RoomAllocations " +
+            "(allocationID, studentID, roomID, allocationDate) " +
+            "VALUES (?, ?, ?, CURRENT_DATE)",
+            allocationId,
+            studentId,
+            roomId
+        );
 
         jdbcTemplate.update(
             "UPDATE Rooms SET occupancy = occupancy + 1 WHERE roomID = ?",
@@ -233,10 +246,13 @@ jdbcTemplate.update(
         );
     }
 
+    // ---------------- COMPLAINTS ----------------
+
     @PostMapping("/update-complaint")
     public ResponseEntity<?> updateComplaint(
             @RequestBody Map<String, Object> body,
             HttpSession session) {
+
         String wardenId = getWardenId(session);
         if (wardenId == null) return forbidden();
 
@@ -251,7 +267,8 @@ jdbcTemplate.update(
 
         int updated = jdbcTemplate.update(
             "UPDATE Complaints SET status = ? WHERE complaint_id = ?",
-            status.toString(), complaintId
+            status.toString(),
+            complaintId
         );
 
         if (updated == 0) {
@@ -264,10 +281,13 @@ jdbcTemplate.update(
         );
     }
 
+    // ---------------- INVENTORY ----------------
+
     @PostMapping("/inventory")
     public ResponseEntity<?> addInventory(
             @RequestBody Map<String, Object> body,
             HttpSession session) {
+
         String wardenId = getWardenId(session);
         if (wardenId == null) return forbidden();
 
@@ -276,14 +296,14 @@ jdbcTemplate.update(
         Object quantityValue = body.get("quantity");
         Object statusValue = body.get("status");
 
-        if (itemName == null || category == null ||
-                quantityValue == null) {
+        if (itemName == null || category == null || quantityValue == null) {
             return ResponseEntity.badRequest().body(
                 Map.of("error", "itemName, category and quantity are required")
             );
         }
 
         int quantity;
+
         try {
             quantity = Integer.parseInt(quantityValue.toString());
             if (quantity < 0) throw new NumberFormatException();
@@ -294,125 +314,127 @@ jdbcTemplate.update(
                 ));
         }
 
-       String itemId = "INV" + java.util.UUID.randomUUID()
-        .toString()
-        .replace("-", "")
-        .substring(0, 7)
-        .toUpperCase();
+        String itemId = "INV" +
+            UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 7)
+                .toUpperCase();
 
-jdbcTemplate.update(
-    "INSERT INTO Inventory " +
-    "(itemID, wardenID, itemName, category, quantity, status) " +
-    "VALUES (?, ?, ?, ?, ?, ?)",
-    itemId,
-    wardenId,
-    itemName.toString(),
-    category.toString(),
-    quantity,
-    statusValue == null ? "Available" : statusValue.toString()
-);
+        jdbcTemplate.update(
+            "INSERT INTO Inventory " +
+            "(itemID, wardenID, itemName, category, quantity, status) " +
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            itemId,
+            wardenId,
+            itemName.toString(),
+            category.toString(),
+            quantity,
+            statusValue == null ? "Available" : statusValue.toString()
+        );
 
         return ResponseEntity.ok(
             Map.of("success", true, "message", "Inventory item added")
         );
     }
 
-    // GET: List events for the warden dashboard.
-  @GetMapping("/events")
-public ResponseEntity<?> getEvents(HttpSession session) {
-    String wardenId = getWardenId(session);
+    // ---------------- EVENTS ----------------
 
-    if (wardenId == null) {
-        return forbidden();
+    @GetMapping("/events")
+    public ResponseEntity<?> getEvents(HttpSession session) {
+        String wardenId = getWardenId(session);
+
+        if (wardenId == null) {
+            return forbidden();
+        }
+
+        // Match the column names in the TiDB Events table.
+        String sql = """
+            SELECT event_id, event_name, description,
+                   event_date, event_time, venue, organized_by
+            FROM Events
+            ORDER BY event_id DESC
+            """;
+
+        try {
+            return ResponseEntity.ok(jdbcTemplate.queryForList(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not load events from the database")
+            );
+        }
     }
 
-    String sql = """
-        SELECT event_id, event_name, description,
-               event_date, event_time, venue,
-               organized_by, created_at
-        FROM Events
-        ORDER BY created_at DESC
-        """;
-
-    try {
-    return ResponseEntity.ok(jdbcTemplate.queryForList(sql));
-} catch (Exception e) {
-    e.printStackTrace();
-    return ResponseEntity.status(500).body(
-        Map.of("error", e.getMessage() == null
-            ? "Unknown database error"
-            : e.getMessage())
-    );
-}
-}
-
-    // POST: Create an event. Warden login is required.
     @PostMapping("/events")
-public ResponseEntity<?> createEvent(
-        @RequestBody Map<String, Object> body,
-        HttpSession session) {
+    public ResponseEntity<?> createEvent(
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
 
-    String wardenId = getWardenId(session);
+        String wardenId = getWardenId(session);
 
-    if (wardenId == null) {
-        return forbidden();
-    }
+        if (wardenId == null) {
+            return forbidden();
+        }
 
-    String eventName = body.get("event_name") == null
+        String eventName = body.get("event_name") == null
             ? "" : body.get("event_name").toString().trim();
 
-    String description = body.get("description") == null
+        String description = body.get("description") == null
             ? "" : body.get("description").toString().trim();
 
-    String eventDate = body.get("event_date") == null
+        String eventDate = body.get("event_date") == null
             ? "" : body.get("event_date").toString().trim();
 
-    String eventTime = body.get("event_time") == null
+        String eventTime = body.get("event_time") == null
             ? "" : body.get("event_time").toString().trim();
 
-    String venue = body.get("venue") == null
+        String venue = body.get("venue") == null
             ? "" : body.get("venue").toString().trim();
 
-    if (eventName.isBlank() || eventDate.isBlank()
-            || eventTime.isBlank() || venue.isBlank()) {
-        return ResponseEntity.badRequest().body(
-                Map.of("error",
-                        "Event name, date, time and venue are required")
+        if (eventName.isBlank() || eventDate.isBlank()
+                || eventTime.isBlank() || venue.isBlank()) {
+            return ResponseEntity.badRequest().body(
+                Map.of(
+                    "error",
+                    "Event name, date, time and venue are required"
+                )
+            );
+        }
+
+        // event_time uses an underscore in the database.
+        // event_id is auto-incremented by TiDB.
+        String sql = """
+            INSERT INTO Events
+                (event_name, description, event_date,
+                 event_time, venue, organized_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
+
+        try {
+            jdbcTemplate.update(
+                sql,
+                eventName,
+                description,
+                eventDate,
+                eventTime,
+                venue,
+                wardenId
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not save the event to the database")
+            );
+        }
+
+        return ResponseEntity.ok(
+            Map.of(
+                "success", true,
+                "message", "Event created successfully"
+            )
         );
     }
-
-    String sql = """
-        INSERT INTO Events
-            (event_name, description, event_date,
-             `event time`, venue, organized_by)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """;
-
-    try {
-    jdbcTemplate.update(
-        sql,
-        eventName,
-        description,
-        eventDate,
-        eventTime,
-        venue,
-        wardenId
-    );
-} catch (Exception e) {
-    e.printStackTrace();
-    return ResponseEntity.status(500).body(
-        Map.of("error", e.getMessage() == null
-            ? "Unknown database error"
-            : e.getMessage())
-    );
-}
-
-    return ResponseEntity.ok(
-            Map.of(
-                    "success", true,
-                    "message", "Event created successfully"
-            )
-    );
-}
-
 }
