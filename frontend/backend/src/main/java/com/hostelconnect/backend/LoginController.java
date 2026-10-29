@@ -1,3 +1,4 @@
+
 package com.hostelconnect.backend;
 
 import jakarta.servlet.http.HttpSession;
@@ -32,8 +33,8 @@ public class LoginController {
         consumes = "application/x-www-form-urlencoded"
     )
     public ResponseEntity<Map<String, Object>> login(
-           @RequestParam String username,
-           @RequestParam String password,
+            @RequestParam String username,
+            @RequestParam String password,
             HttpSession session) {
 
         String input = username.trim();
@@ -70,10 +71,22 @@ public class LoginController {
                         "message", "Invalid ID/email or password."
                     ));
             }
-            session.setAttribute("userID", user.userID());
-            session.setAttribute("userRole", user.role().toLowerCase());
 
-            String redirect = switch (user.role().toLowerCase()) {
+            if (user.role() == null || user.role().isBlank()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                        "success", false,
+                        "message", "User role is not configured."
+                    ));
+            }
+
+            String role = user.role().trim().toLowerCase();
+
+            // Store the authenticated user's identity in the session.
+            session.setAttribute("userID", user.userID());
+            session.setAttribute("userRole", role);
+
+            String redirect = switch (role) {
                 case "student" -> "Student.html";
                 case "warden" -> "warden.html";
                 case "administrator" -> "admin.html";
