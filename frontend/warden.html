@@ -100,7 +100,7 @@
             <a class="nav-link" data-section="complaints" onclick="showSection('complaints')">Student Complaints</a>
             <a class="nav-link" data-section="inventory" onclick="showSection('inventory')">Inventory &amp; Records</a>
             <a class="nav-link" data-section="mess" onclick="showSection('mess')">Mess Details</a>
-            <a class="nav-link" data-section="announcements" onclick="showSection('announcements')">Announcements</a>
+            <a class="nav-link" data-section="events" onclick="showSection('events')">Events</a>
         </div>
     </div>
     <div>
@@ -222,31 +222,79 @@
     </div>
 
     <!-- ANNOUNCEMENTS SECTION -->
-    <div id="announcements" class="warden-section">
-        <div class="dashboard-label">WARDEN DASHBOARD</div>
-        <h1>Hostel Announcements</h1>
-        <div class="section">
-            <h2>Active Announcements</h2>
-            <div id="announcementList">
-                <p style="color:#888;">Loading announcements from database...</p>
-            </div>
-        </div>
+   
+<!-- EVENTS SECTION -->
+<div id="events" class="warden-section">
+    <div class="dashboard-label">WARDEN DASHBOARD</div>
+    <h1>Hostel Events</h1>
+
+    <div class="section">
+        <h2>Create New Event</h2>
+
+        <form id="createEventForm"
+              onsubmit="createHostelEvent(event)"
+              style="display:flex; flex-direction:column; gap:12px; max-width:650px;">
+
+            <label for="eventName">Event Name</label>
+            <input id="eventName" type="text"
+                   placeholder="e.g. Cultural Fest" required>
+
+            <label for="eventDescription">Description</label>
+            <textarea id="eventDescription" rows="3"
+                      placeholder="Describe the event"></textarea>
+
+            <label for="eventDate">Event Date</label>
+            <input id="eventDate" type="date" required>
+
+            <label for="eventTime">Event Time</label>
+            <input id="eventTime" type="time" required>
+
+            <label for="eventVenue">Venue</label>
+            <input id="eventVenue" type="text"
+                   placeholder="e.g. College Auditorium" required>
+
+            <button type="submit" id="createEventButton">
+                Create Event
+            </button>
+
+            <p id="eventMessage" role="status"
+               style="color:#3d1738;"></p>
+        </form>
     </div>
 
+    <div class="section">
+        <h2>Existing Events</h2>
+        <div id="wardenEventsList">
+            <p style="color:#888;">Loading events...</p>
+        </div>
+        <button type="button" onclick="loadWardenEvents()">
+            Refresh Events
+        </button>
+    </div>
 </div>
 
- <script>
+
+
+<script>
     const API_BASE = "https://hostelconnect-backend-za3a.onrender.com/api";
     let globalRooms = [];
 
     function showSection(sectionId) {
         document.querySelectorAll(".warden-section").forEach(s => s.classList.remove("active"));
+
         const target = document.getElementById(sectionId);
         if (target) target.classList.add("active");
 
         document.querySelectorAll(".nav-link").forEach(link => link.classList.remove("active"));
-        const activeLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+
+        const activeLink = document.querySelector(
+            `.nav-link[data-section="${sectionId}"]`
+        );
         if (activeLink) activeLink.classList.add("active");
+
+        if (sectionId === "events") {
+            loadWardenEvents();
+        }
     }
 
     async function apiRequest(path, options = {}) {
@@ -261,6 +309,7 @@
 
         const text = await response.text();
         let data = {};
+
         try {
             data = text ? JSON.parse(text) : {};
         } catch {
@@ -270,40 +319,60 @@
         if (!response.ok) {
             throw new Error(data.error || data.message || `HTTP ${response.status}`);
         }
+
         return data;
     }
+
+    // ---------------- DASHBOARD ----------------
 
     async function loadWardenDashboard() {
         try {
             const data = await apiRequest("/warden/dashboard");
+
             globalRooms = data.rooms || [];
 
             const applications = data.applications || [];
             const complaints = data.complaints || [];
 
             document.getElementById("pendingApplications").innerText =
-                applications.filter(a => (a.status || "").toLowerCase() === "pending").length;
+                applications.filter(a =>
+                    (a.status || "").toLowerCase() === "pending"
+                ).length;
 
             document.getElementById("openComplaints").innerText =
                 complaints.filter(c => {
                     const status = (c.status || "").toLowerCase();
-                    return status === "pending" || status === "open" || status === "in progress";
+
+                    return status === "pending" ||
+                           status === "open" ||
+                           status === "in progress";
                 }).length;
 
-            const totalCapacity = globalRooms.reduce((sum, room) => sum + (Number(room.capacity) || 0), 0);
-            const totalOccupancy = globalRooms.reduce((sum, room) => sum + (Number(room.occupancy) || 0), 0);
+            const totalCapacity = globalRooms.reduce(
+                (sum, room) => sum + (Number(room.capacity) || 0), 0
+            );
+
+            const totalOccupancy = globalRooms.reduce(
+                (sum, room) => sum + (Number(room.occupancy) || 0), 0
+            );
 
             document.getElementById("occupancy").innerText =
-                (totalCapacity ? Math.round(totalOccupancy / totalCapacity * 100) : 0) + "%";
+                (totalCapacity
+                    ? Math.round(totalOccupancy / totalCapacity * 100)
+                    : 0) + "%";
 
             renderApplications(applications);
             renderRooms(globalRooms);
             renderComplaints(complaints);
             renderInventory(data.inventory || []);
-        
+
         } catch (error) {
             console.error("Error loading warden dashboard:", error);
-            if (String(error.message).includes("403") || String(error.message).includes("401")) {
+
+            if (
+                String(error.message).includes("403") ||
+                String(error.message).includes("401")
+            ) {
                 window.location.href = "login1.html";
             } else {
                 alert("Could not load the warden dashboard: " + error.message);
@@ -311,17 +380,21 @@
         }
     }
 
+    // ---------------- APPLICATIONS ----------------
+
     function renderApplications(applications) {
         const tbody = document.getElementById("applicationTable");
 
         if (!applications.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:25px;color:#888;">No student applications registered yet.</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="7" style="text-align:center;padding:25px;color:#888;">No student applications registered yet.</td></tr>';
             return;
         }
 
         tbody.innerHTML = applications.map(app => {
             const status = String(app.status || "Pending");
             const normalizedStatus = status.toLowerCase();
+
             const id = escapeHtml(app.applicationID ?? app.applicationId ?? "");
             const studentId = escapeHtml(app.studentID ?? app.studentId ?? "");
             const studentName = escapeHtml(app.studentName ?? app.name ?? "");
@@ -335,7 +408,8 @@
                     <button class="btn-red" onclick="rejectApp('${id}')">Reject</button>`;
             } else if (normalizedStatus === "approved") {
                 const availableRooms = globalRooms.filter(room =>
-                    (Number(room.occupancy) || 0) < (Number(room.capacity) || 0)
+                    (Number(room.occupancy) || 0) <
+                    (Number(room.capacity) || 0)
                 );
 
                 const options = availableRooms.map(room =>
@@ -350,7 +424,8 @@
                         <button ${options ? "" : "disabled"} onclick="allocateRoomToStudent('${studentId}')">Allocate</button>
                     </div>`;
             } else {
-                actionHtml = `<span style="color:#888;font-size:12px;">${escapeHtml(status)}</span>`;
+                actionHtml =
+                    `<span style="color:#888;font-size:12px;">${escapeHtml(status)}</span>`;
             }
 
             return `
@@ -389,111 +464,13 @@
         }).join("");
     }
 
-function renderComplaints(complaints) {
-    const list = document.getElementById("complaintList");
-
-    if (!complaints || complaints.length === 0) {
-        list.innerHTML = "<p>No complaints found.</p>";
-        return;
-    }
-
-    let html = "";
-
-    complaints.forEach(complaint => {
-        const complaintId = complaint.complaint_id;
-        const studentId = complaint.student_id ?? "";
-        const complaintType = complaint.complaint_type ?? "General";
-        const description = complaint.description ?? "";
-        const complaintDate = complaint.complaint_date ?? "";
-        const status = complaint.status ?? "Pending";
-        const remarks = complaint.admin_remarks ?? "";
-
-        const normalizedStatus = status.toLowerCase();
-
-        const badgeClass =
-            normalizedStatus === "resolved"
-                ? "approved"
-                : normalizedStatus === "in progress"
-                    ? "progress"
-                    : "pending";
-
-        let actionButtons = "";
-
-        if (normalizedStatus !== "resolved") {
-            actionButtons = `
-                <div style="display:flex; gap:6px;">
-                    ${
-                        normalizedStatus !== "in progress"
-                            ? `<button onclick="updateComplaintStatus('${escapeHtml(String(complaintId))}', 'In Progress')"
-                                style="font-size:12px; padding:6px 10px;">
-                                Mark In Progress
-                               </button>`
-                            : ""
-                    }
-
-                    <button class="btn-green"
-                        onclick="updateComplaintStatus('${escapeHtml(String(complaintId))}', 'Resolved')"
-                        style="font-size:12px; padding:6px 10px;">
-                        Resolve
-                    </button>
-                </div>
-            `;
-        }
-
-        html += `
-            <div class="list-row">
-                <div class="list-row-content">
-                    <h5>
-                        ${escapeHtml(String(complaintType))}
-                        - <small>Student ID: ${escapeHtml(String(studentId))}</small>
-                    </h5>
-
-                    <p>${escapeHtml(String(description))}</p>
-
-                    <p style="font-size:11px; color:#888;">
-                        Reported: ${escapeHtml(String(complaintDate))}
-                        ${remarks
-                            ? " | Remarks: " + escapeHtml(String(remarks))
-                            : ""}
-                    </p>
-                </div>
-
-                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                    <span class="badge ${badgeClass}">
-                        ${escapeHtml(String(status))}
-                    </span>
-                    ${actionButtons}
-                </div>
-            </div>
-        `;
-    });
-
-    list.innerHTML = html;
-}
-    function renderInventory(inventory) {
-        const list = document.getElementById("inventoryList");
-
-        if (!inventory.length) {
-            list.innerHTML = '<p style="color:#888;padding:10px 0;">No inventory records in database yet. Add one below.</p>';
-            return;
-        }
-
-        list.innerHTML = inventory.map(item => `
-            <div class="list-row">
-                <div class="list-row-content">
-                    <h5>${escapeHtml(item.itemName)}</h5>
-                    <p>${escapeHtml(item.category || "General")} · Quantity: <strong>${escapeHtml(item.quantity)}</strong></p>
-                </div>
-                <span class="badge approved">${escapeHtml(item.status || "Working")}</span>
-            </div>`).join("");
-    }
-
     async function approveApp(applicationId) {
         try {
             const data = await apiRequest("/warden/approve-application", {
                 method: "POST",
                 body: JSON.stringify({ applicationID: applicationId })
             });
+
             alert(data.message || "Application approved.");
             await loadWardenDashboard();
         } catch (error) {
@@ -502,13 +479,16 @@ function renderComplaints(complaints) {
     }
 
     async function rejectApp(applicationId) {
-        if (!confirm("Are you sure you want to reject this registration application?")) return;
+        if (!confirm("Are you sure you want to reject this registration application?")) {
+            return;
+        }
 
         try {
             const data = await apiRequest("/warden/reject-application", {
                 method: "POST",
                 body: JSON.stringify({ applicationID: applicationId })
             });
+
             alert(data.message || "Application rejected.");
             await loadWardenDashboard();
         } catch (error) {
@@ -532,6 +512,7 @@ function renderComplaints(complaints) {
                     roomID: select.value
                 })
             });
+
             alert(data.message || "Room allocated successfully.");
             await loadWardenDashboard();
         } catch (error) {
@@ -539,86 +520,149 @@ function renderComplaints(complaints) {
         }
     }
 
-async function updateComplaintStatus(complaintId, status) {
-    try {
-        const response = await fetch(`${API_BASE}/warden/update-complaint`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({
-                complaint_id: complaintId,
-                status: status
-            })
-        });
+    // ---------------- COMPLAINTS ----------------
 
-        const result = await response.json();
+    function renderComplaints(complaints) {
+        const list = document.getElementById("complaintList");
 
-        if (!response.ok) {
-            throw new Error(result.error || `HTTP ${response.status}`);
-        }
-
-        alert("Complaint updated to " + status);
-        await loadWardenDashboard();
-
-    } catch (error) {
-        console.error("Complaint update failed:", error);
-        alert("Failed to update complaint: " + error.message);
-    }
-}
-    
-async function addInventoryItem(e) {
-    e.preventDefault();
-
-    const itemName = document.getElementById("invItemName").value.trim();
-    const category = document.getElementById("invCategory").value.trim();
-    const quantity = Number(document.getElementById("invQuantity").value);
-
-    if (!itemName || !category || !Number.isInteger(quantity) || quantity < 1) {
-        alert("Please enter a valid item name, category, and quantity.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE}/warden/inventory`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                itemName: itemName,
-                category: category,
-                quantity: quantity,
-                status: "Working"
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            alert(data.error || "Failed to add inventory item.");
+        if (!complaints || complaints.length === 0) {
+            list.innerHTML = "<p>No complaints found.</p>";
             return;
         }
 
-        alert(data.message || "Inventory item added successfully!");
+        let html = "";
 
-        document.getElementById("invItemName").value = "";
-        document.getElementById("invCategory").value = "";
-        document.getElementById("invQuantity").value = "10";
+        complaints.forEach(complaint => {
+            const complaintId = complaint.complaint_id;
+            const studentId = complaint.student_id ?? "";
+            const complaintType = complaint.complaint_type ?? "General";
+            const description = complaint.description ?? "";
+            const complaintDate = complaint.complaint_date ?? "";
+            const status = complaint.status ?? "Pending";
+            const remarks = complaint.admin_remarks ?? "";
 
-        loadWardenDashboard();
+            const normalizedStatus = status.toLowerCase();
 
-    } catch (error) {
-        console.error("Error adding inventory item:", error);
-        alert("Could not connect to the server. Please try again.");
+            const badgeClass =
+                normalizedStatus === "resolved"
+                    ? "approved"
+                    : normalizedStatus === "in progress"
+                        ? "progress"
+                        : "pending";
+
+            let actionButtons = "";
+
+            if (normalizedStatus !== "resolved") {
+                actionButtons = `
+                    <div style="display:flex;gap:6px;">
+                        ${
+                            normalizedStatus !== "in progress"
+                                ? `<button onclick="updateComplaintStatus('${escapeHtml(String(complaintId))}', 'In Progress')" style="font-size:12px;padding:6px 10px;">Mark In Progress</button>`
+                                : ""
+                        }
+                        <button class="btn-green" onclick="updateComplaintStatus('${escapeHtml(String(complaintId))}', 'Resolved')" style="font-size:12px;padding:6px 10px;">Resolve</button>
+                    </div>`;
+            }
+
+            html += `
+                <div class="list-row">
+                    <div class="list-row-content">
+                        <h5>
+                            ${escapeHtml(String(complaintType))}
+                            - <small>Student ID: ${escapeHtml(String(studentId))}</small>
+                        </h5>
+                        <p>${escapeHtml(String(description))}</p>
+                        <p style="font-size:11px;color:#888;">
+                            Reported: ${escapeHtml(String(complaintDate))}
+                            ${remarks ? " | Remarks: " + escapeHtml(String(remarks)) : ""}
+                        </p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <span class="badge ${badgeClass}">${escapeHtml(String(status))}</span>
+                        ${actionButtons}
+                    </div>
+                </div>`;
+        });
+
+        list.innerHTML = html;
     }
-}
 
+    async function updateComplaintStatus(complaintId, status) {
+        try {
+            const result = await apiRequest("/warden/update-complaint", {
+                method: "POST",
+                body: JSON.stringify({
+                    complaint_id: complaintId,
+                    status: status
+                })
+            });
 
-    
+            alert(result.message || "Complaint updated to " + status);
+            await loadWardenDashboard();
+        } catch (error) {
+            console.error("Complaint update failed:", error);
+            alert("Failed to update complaint: " + error.message);
+        }
+    }
+
+    // ---------------- INVENTORY ----------------
+
+    function renderInventory(inventory) {
+        const list = document.getElementById("inventoryList");
+
+        if (!inventory.length) {
+            list.innerHTML =
+                '<p style="color:#888;padding:10px 0;">No inventory records in database yet. Add one below.</p>';
+            return;
+        }
+
+        list.innerHTML = inventory.map(item => `
+            <div class="list-row">
+                <div class="list-row-content">
+                    <h5>${escapeHtml(item.itemName)}</h5>
+                    <p>${escapeHtml(item.category || "General")} · Quantity: <strong>${escapeHtml(item.quantity)}</strong></p>
+                </div>
+                <span class="badge approved">${escapeHtml(item.status || "Working")}</span>
+            </div>`).join("");
+    }
+
+    async function addInventoryItem(e) {
+        e.preventDefault();
+
+        const itemName = document.getElementById("invItemName").value.trim();
+        const category = document.getElementById("invCategory").value.trim();
+        const quantity = Number(document.getElementById("invQuantity").value);
+
+        if (!itemName || !category || !Number.isInteger(quantity) || quantity < 1) {
+            alert("Please enter a valid item name, category, and quantity.");
+            return;
+        }
+
+        try {
+            const data = await apiRequest("/warden/inventory", {
+                method: "POST",
+                body: JSON.stringify({
+                    itemName: itemName,
+                    category: category,
+                    quantity: quantity,
+                    status: "Working"
+                })
+            });
+
+            alert(data.message || "Inventory item added successfully!");
+
+            document.getElementById("invItemName").value = "";
+            document.getElementById("invCategory").value = "";
+            document.getElementById("invQuantity").value = "10";
+
+            await loadWardenDashboard();
+        } catch (error) {
+            console.error("Error adding inventory item:", error);
+            alert("Could not add inventory item: " + error.message);
+        }
+    }
+
+    // ---------------- MESS MENU ----------------
 
     function saveMenu() {
         const menu = {
@@ -632,8 +676,13 @@ async function addInventoryItem(e) {
         };
 
         localStorage.setItem("hostelMenu", JSON.stringify(menu));
-        document.getElementById("messMessage").innerText = "Menu saved successfully!";
-        setTimeout(() => document.getElementById("messMessage").innerText = "", 3000);
+
+        document.getElementById("messMessage").innerText =
+            "Menu saved successfully!";
+
+        setTimeout(() => {
+            document.getElementById("messMessage").innerText = "";
+        }, 3000);
     }
 
     function initMenu() {
@@ -648,6 +697,7 @@ async function addInventoryItem(e) {
         };
 
         let menu;
+
         try {
             menu = JSON.parse(localStorage.getItem("hostelMenu")) || defaultMenu;
         } catch {
@@ -660,6 +710,107 @@ async function addInventoryItem(e) {
         });
     }
 
+    // ---------------- EVENTS ----------------
+
+    async function loadWardenEvents() {
+        const list = document.getElementById("wardenEventsList");
+        if (!list) return;
+
+        list.textContent = "Loading events...";
+
+        try {
+            const events = await apiRequest("/warden/events");
+            list.replaceChildren();
+
+            if (!Array.isArray(events) || events.length === 0) {
+                list.textContent = "No events created yet.";
+                return;
+            }
+
+            events.forEach(eventItem => {
+                const card = document.createElement("div");
+                card.className = "list-row";
+                card.style.alignItems = "flex-start";
+
+                const content = document.createElement("div");
+                content.className = "list-row-content";
+
+                const title = document.createElement("h5");
+                title.textContent = eventItem["event name"] || "Untitled event";
+
+                const description = document.createElement("p");
+                description.textContent = eventItem.description || "No description";
+
+                const details = document.createElement("p");
+                details.textContent =
+                    "Date: " + (eventItem.event_date || "Not set") +
+                    " | Time: " + (eventItem["event time"] || "Not set");
+
+                const venue = document.createElement("p");
+                venue.textContent = "Venue: " + (eventItem.venue || "Not set");
+
+                const organizer = document.createElement("p");
+                organizer.textContent =
+                    "Organized by: " + (eventItem.organized_by || "Warden");
+
+                content.append(title, description, details, venue, organizer);
+                card.appendChild(content);
+                list.appendChild(card);
+            });
+        } catch (error) {
+            list.textContent = "Could not load events: " + error.message;
+        }
+    }
+
+    async function createHostelEvent(event) {
+        event.preventDefault();
+
+        const message = document.getElementById("eventMessage");
+        const button = document.getElementById("createEventButton");
+
+        const payload = {
+            event_name: document.getElementById("eventName").value.trim(),
+            description: document.getElementById("eventDescription").value.trim(),
+            event_date: document.getElementById("eventDate").value,
+            event_time: document.getElementById("eventTime").value,
+            venue: document.getElementById("eventVenue").value.trim()
+        };
+
+        if (
+            !payload.event_name ||
+            !payload.event_date ||
+            !payload.event_time ||
+            !payload.venue
+        ) {
+            message.textContent =
+                "Please fill in the event name, date, time, and venue.";
+            return;
+        }
+
+        button.disabled = true;
+        message.textContent = "Creating event...";
+
+        try {
+            const result = await apiRequest("/warden/events", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+
+            message.textContent =
+                result.message || "Event created successfully!";
+
+            document.getElementById("createEventForm").reset();
+
+            await loadWardenEvents();
+        } catch (error) {
+            message.textContent = "Could not create event: " + error.message;
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    // ---------------- SIGN OUT & HELPERS ----------------
+
     async function signOut() {
         try {
             await fetch(`${API_BASE}/logout`, {
@@ -669,11 +820,13 @@ async function addInventoryItem(e) {
         } catch (error) {
             console.warn("Logout request failed:", error);
         }
+
         window.location.href = "login1.html";
     }
 
     function escapeHtml(value) {
         if (value == null) return "";
+
         return String(value)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -687,6 +840,7 @@ async function addInventoryItem(e) {
         loadWardenDashboard();
     });
 </script>
+
 
 </body>
 </html>
