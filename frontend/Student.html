@@ -1759,7 +1759,7 @@ async function loadStudentFees() {
 document.addEventListener("DOMContentLoaded", function() {
     
     let payBtn = document.querySelector("#fees .action-btn");
-    if (payBtn) payBtn.onclick = payDues;
+    if (payBtn) payBtn.onclick = null;
 
     let roomAppBtn = document.querySelector("#room .action-btn");
     if (roomAppBtn) roomAppBtn.onclick = submitRoomChangeApp;
