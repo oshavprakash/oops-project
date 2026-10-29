@@ -214,10 +214,7 @@ public class WardenController {
         .substring(0, 12)
         .toUpperCase();
 
-String allocationId = "AL" + UUID.randomUUID()
-        .toString()
-        .replace("-", "")
-        .substring(0, 8);
+
 
 jdbcTemplate.update(
     "INSERT INTO RoomAllocations (allocationID, studentID, roomID, allocationDate) " +
