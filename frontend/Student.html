@@ -2119,124 +2119,58 @@ async function loadEvents() {
 
 
 
+
 function renderEventsSection(events) {
-    const container = document.getElementById("eventsContainer");
-    const countBadge = document.getElementById("eventCountBadge");
+    // Update the Events count on the student overview.
+    const countElement = document.getElementById("overviewEventCount");
 
-    if (!container) {
-        console.error("Events container not found");
+    const eventList = Array.isArray(events) ? events : [];
+
+    if (countElement) {
+        countElement.textContent = eventList.length;
+    }
+
+    // Render the Events sidebar page.
+    const container = document.getElementById("eventsContainer")
+        || document.querySelector("#events .section-heading + div");
+
+    if (!container) return;
+
+    if (eventList.length === 0) {
+        container.innerHTML =
+            '<div class="card-box"><p style="color:#888;">No upcoming hostel events scheduled yet.</p></div>';
         return;
     }
 
-    if (!Array.isArray(events)) {
-        container.innerHTML = "<p>Could not load events.</p>";
-        console.error("Invalid events response:", events);
-        return;
-    }
-
-    const now = new Date();
-
-    const thisMonthEvents = events.filter(event => {
-        const d = new Date(event.event_date ?? event.date);
-
-        return !isNaN(d.getTime()) &&
-            d.getMonth() === now.getMonth() &&
-            d.getFullYear() === now.getFullYear();
-    });
-
-    if (countBadge) {
-        const count = thisMonthEvents.length;
-        countBadge.textContent =
-            `${count} ${count === 1 ? "EVENT" : "EVENTS"} THIS MONTH`;
-    }
-
-    if (events.length === 0) {
-        container.innerHTML = "<p>No upcoming events.</p>";
-        return;
-    }
-
-    container.innerHTML = events.map(event => {
-        const title = event.event_name ?? event.title ?? "Hostel Event";
-        const description = event.description ?? "";
-        const venue = event.venue ?? "Venue not specified";
-        const rawDate = event.event_date ?? event.date;
-        const rawTime = event.event_time ?? event.time;
-
-        const dateText = rawDate
-            ? new Date(rawDate).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                timeZone: "UTC"
-            })
-            : "Date not specified";
-
-        let timeText = "Time not specified";
-
-        if (rawTime) {
-            const parts = String(rawTime).split(":");
-            const hours = Number(parts[0]);
-            const minutes = Number(parts[1]);
-
-            if (
-                parts.length >= 2 &&
-                Number.isFinite(hours) &&
-                Number.isFinite(minutes)
-            ) {
-                timeText =
-                    `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
-            }
-        }
-
-        const safe = value => String(value).replace(/[&<>"']/g, char => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;"
-        })[char]);
+    container.innerHTML = eventList.map(e => {
+        const title = e.title ?? e["event name"] ?? "Hostel Event";
+        const date = e.date ?? e.event_date ?? "";
+        const time = e.time ?? e["event time"] ?? "TBA";
+        const venue = e.venue ?? "Hostel Main Block";
 
         return `
-            <article class="hostel-event-card">
-                <span class="badge event">ANNOUNCEMENT</span>
-                <h4>${safe(title)}</h4>
-                <p>📅 Date: ${safe(dateText)} | ⏰ Time: ${safe(timeText)}</p>
-                <p>📍 Venue: ${safe(venue)}</p>
-                <p>${safe(description)}</p>
-            </article>
+            <div class="card-box">
+                <div class="flex-gap">
+                    <span class="badge event">ANNOUNCEMENT</span>
+                    <h4 style="color:#3d1738;font-size:1.1rem;">
+                        ${escapeHtml(String(title))}
+                    </h4>
+                </div>
+                <p style="font-size:.85rem;color:#777;margin-bottom:4px;">
+                    📅 Date: <strong>${escapeHtml(String(date))}</strong>
+                    | ⏰ Time: ${escapeHtml(String(time))}
+                </p>
+                <p style="font-size:.85rem;color:#555;">
+                    📍 Venue: ${escapeHtml(String(venue))}
+                </p>
+                <p style="font-size:.85rem;color:#666;margin-top:6px;">
+                    ${escapeHtml(String(e.description ?? ""))}
+                </p>
+            </div>
         `;
     }).join("");
-
-    // Events-only visibility fix
-    container.style.setProperty("display", "flex", "important");
-    container.style.setProperty("flex-direction", "column", "important");
-    container.style.setProperty("align-items", "stretch", "important");
-    container.style.setProperty("height", "auto", "important");
-    container.style.setProperty("min-height", "100px", "important");
-    container.style.setProperty("overflow", "visible", "important");
-
-    container.querySelectorAll(".hostel-event-card").forEach(card => {
-        card.style.setProperty("display", "block", "important");
-        card.style.setProperty("position", "relative", "important");
-        card.style.setProperty("height", "auto", "important");
-        card.style.setProperty("min-height", "100px", "important");
-        card.style.setProperty("width", "100%", "important");
-        card.style.setProperty("visibility", "visible", "important");
-        card.style.setProperty("opacity", "1", "important");
-        card.style.setProperty("box-sizing", "border-box", "important");
-        card.style.setProperty("background", "#fff", "important");
-        card.style.setProperty("color", "#3d1738", "important");
-        card.style.setProperty("padding", "18px", "important");
-        card.style.setProperty("margin-bottom", "10px", "important");
-        card.style.setProperty("border", "1px solid #ead6e4", "important");
-        card.style.setProperty("border-radius", "10px", "important");
-    });
-
-    console.log(
-        "Event cards inserted:",
-        container.querySelectorAll(".hostel-event-card").length
-    );
 }
+
 
 
 /* -------------------- LOST AND FOUND -------------------- */
