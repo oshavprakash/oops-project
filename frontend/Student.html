@@ -1033,14 +1033,14 @@
     <h2>Mess Schedule</h2>
 
     <p class="mess-intro">
-        View the mess menu and customize your food preferences.
+        View the mess menu and choose your food preference.
     </p>
 
     <div class="mess-preferences">
         <div class="mess-preference-header">
             <div>
                 <h3>My Food Preferences</h3>
-                <p>Choose your diet and specify other food preferences.</p>
+                <p>Choose Veg or Non-Veg.</p>
             </div>
         </div>
 
@@ -1048,35 +1048,12 @@
             <div class="preference-item">
                 <label for="dietPreference">Food Preference</label>
                 <select id="dietPreference">
-                    <option value="VEG">VEG — Vegetarian only</option>
-                    <option value="NON_VEG">
-                        NON_VEG — Vegetarian + Non-Vegetarian
-                    </option>
-                    <option value="NON_VEG">NON_VEG — Vegetarian + Non-Vegetarian</option>
+                    <option value="VEG">Veg</option>
+                    <option value="NON_VEG">Non-Veg</option>
                 </select>
-            </div>
-
-            <div class="preference-item">
-                <label for="allergyPreference">Allergies</label>
-                <input type="text" id="allergyPreference"
-                       placeholder="e.g. peanuts, milk, egg">
-            </div>
-
-            <div class="preference-item">
-                <label for="foodPreference">Foods I Like</label>
-                <input type="text" id="foodPreference"
-                       placeholder="e.g. dosa, chicken, rice">
-            </div>
-
-            <div class="preference-item">
-                <label for="foodAvoid">Foods I Avoid</label>
-                <input type="text" id="foodAvoid"
-                       placeholder="e.g. spicy food, fish">
             </div>
         </div>
 
-        <button class="save-food-preferences"
-                type="button"
         <button class="save-food-preferences" type="button"
                 onclick="saveFoodPreferences()">
             Save Preferences
@@ -1090,14 +1067,12 @@
         <div class="mess-menu-header">
             <div>
                 <h3>Mess Menu</h3>
-                <h3>Today's Menu</h3>
                 <p id="messDate">Loading date...</p>
             </div>
 
             <input type="date" id="messMenuDate"
                    aria-label="Choose menu date">
 
-            <select id="mealFilter" aria-label="Filter by meal">
             <select id="mealFilter" onchange="displayMessMenu()"
                     aria-label="Filter by meal">
                 <option value="all">All Meals</option>
@@ -1115,30 +1090,6 @@
 </div>
 <!-- End Mess Section -->
 
-
-    <div class="mess-menu">
-
-        <div class="mess-menu-header">
-            <div>
-                <h3>Today's Menu</h3>
-                <p id="messDate"></p>
-            </div>
-            
-<input type="date" id="messMenuDate" aria-label="Choose menu date">
-
-            <select id="mealFilter" onchange="displayMessMenu()">
-                <option value="all">All Meals</option>
-                <option value="breakfast">Breakfast</option>
-                <option value="lunch">Lunch</option>
-                <option value="snacks">Snacks</option>
-                <option value="dinner">Dinner</option>
-            </select>
-        </div>
-
-        <div id="messMenuContainer">
-        </div>
-
-    </div>
 
 
 
@@ -1987,22 +1938,6 @@ function getLocalDateString() {
     ].join("-");
 }
 
-function loadLocalFoodPreferences() {
-    try {
-        const saved = JSON.parse(localStorage.getItem("foodPreferences") || "{}");
-
-        const allergies = document.getElementById("allergyPreference");
-        const likes = document.getElementById("foodPreference");
-        const avoids = document.getElementById("foodAvoid");
-
-        if (allergies) allergies.value = saved.allergies || "";
-        if (likes) likes.value = saved.likes || "";
-        if (avoids) avoids.value = saved.avoids || "";
-    } catch (error) {
-        console.warn("Could not load local food preferences:", error);
-    }
-}
-
 async function saveFoodPreferences() {
     const dietInput = document.getElementById("dietPreference");
     const status = document.getElementById("foodPreferenceStatus");
@@ -2030,12 +1965,7 @@ async function saveFoodPreferences() {
             throw new Error(`Could not save preference (HTTP ${response.status}).`);
         }
 
-        localStorage.setItem("foodPreferences", JSON.stringify({
-            diet,
-            allergies: document.getElementById("allergyPreference")?.value.trim() || "",
-            likes: document.getElementById("foodPreference")?.value.trim() || "",
-            avoids: document.getElementById("foodAvoid")?.value.trim() || ""
-        }));
+        localStorage.setItem("foodPreferences", JSON.stringify({ diet }));
 
         currentMessPreference = diet;
 
@@ -2263,8 +2193,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const reportItemBtn = document.querySelector("#lostfound .action-btn");
     if (reportItemBtn) reportItemBtn.onclick = reportLostFoundItem;
-
-    loadLocalFoodPreferences();
 
     loadStudentDashboard();
     loadStudentFees();
