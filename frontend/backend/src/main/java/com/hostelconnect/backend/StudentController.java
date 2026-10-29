@@ -308,57 +308,68 @@ public class StudentController {
 
     // -------------------- FEES --------------------
 
-    @GetMapping("/fees")
-    public ResponseEntity<?> getFees(HttpSession session) {
-        try {
-            String sid = getStudentID(session);
+    
+@GetMapping("/fees")
+public ResponseEntity<?> getFees(HttpSession session) {
+    try {
+        String sid = getStudentID(session);
 
-            List<Map<String, Object>> all = jdbc.queryForList(
-                "SELECT paymentID, feeType, amount, paymentDate, status " +
-                "FROM FeePayments WHERE studentID = ? " +
-                "ORDER BY paymentDate DESC",
-                sid
-            );
+        // Retrieve ALL fee records for this student
+        List<Map<String, Object>> all = jdbc.queryForList(
+            "SELECT paymentID, feeType, amount, paymentDate, status " +
+            "FROM FeePayments WHERE studentID = ? " +
+            "ORDER BY paymentDate DESC",
+            sid
+        );
 
-            List<Map<String, Object>> paid = new ArrayList<>();
-            List<Map<String, Object>> due = new ArrayList<>();
+        // Retrieve pending fee records separately
+        List<Map<String, Object>> due = jdbc.queryForList(
+            "SELECT paymentID, feeType, amount, paymentDate, status " +
+            "FROM FeePayments " +
+            "WHERE studentID = ? AND LOWER(status) = 'pending' " +
+            "ORDER BY paymentDate DESC",
+            sid
+        );
 
-            BigDecimal totalDue = BigDecimal.ZERO;
+        List<Map<String, Object>> paid = new ArrayList<>();
 
-            for (Map<String, Object> fee : all) {
-                String status = String.valueOf(fee.get("status"));
+        for (Map<String, Object> fee : all) {
+            String status = String.valueOf(fee.get("status"));
 
-                if ("Paid".equalsIgnoreCase(status)
-                        || "Success".equalsIgnoreCase(status)) {
-
-                    paid.add(fee);
-
-                } else if ("Pending".equalsIgnoreCase(status)) {
-
-                    due.add(fee);
-
-                    Object amount = fee.get("amount");
-
-                    if (amount != null) {
-                        totalDue = totalDue.add(
-                            new BigDecimal(String.valueOf(amount))
-                        );
-                    }
-                }
+            if ("Paid".equalsIgnoreCase(status)
+                    || "Success".equalsIgnoreCase(status)) {
+                paid.add(fee);
             }
-
-            Map<String, Object> result = new LinkedHashMap<>();
-
-            result.put("paid", paid);
-            result.put("due", due);
-            result.put("totalDue", totalDue);
-
-            return ResponseEntity.ok(result);
-
-        } catch (RuntimeException e) {
-            return handleError(e);
         }
+
+        BigDecimal totalDue = BigDecimal.ZERO;
+
+        for (Map<String, Object> fee : due) {
+            Object amount = fee.get("amount");
+
+            if (amount != null) {
+                totalDue = totalDue.add(
+                    new BigDecimal(String.valueOf(amount))
+                );
+            }
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("paid", paid);
+        result.put("due", due);
+        result.put("totalDue", totalDue);
+
+        // Temporary debugging information
+        result.put("debugStudentID", sid);
+        result.put("debugAllCount", all.size());
+        result.put("debugDueCount", due.size());
+
+        return ResponseEntity.ok(result);
+
+    } catch (RuntimeException e) {
+        return handleError(e);
     }
+}
 
     // -------------------- PAY FEE --------------------
 
