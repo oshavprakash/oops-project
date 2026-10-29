@@ -33,16 +33,24 @@ public class AdminDashboardController {
                     .body(Map.of("error", "Admin access required"));
         }
 
+        // Fetch users
         List<Map<String, Object>> users = jdbcTemplate.queryForList(
             "SELECT userID, name, email, role FROM users"
+        );
+
+        // Fetch fee payment records
+        List<Map<String, Object>> fees = jdbcTemplate.queryForList(
+            "SELECT paymentID, studentID, feeType, amount, paymentDate, status " +
+            "FROM FeePayments ORDER BY paymentID"
         );
 
         return ResponseEntity.ok(Map.of(
             "users", users,
             "rooms", List.of(),
             "complaints", List.of(),
-            "fees", List.of(),
+            "fees", fees,
             "events", List.of()
         ));
     }
 }
+
