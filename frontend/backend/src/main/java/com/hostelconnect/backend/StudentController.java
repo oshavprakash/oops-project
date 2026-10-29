@@ -362,27 +362,61 @@ public class StudentController {
 
     // -------------------- PAY FEE --------------------
 
-    @PostMapping("/pay-fee")
-    public ResponseEntity<?> payFee(HttpSession session) {
-        try {
-            getStudentID(session);
+    
+@PostMapping("/pay-fee")
+public ResponseEntity<?> payFee(
+        @RequestBody Map<String, Object> body,
+        HttpSession session) {
 
-            // Do not mark fees as paid without processing
-            // and verifying an actual payment.
+    try {
+        String sid = getStudentID(session);
+
+        String paymentID = String.valueOf(
+            body.getOrDefault("paymentID", "")
+        ).trim();
+
+        if (paymentID.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                Map.of(
+                    "success", false,
+                    "message", "Payment ID is required"
+                )
+            );
+        }
+
+        int updated = jdbc.update(
+            "UPDATE FeePayments " +
+            "SET status = 'Paid' " +
+            "WHERE paymentID = ? " +
+            "AND studentID = ? " +
+            "AND LOWER(status) = 'pending'",
+            paymentID, sid
+        );
+
+        if (updated == 0) {
             return ResponseEntity.status(
-                HttpStatus.NOT_IMPLEMENTED
+                HttpStatus.CONFLICT
             ).body(
                 Map.of(
                     "success", false,
                     "message",
-                    "Online payment processing is not configured yet."
+                    "Fee not found, already paid, or not pending"
                 )
             );
-
-        } catch (RuntimeException e) {
-            return handleError(e);
         }
+
+        return ResponseEntity.ok(
+            Map.of(
+                "success", true,
+                "paymentID", paymentID,
+                "status", "Paid"
+            )
+        );
+
+    } catch (RuntimeException e) {
+        return handleError(e);
     }
+}
 
     // -------------------- COMPLAINTS --------------------
 
