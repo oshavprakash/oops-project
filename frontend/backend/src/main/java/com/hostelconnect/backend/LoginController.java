@@ -69,8 +69,8 @@ public class LoginController {
 
             String redirect = switch (user.role().toLowerCase()) {
                 case "student" -> "Student.html";
-                case "warden" -> "Warden.html";
-                case "administrator" -> "Admin.html";
+                case "warden" -> "warden.html";
+                case "administrator" -> "admin.html";
                 default -> "Student.html";
             };
 
