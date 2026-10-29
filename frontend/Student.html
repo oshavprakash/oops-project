@@ -1789,7 +1789,44 @@ function renderEventsSection(events) {
 
     container.innerHTML = html;
 }
-```
+
+async function loadEvents() {
+    try {
+        const response = await fetch(
+            "https://hostelconnect-backend-za3a.onrender.com/api/student/events",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Events request failed: HTTP ${response.status}`
+            );
+        }
+
+        const events = await response.json();
+
+        console.log("Events received from backend:", events);
+
+        renderEventsSection(events);
+
+    } catch (error) {
+        console.error("Could not load hostel events:", error);
+
+        const container = document.querySelector(
+            "#events .section-heading + div"
+        );
+
+        if (container) {
+            container.innerHTML =
+                '<div class="card-box"><p style="color:#888;">Unable to load events. Please refresh the page and try again.</p></div>';
+        }
+    }
+}
+
+
 
 
         function renderLostFoundSection(items) {
