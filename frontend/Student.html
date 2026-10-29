@@ -1645,40 +1645,6 @@ function renderRoomSection(data) {
         }
     }
 
-    const roommateBox = document.querySelector("#room .card-box.flex-row");
-
-    if (roommateBox) {
-        if (!roommates.length) {
-            roommateBox.innerHTML = `
-                <div>
-                    <h4 style="color:#3d1738;margin-bottom:4px;">
-                        No Roommates Assigned Yet
-                    </h4>
-                    <p style="font-size:.85rem;color:#777;">
-                        Roommate details will appear here after allocation.
-                    </p>
-                </div>
-            `;
-        } else {
-            const mates = roommates.map(m => `
-                <div style="margin-bottom:10px;">
-                    <h4 style="color:#3d1738;margin-bottom:2px;">
-                        ${escapeHtml(m.name || "")}
-                    </h4>
-                    <p style="font-size:.85rem;color:#777;">
-                        Student ID: ${escapeHtml(m.studentID || "")}
-                        · Email: ${escapeHtml(m.email || "")}
-                    </p>
-                </div>
-            `).join("");
-
-            roommateBox.innerHTML =
-                `<div>${mates}</div><div><span class="badge event">ROOM ALLOTMENT</span></div>`;
-            }
-        }
-    }
-
-
     const tbody = document.querySelector("#room .custom-table tbody");
 
     if (tbody) {
