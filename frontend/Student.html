@@ -1566,17 +1566,24 @@ function renderOverviewMessMenu() {
     }).join("") || '<div class="list-row"><div class="list-row-content"><h5>No menu available</h5><p>The warden has not published menu items for this date.</p></div></div>';
 }
 
+
 function renderRoomSection(data) {
     const room = data.room;
     const roommates = data.roommates || [];
     const app = data.application;
 
+    // Get the actual application status
+    const status = String(app?.status || "Pending").trim().toLowerCase();
+
     const roomPageNumber = document.getElementById("roomPageRoomNumber");
     const roomPageBlock = document.getElementById("roomPageBlock");
+
     if (room?.roomID) {
         if (roomPageNumber) roomPageNumber.innerText = room.roomID;
-        if (roomPageBlock) roomPageBlock.innerText =
-            `${room.roomType || "Allotted room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
+        if (roomPageBlock) {
+            roomPageBlock.innerText =
+                `${room.roomType || "Allotted room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
+        }
     } else {
         if (roomPageNumber) roomPageNumber.innerText = "Not Allocated";
         if (roomPageBlock) roomPageBlock.innerText = "No room allotment found";
@@ -1585,6 +1592,7 @@ function renderRoomSection(data) {
     const cards = document.querySelectorAll(
         "#room .overview-card .card-main-val"
     );
+
     const subtitles = document.querySelectorAll(
         "#room .overview-card .card-sub-val"
     );
@@ -1592,8 +1600,12 @@ function renderRoomSection(data) {
     if (cards.length) {
         if (room?.roomID) {
             cards[0].innerText = room.roomID;
-            if (subtitles[0]) subtitles[0].innerText =
-                `${room.roomType || "Room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
+
+            if (subtitles[0]) {
+                subtitles[0].innerText =
+                    `${room.roomType || "Room"}${room.capacity != null ? " · Capacity " + room.capacity : ""}`;
+            }
+
             if (cards[1]) cards[1].innerText = room.roomType || "Standard";
 
             if (cards[2]) {
@@ -1602,12 +1614,31 @@ function renderRoomSection(data) {
             }
         } else {
             cards[0].innerText = "Not Allocated";
-            if (subtitles[0]) subtitles[0].innerText = "Application Approved";
+
+            // Display the actual application status
+            if (subtitles[0]) {
+                if (status === "approved") {
+                    subtitles[0].innerText = "Application Approved";
+                } else if (status === "rejected") {
+                    subtitles[0].innerText = "Application Rejected";
+                } else {
+                    subtitles[0].innerText = "Application Pending";
+                }
+            }
+
             if (cards[1]) cards[1].innerText = "Standard";
 
             if (cards[2]) {
-                cards[2].innerText = "Pending";
-                cards[2].style.color = "#e67e22";
+                if (status === "approved") {
+                    cards[2].innerText = "Approved";
+                    cards[2].style.color = "#27ae60";
+                } else if (status === "rejected") {
+                    cards[2].innerText = "Rejected";
+                    cards[2].style.color = "#e74c3c";
+                } else {
+                    cards[2].innerText = "Pending";
+                    cards[2].style.color = "#e67e22";
+                }
             }
         }
     }
@@ -1643,6 +1674,8 @@ function renderRoomSection(data) {
                 `<div>${mates}</div><div><span class="badge event">ROOM ALLOTMENT</span></div>`;
         }
     }
+}
+
 
     const tbody = document.querySelector("#room .custom-table tbody");
 
