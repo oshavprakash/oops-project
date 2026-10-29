@@ -1484,7 +1484,7 @@ async function loadStudentDashboard() {
             []
         );
         renderRoomSection(data);
-        renderLostFoundSection(data.lostFound || []);
+        await loadLostFoundItems();
 
         // Fees are loaded from the dedicated fees endpoint.
         displayComplaints();
