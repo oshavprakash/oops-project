@@ -1,4 +1,3 @@
-
 package com.hostelconnect.backend;
 
 import jakarta.servlet.http.HttpSession;
@@ -38,18 +37,41 @@ public class AdminDashboardController {
             "SELECT userID, name, email, role FROM users"
         );
 
+        // Fetch all rooms
+        List<Map<String, Object>> rooms = jdbcTemplate.queryForList(
+            "SELECT * FROM Rooms ORDER BY roomID"
+        );
+
+        // Total number of rooms
+        long totalRooms = rooms.size();
+
+        // Count rooms that have reached full capacity
+        long occupiedRooms = rooms.stream()
+            .filter(room -> {
+                Object occupancy = room.get("occupancy");
+                Object capacity = room.get("capacity");
+
+                return occupancy instanceof Number
+                    && capacity instanceof Number
+                    && ((Number) occupancy).intValue()
+                        >= ((Number) capacity).intValue();
+            })
+            .count();
+
         // Fetch fee payment records
-       List<Map<String, Object>> fees = jdbcTemplate.queryForList(
-    "SELECT f.paymentID, f.studentID, s.name AS studentName, " +
-    "f.feeType, f.amount, f.paymentDate, f.status " +
-    "FROM FeePayments f " +
-    "JOIN Students s ON f.studentID = s.studentID " +
-    "ORDER BY f.paymentID"
-);
+        List<Map<String, Object>> fees = jdbcTemplate.queryForList(
+            "SELECT f.paymentID, f.studentID, s.name AS studentName, " +
+            "f.feeType, f.amount, f.paymentDate, f.status " +
+            "FROM FeePayments f " +
+            "JOIN Students s ON f.studentID = s.studentID " +
+            "ORDER BY f.paymentID"
+        );
 
         return ResponseEntity.ok(Map.of(
             "users", users,
-            "rooms", List.of(),
+            "rooms", rooms,
+            "totalRooms", totalRooms,
+            "occupiedRooms", occupiedRooms,
             "complaints", List.of(),
             "fees", fees,
             "events", List.of()
