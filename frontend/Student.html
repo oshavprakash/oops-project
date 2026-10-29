@@ -1870,7 +1870,8 @@ async function loadStudentFees() {
 
 /* -------------------- COMPLAINTS -------------------- */
 
-function submitComplaint() {
+
+async function submitComplaint() {
     const room = document.getElementById("complaintRoom").value.trim();
     const type = document.getElementById("complaintType").value;
     const description = document.getElementById("complaintDescription").value.trim();
@@ -1882,32 +1883,50 @@ function submitComplaint() {
         return;
     }
 
-    const params = new URLSearchParams();
-    params.append("category", type);
-    params.append(
-        "description",
-        (room ? `[Room ${room}] ` : "") + description
-    );
+    message.textContent = "Submitting complaint...";
+    message.style.color = "#666";
 
-    fetch(`${API_BASE}/student/complaints`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString()
-    })
-    .then(async response => {
-        const data = await response.json();
+    const payload = {
+        category: type,
+        description: (room ? `[Room ${room}] ` : "") + description
+    };
+
+    try {
+        const response = await fetch(
+            `${API_BASE}/student/complaints`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const responseText = await response.text();
+        let data = {};
+
+        try {
+            data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+            data = {};
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || "Submission failed.");
+            throw new Error(
+                data.message || responseText ||
+                `Submission failed (HTTP ${response.status}).`
+            );
         }
 
         if (data.success === false) {
             throw new Error(data.message || "Submission failed.");
         }
 
-        message.textContent = data.message ||
-            "Complaint submitted successfully to Warden portal.";
+        message.textContent =
+            data.message || "Complaint submitted successfully.";
         message.style.color = "#15803d";
 
         document.getElementById("complaintRoom").value = "";
@@ -1915,11 +1934,14 @@ function submitComplaint() {
         document.getElementById("complaintDescription").value = "";
 
         await loadStudentDashboard();
-    })
-    .catch(error => {
-        message.textContent = error.message || "Could not submit complaint.";
+
+    } catch (error) {
+        console.error("Complaint submission error:", error);
+
+        message.textContent =
+            error.message || "Could not submit complaint.";
         message.style.color = "#b33939";
-    });
+    }
 }
 
 function displayComplaints() {
