@@ -96,18 +96,21 @@ public class StudentController {
                 || "All".equalsIgnoreCase(status)) {
 
             rows = jdbc.queryForList(
-                "SELECT complaintID, category, description, " +
-                "`date`, status FROM Complaints " +
-                "WHERE studentID = ? ORDER BY `date` DESC LIMIT ?",
+                "SELECT complaint_id AS complaintID, " +
+                "complaint_type AS category, description, " +
+                "complaint_date AS date, status FROM Complaints " +
+                "WHERE student_id = ? " +
+                "ORDER BY complaint_date DESC LIMIT ?",
                 sid, limit
             );
 
         } else {
             rows = jdbc.queryForList(
-                "SELECT complaintID, category, description, " +
-                "`date`, status FROM Complaints " +
-                "WHERE studentID = ? AND status = ? " +
-                "ORDER BY `date` DESC LIMIT ?",
+                "SELECT complaint_id AS complaintID, " +
+                "complaint_type AS category, description, " +
+                "complaint_date AS date, status FROM Complaints " +
+                "WHERE student_id = ? AND status = ? " +
+                "ORDER BY complaint_date DESC LIMIT ?",
                 sid, status, limit
             );
         }
@@ -176,11 +179,10 @@ public class StudentController {
             );
 
             result.put("fees", fees);
-            // Unresolved complaints. Use the same studentID column and
-            // string ID type as the other complaint queries.
+            // Unresolved complaints, using the actual Complaints table schema.
             result.put("openComplaints", jdbc.queryForObject(
                 "SELECT COUNT(*) FROM Complaints " +
-                "WHERE studentID = ? AND status <> 'Resolved'",
+                "WHERE student_id = ? AND status <> 'Resolved'",
                 Integer.class, sid
             ));
 
@@ -427,22 +429,20 @@ public class StudentController {
             // warden assignment can be handled separately using the schema's
             // actual room/warden relationship, if one exists.
 
-            String id = UUID.randomUUID()
-                .toString().replace("-", "").substring(0, 10);
-
             LocalDate today = LocalDate.now();
 
+            // Use the actual table columns. complaint_id is left to the
+            // database to generate, and no hostelID/wardenID is required.
             jdbc.update(
                 "INSERT INTO Complaints " +
-                "(complaintID, studentID, wardenID, category, " +
-                "description, `date`, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, 'Pending')",
-                id, sid, null, category, description, today
+                "(student_id, complaint_type, description, " +
+                "complaint_date, status) " +
+                "VALUES (?, ?, ?, ?, 'Pending')",
+                sid, category, description, today
             );
 
             Map<String, Object> result = new LinkedHashMap<>();
 
-            result.put("complaintID", id);
             result.put("category", category);
             result.put("description", description);
             result.put("date", today.toString());
