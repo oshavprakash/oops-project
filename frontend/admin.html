@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -561,11 +561,13 @@
                     let amount = parseFloat(f.amount) || 0;
                     let status = (f.status || "").toLowerCase();
 
-                    if (status === "success") {
-                        feeTotal += amount;
-                    } else {
-                        feePending++;
-                    }
+
+             if (status === "paid" || status === "success") {
+                 feeTotal += amount;
+             } else {
+                 feePending++;
+             }
+
 
                     feesHtml += `
                         <tr>
@@ -592,7 +594,9 @@
                 "₹" + feeTotal.toLocaleString("en-IN");
 
             document.getElementById("statFeeCount").innerText =
-                fees.length - feePending;
+    fees.filter(f =>
+        ["paid", "success"].includes((f.status || "").toLowerCase())
+    ).length;
 
             document.getElementById("statFeePending").innerText =
                 feePending;
@@ -641,4 +645,4 @@
 
 </body>
 </html>
-```
+
