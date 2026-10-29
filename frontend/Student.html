@@ -1378,7 +1378,6 @@ async function loadStudentDashboard() {
 
         renderOverviewComplaints(data.complaints || []);
         renderRoomSection(data);
-        renderEventsSection(data.events || []);
         renderLostFoundSection(data.lostFound || []);
 
         // Fees are loaded from the dedicated fees endpoint.
@@ -1810,19 +1809,17 @@ async function loadEvents() {
         });
 
         if (!response.ok) {
-            throw new Error(`Events request failed: HTTP ${response.status}`);
+            throw new Error(
+                `Events request failed: HTTP ${response.status}`
+            );
         }
 
         const events = await response.json();
+
         renderEventsSection(Array.isArray(events) ? events : []);
+
     } catch (error) {
         console.error("Could not load events:", error);
-
-        const container = document.querySelector("#events .section-heading + div");
-        if (container) {
-            container.innerHTML =
-                '<div class="card-box"><p style="color:#888;">Unable to load events. Please try again later.</p></div>';
-        }
     }
 }
 
