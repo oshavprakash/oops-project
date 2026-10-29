@@ -1047,9 +1047,9 @@
 <div class="preference-item">
     <label for="dietPreference">Food Preference</label>
     <select id="dietPreference">
-        <option value="VEG">Vegetarian (VEG)</option>
-        <option value="NON_VEG">Non-Vegetarian (NON_VEG)</option>
-    </select>
+    <option value="VEG">VEG — Vegetarian only</option>
+    <option value="NON_VEG">NON_VEG — Vegetarian + Non-Vegetarian</option>
+</select>
 </div>
 
 
@@ -1906,16 +1906,15 @@ function savePreferences() {
 
 
         
+
 async function saveFoodPreferences() {
     const diet = document.getElementById("dietPreference").value;
-    const allergies = document.getElementById("allergyPreference").value.trim();
-    const likes = document.getElementById("foodPreference").value.trim();
-    const avoids = document.getElementById("foodAvoid").value.trim();
+    const allergies = document.getElementById("allergyPreference").value;
+    const likes = document.getElementById("foodPreference").value;
+    const avoids = document.getElementById("foodAvoid").value;
     const status = document.getElementById("foodPreferenceStatus");
 
-    status.textContent = "Saving preferences...";
-
-    // Keep the additional dietary details in this browser.
+    // Keep the extra preferences locally.
     localStorage.setItem("foodPreferences", JSON.stringify({
         diet,
         allergies,
@@ -1923,26 +1922,47 @@ async function saveFoodPreferences() {
         avoids
     }));
 
-    try {
-        const response = await fetch(`${API_BASE}/student/mess/preference`, {
-            method: "PUT",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ foodPreference: diet })
-        });
+    if (status) {
+        status.innerText = "Saving preferences...";
+    }
 
-        const data = await response.json();
+    try {
+        const response = await fetch(
+            `${API_BASE}/student/mess/preference`,
+            {
+                method: "PUT",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    foodPreference: diet
+                })
+            }
+        );
 
         if (!response.ok) {
-            throw new Error(data.message || "Could not save food preference.");
+            throw new Error("Could not save preference. Please log in again or try later.");
         }
 
-        status.textContent = "Food preference saved successfully!";
-        await loadMessData();
+        if (status) {
+            status.innerText = "Food preferences saved successfully!";
+        }
+
+        // Reload the menu using the newly saved preference.
+        if (typeof loadMessMenu === "function") {
+            await loadMessMenu();
+        }
     } catch (error) {
-        status.textContent = "Unable to save food preference: " + error.message;
+        console.error("Saving food preferences failed:", error);
+
+        if (status) {
+            status.innerText =
+                "Could not save to the server. Please check your login and try again.";
+        }
     }
 }
+
 
 
 // Load the student's saved diet preference.
