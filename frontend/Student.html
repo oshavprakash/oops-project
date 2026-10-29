@@ -1458,81 +1458,94 @@
             .catch(() => alert("Request sent to warden office."));
         }
 
-        function renderFeeSection(fees) {
-            let tables = document.querySelectorAll("#fees .custom-table tbody");
-            if (tables.length === 0) return;
-            let paidTable = tables[0];
-            let dueTable = tables.length > 1 ? tables[1] : null;
+function renderFeeSection(fees) {
+    let tables = document.querySelectorAll("#fees .custom-table tbody");
 
-            let paidFees = fees.filter(f =>
-             ["paid", "success"].includes((f.status || "").toLowerCase())
-             );
+    if (tables.length === 0) return;
 
-             let pendingFees = fees.filter(f =>
-             (f.status || "").toLowerCase() === "pending"
-             );
+    let paidTable = tables[0];
+    let dueTable = tables.length > 1 ? tables[1] : null;
 
-            if (paidFees.length === 0) {
-                paidTable.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#888;">No completed payments yet.</td></tr>';
-            } else {
-                paidTable.innerHTML = paidFees.map(f => `
-                    <tr>
-                        <td>${escapeHtml(f.feeType)}</td>
-                        <td>₹${parseFloat(f.amount).toFixed(2)}</td>
-                        <td>${escapeHtml(f.paymentDate || "")}</td>
-                        <td><span class="badge resolved">Completed</span></td>
-                    </tr>
-                `).join("");
-            }
+    fees = Array.isArray(fees) ? fees : [];
 
-            if (dueTable) {
-                if (pendingFees.length === 0) {
-                    dueTable.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#888;">All hostel fees are currently paid! No pending dues.</td></tr>';
-                } else {
-                    dueTable.innerHTML = pendingFees.map(f => `
-                        <tr>
-                            <td>${escapeHtml(f.feeType)}</td>
-                            <td>₹${parseFloat(f.amount).toFixed(2)}</td>
-                            <td>${escapeHtml(f.paymentDate || "Due now")}</td>
-                            <td><span class="badge open">Pending</span></td>
-                        </tr>
-                    `).join("");
-                }
-            }
-        }
+    let paidFees = fees.filter(f =>
+        ["paid", "success"].includes(
+            (f.status || "").toLowerCase()
+        )
+    );
 
-        
-    async function payDues() {
-        try {
-            const response = await fetch(
-                "https://hostelconnect-backend-za3a.onrender.com/api/student/pay-fee",
-                {
-                    method: "POST",
-                    credentials: "include"
-                }
-            );
+    let pendingFees = fees.filter(f =>
+        (f.status || "").toLowerCase() === "pending"
+    );
 
-            const data = await response.json();
+    if (paidFees.length === 0) {
+        paidTable.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center; padding:15px; color:#888;">
+                    No completed payments yet.
+                </td>
+            </tr>`;
+    } else {
+        paidTable.innerHTML = paidFees.map(f => `
+            <tr>
+                <td>${escapeHtml(f.feeType || "")}</td>
+                <td>₹${Number(f.amount || 0).toFixed(2)}</td>
+                <td>${escapeHtml(f.paymentDate || "")}</td>
+                <td><span class="badge resolved">Completed</span></td>
+            </tr>
+        `).join("");
+    }
 
-            if (!response.ok) {
-                alert(data.message || "Could not update fee status.");
-                return;
-            }
-
-            const button = document.getElementById("payFeesButton");
-
-            if (button) {
-                button.textContent = "Paid!";
-                button.disabled = true;
-            }
-
-            alert("Fee status updated to Paid!");
-
-        } catch (error) {
-        console.error(error);
-        alert("Unable to contact the server.");
+    if (dueTable) {
+        if (pendingFees.length === 0) {
+            dueTable.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:15px; color:#888;">
+                        No pending dues.
+                    </td>
+                </tr>`;
+        } else {
+            dueTable.innerHTML = pendingFees.map(f => `
+                <tr>
+                    <td>${escapeHtml(f.feeType || "")}</td>
+                    <td>₹${Number(f.amount || 0).toFixed(2)}</td>
+                    <td>${escapeHtml(f.paymentDate || "Due now")}</td>
+                    <td><span class="badge open">Pending</span></td>
+                </tr>
+            `).join("");
         }
     }
+}
+
+        
+async function loadStudentFees() {
+    const url =
+        "https://hostelconnect-backend-za3a.onrender.com/api/student/fees";
+
+    try {
+        const response = await fetch(url, {
+            credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("Failed to load fees:", data);
+            return;
+        }
+
+        // The backend returns { paid: [], due: [], totalDue: ... }
+        const fees = [
+            ...(data.paid || []),
+            ...(data.due || [])
+        ];
+
+        renderFeeSection(fees);
+
+    } catch (error) {
+        console.error("Error loading student fees:", error);
+    }
+}
 
 
         function submitComplaint() {
@@ -1742,19 +1755,20 @@
                 .replace(/'/g, "&#039;");
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Bind action buttons
-            let payBtn = document.querySelector("#fees .action-btn");
-            if (payBtn) payBtn.onclick = payDues;
+document.addEventListener("DOMContentLoaded", function() {
+    
+    let payBtn = document.querySelector("#fees .action-btn");
+    if (payBtn) payBtn.onclick = payDues;
 
-            let roomAppBtn = document.querySelector("#room .action-btn");
-            if (roomAppBtn) roomAppBtn.onclick = submitRoomChangeApp;
+    let roomAppBtn = document.querySelector("#room .action-btn");
+    if (roomAppBtn) roomAppBtn.onclick = submitRoomChangeApp;
 
-            let reportItemBtn = document.querySelector("#lostfound .action-btn");
-            if (reportItemBtn) reportItemBtn.onclick = reportLostFoundItem;
+    let reportItemBtn = document.querySelector("#lostfound .action-btn");
+    if (reportItemBtn) reportItemBtn.onclick = reportLostFoundItem;
 
-            loadStudentDashboard();
-        });
+    loadStudentDashboard();
+    loadStudentFees(); 
+});
     </script>
 </body>
 </html>
