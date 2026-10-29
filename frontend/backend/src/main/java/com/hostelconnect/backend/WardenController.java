@@ -57,17 +57,14 @@ public class WardenController {
                 .body(Map.of("error", "Warden record not found"));
         }
 
-        String hostelName =
-            String.valueOf(hostelRows.get(0).get("HostelName"));
-
         List<Map<String, Object>> applications =
             jdbcTemplate.queryForList(
                 "SELECT * FROM Applications ORDER BY appliedDate DESC"
             );
 
-           List<Map<String, Object>> rooms =
+        List<Map<String, Object>> rooms =
             jdbcTemplate.queryForList(
-            "SELECT * FROM Rooms ORDER BY roomID"
+                "SELECT * FROM Rooms ORDER BY roomID"
             );
 
         List<Map<String, Object>> complaints =
@@ -103,8 +100,7 @@ public class WardenController {
         }
 
         int updated = jdbcTemplate.update(
-            "UPDATE Applications SET status = ? " +
-            "WHERE applicationID = ?",
+            "UPDATE Applications SET status = ? WHERE applicationID = ?",
             "Approved", applicationId
         );
 
@@ -132,8 +128,7 @@ public class WardenController {
         }
 
         int updated = jdbcTemplate.update(
-            "UPDATE Applications SET status = ? " +
-            "WHERE applicationID = ?",
+            "UPDATE Applications SET status = ? WHERE applicationID = ?",
             "Rejected", applicationId
         );
 
@@ -175,15 +170,12 @@ public class WardenController {
                 .body(Map.of("error", "Warden record not found"));
         }
 
-        String hostelName =
-            String.valueOf(hostelRows.get(0).get("HostelName"));
-
-       List<Map<String, Object>> roomRows =
-    jdbcTemplate.queryForList(
-        "SELECT roomID, capacity, occupancy, status " +
-        "FROM Rooms WHERE roomID = ? FOR UPDATE",
-        roomId
-    );
+        List<Map<String, Object>> roomRows =
+            jdbcTemplate.queryForList(
+                "SELECT roomID, capacity, occupancy, status " +
+                "FROM Rooms WHERE roomID = ? FOR UPDATE",
+                roomId
+            );
 
         if (roomRows.isEmpty()) {
             return ResponseEntity.badRequest()
@@ -212,7 +204,8 @@ public class WardenController {
 
         jdbcTemplate.update(
             "INSERT INTO RoomAllocations " +
-            "(studentID, roomID, allocationDate) VALUES (?, ?, CURRENT_DATE)",
+            "(studentID, roomID, allocationDate) " +
+            "VALUES (?, ?, CURRENT_DATE)",
             studentId, roomId
         );
 
@@ -282,7 +275,9 @@ public class WardenController {
             if (quantity < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", "quantity must be a non-negative integer"));
+                .body(Map.of(
+                    "error", "quantity must be a non-negative integer"
+                ));
         }
 
         jdbcTemplate.update(
@@ -300,5 +295,77 @@ public class WardenController {
             Map.of("success", true, "message", "Inventory item added")
         );
     }
-}
 
+    // GET: List events for the warden dashboard.
+    @GetMapping("/events")
+    public ResponseEntity<?> getEvents(HttpSession session) {
+        String wardenId = getWardenId(session);
+        if (wardenId == null) return forbidden();
+
+        String sql = """
+            SELECT `event id`, `event name`, description,
+                   event_date, `event time`, venue,
+                   organized_by, created_at
+            FROM Events
+            ORDER BY created_at DESC
+            """;
+
+        return ResponseEntity.ok(jdbcTemplate.queryForList(sql));
+    }
+
+    // POST: Create an event. Warden login is required.
+    @PostMapping("/events")
+    public ResponseEntity<?> createEvent(
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+        String wardenId = getWardenId(session);
+        if (wardenId == null) return forbidden();
+
+        String eventName = body.get("event_name") == null
+            ? "" : body.get("event_name").toString().trim();
+
+        String description = body.get("description") == null
+            ? "" : body.get("description").toString().trim();
+
+        String eventDate = body.get("event_date") == null
+            ? "" : body.get("event_date").toString().trim();
+
+        String eventTime = body.get("event_time") == null
+            ? "" : body.get("event_time").toString().trim();
+
+        String venue = body.get("venue") == null
+            ? "" : body.get("venue").toString().trim();
+
+        if (eventName.isBlank() || eventDate.isBlank()
+                || eventTime.isBlank() || venue.isBlank()) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error",
+                    "Event name, date, time and venue are required")
+            );
+        }
+
+        String sql = """
+            INSERT INTO Events
+                (`event name`, description, event_date,
+                 `event time`, venue, organized_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
+
+        jdbcTemplate.update(
+            sql,
+            eventName,
+            description,
+            eventDate,
+            eventTime,
+            venue,
+            wardenId
+        );
+
+        return ResponseEntity.ok(
+            Map.of(
+                "success", true,
+                "message", "Event created successfully"
+            )
+        );
+    }
+}
