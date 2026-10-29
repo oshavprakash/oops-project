@@ -1,6 +1,6 @@
 package com.hostelconnect.backend;
 
-
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,8 +29,9 @@ public class LoginController {
         consumes = "application/x-www-form-urlencoded"
     )
     public ResponseEntity<Map<String, Object>> login(
-            @RequestParam String username,
-            @RequestParam String password) {
+           @RequestParam String username,
+           @RequestParam String password,
+            HttpSession session) {
 
         String input = username.trim();
 
@@ -66,6 +67,8 @@ public class LoginController {
                         "message", "Invalid ID/email or password."
                     ));
             }
+            session.setAttribute("userID", user.userID());
+            session.setAttribute("userRole", user.role().toLowerCase());
 
             String redirect = switch (user.role().toLowerCase()) {
                 case "student" -> "Student.html";
