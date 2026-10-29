@@ -1462,70 +1462,73 @@
         }
 
 function renderFeeSection(fees) {
-    console.log("Fees received for display:", fees);
+    const tables = document.querySelectorAll("#fees .custom-table tbody");
 
-console.log(
-    "Fee tables found:",
-    document.querySelectorAll("#fees .custom-table tbody").length
-);
-    let tables = document.querySelectorAll("#fees .custom-table tbody");
-
-    if (tables.length === 0) return;
-
-    let paidTable = tables[0];
-    let dueTable = tables.length > 1 ? tables[1] : null;
-
-    fees = Array.isArray(fees) ? fees : [];
-
-    let paidFees = fees.filter(f =>
-        ["paid", "success"].includes(
-            (f.status || "").toLowerCase()
-        )
-    );
-
-    let pendingFees = fees.filter(f =>
-        (f.status || "").toLowerCase() === "pending"
-    );
-
-    if (paidFees.length === 0) {
-        paidTable.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align:center; padding:15px; color:#888;">
-                    No completed payments yet.
-                </td>
-            </tr>`;
-    } else {
-        paidTable.innerHTML = paidFees.map(f => `
-            <tr>
-                <td>${escapeHtml(f.feeType || "")}</td>
-                <td>₹${Number(f.amount || 0).toFixed(2)}</td>
-                <td>${escapeHtml(f.paymentDate || "")}</td>
-                <td><span class="badge resolved">Completed</span></td>
-            </tr>
-        `).join("");
+    if (tables.length < 2) {
+        console.error("Fees tables not found.");
+        return;
     }
 
-    if (dueTable) {
-        if (pendingFees.length === 0) {
-            dueTable.innerHTML = `
-                <tr>
-                    <td colspan="4" style="text-align:center; padding:15px; color:#888;">
-                        No pending dues.
-                    </td>
-                </tr>`;
-        } else {
-            dueTable.innerHTML = pendingFees.map(f => `
-                <tr>
-                    <td>${escapeHtml(f.feeType || "")}</td>
-                    <td>₹${Number(f.amount || 0).toFixed(2)}</td>
-                    <td>${escapeHtml(f.paymentDate || "Due now")}</td>
-                    <td><span class="badge open">Pending</span></td>
-                </tr>
-            `).join("");
+    const paidTable = tables[0];
+    const dueTable = tables[1];
+
+    paidTable.innerHTML = "";
+    dueTable.innerHTML = "";
+
+    let totalDue = 0;
+
+    fees.forEach(fee => {
+        const status = (fee.status || "").toLowerCase();
+        const amount = Number(fee.amount) || 0;
+
+        const row = document.createElement("tr");
+
+        if (status === "paid" || status === "success") {
+            row.innerHTML = `
+                <td>${fee.feeType || "Fee"}</td>
+                <td>₹${amount.toLocaleString("en-IN")}</td>
+                <td>${fee.paymentDate || "-"}</td>
+                <td>Completed</td>
+            `;
+
+            paidTable.appendChild(row);
+        } else if (status === "pending" || status === "due") {
+            totalDue += amount;
+
+            row.innerHTML = `
+                <td>${fee.feeType || "Fee"}</td>
+                <td>₹${amount.toLocaleString("en-IN")}</td>
+                <td>${fee.paymentDate || "-"}</td>
+                <td>Pending</td>
+            `;
+
+            dueTable.appendChild(row);
         }
+    });
+
+    if (paidTable.children.length === 0) {
+        paidTable.innerHTML =
+            '<tr><td colspan="4">No completed payments.</td></tr>';
+    }
+
+    if (dueTable.children.length === 0) {
+        dueTable.innerHTML =
+            '<tr><td colspan="4">No pending dues.</td></tr>';
+    }
+
+    // Update the Total Due amount
+    const feesSection = document.querySelector("#fees");
+    const totalDueText = [...feesSection.querySelectorAll("*")]
+        .find(element =>
+            element.children.length === 0 &&
+            element.textContent.trim() === "₹9,200"
+        );
+
+    if (totalDueText) {
+        totalDueText.textContent =
+            "₹" + totalDue.toLocaleString("en-IN");
     }
 }
-
         
 async function loadStudentFees() {
     console.log("loadStudentFees is running!");
