@@ -39,10 +39,13 @@ public class AdminDashboardController {
         );
 
         // Fetch fee payment records
-        List<Map<String, Object>> fees = jdbcTemplate.queryForList(
-            "SELECT paymentID, studentID, feeType, amount, paymentDate, status " +
-            "FROM FeePayments ORDER BY paymentID"
-        );
+       List<Map<String, Object>> fees = jdbcTemplate.queryForList(
+    "SELECT f.paymentID, f.studentID, s.name AS studentName, " +
+    "f.feeType, f.amount, f.paymentDate, f.status " +
+    "FROM FeePayments f " +
+    "JOIN Students s ON f.studentID = s.studentID " +
+    "ORDER BY f.paymentID"
+);
 
         return ResponseEntity.ok(Map.of(
             "users", users,
