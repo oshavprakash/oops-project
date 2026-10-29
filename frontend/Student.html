@@ -1482,7 +1482,9 @@ async function submitRoomChangeApp() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    preferenceDescription: preferenceDescription
+                    preferenceDescription:
+                        "Preferred Block: " + block +
+                        "; Preferred Room Type: " + roomType
                 })
             }
         );
