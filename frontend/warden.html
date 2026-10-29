@@ -389,60 +389,87 @@
         }).join("");
     }
 
-    function renderComplaints(complaints) {
-        const list = document.getElementById("complaintList");
+function renderComplaints(complaints) {
+    const list = document.getElementById("complaintList");
 
-        if (!complaints.length) {
-            list.innerHTML = '<p style="color:#888;padding:15px 0;">No student complaints registered.</p>';
-            return;
-        }
-
-        list.innerHTML = complaints.map(complaint => {
-            const status = String(complaint.status || "Pending");
-            const normalizedStatus = status.toLowerCase();
-            const complaintId = complaint.complaint_id ?? complaint.complaintID ?? complaint.complaintId;
-            const studentId = complaint.student_id ?? complaint.studentID ?? complaint.studentId ?? "";
-            const category = complaint.complaint_type ?? complaint.category ?? "General";
-            const date = complaint.complaint_date ?? complaint.date ?? "";
-            const remarks = complaint.admin_remarks ?? complaint.remarks ?? "";
-
-            const badgeClass = normalizedStatus === "resolved"
-                ? "resolved"
-                : normalizedStatus === "in progress"
-                    ? "progress"
-                    : normalizedStatus === "open"
-                        ? "open"
-                        : "pending";
-
-            let buttons = "";
-            if (normalizedStatus !== "resolved" && complaintId != null) {
-                buttons = `
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                        ${normalizedStatus !== "in progress"
-                            ? `<button onclick="updateComplaintStatus('${escapeHtml(complaintId)}','In Progress')" style="font-size:12px;padding:6px 10px;">Mark In Progress</button>`
-                            : ""}
-                        <button class="btn-green" onclick="updateComplaintStatus('${escapeHtml(complaintId)}','Resolved')" style="font-size:12px;padding:6px 10px;">Resolve</button>
-                    </div>`;
-            }
-
-            return `
-                <div class="list-row" style="gap:15px;flex-wrap:wrap;">
-                    <div class="list-row-content" style="flex:1;min-width:220px;">
-                        <h5>${escapeHtml(category)} - <small>Student ID: ${escapeHtml(studentId)}</small></h5>
-                        <p>${escapeHtml(complaint.description || "")}</p>
-                        <p style="font-size:11px;color:#888;">
-                            Reported: ${escapeHtml(date)}
-                            ${remarks ? " | Remarks: " + escapeHtml(remarks) : ""}
-                        </p>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                        <span class="badge ${badgeClass}">${escapeHtml(status)}</span>
-                        ${buttons}
-                    </div>
-                </div>`;
-        }).join("");
+    if (!complaints || complaints.length === 0) {
+        list.innerHTML = "<p>No complaints found.</p>";
+        return;
     }
 
+    let html = "";
+
+    complaints.forEach(complaint => {
+        const complaintId = complaint.complaint_id;
+        const studentId = complaint.student_id ?? "";
+        const complaintType = complaint.complaint_type ?? "General";
+        const description = complaint.description ?? "";
+        const complaintDate = complaint.complaint_date ?? "";
+        const status = complaint.status ?? "Pending";
+        const remarks = complaint.admin_remarks ?? "";
+
+        const normalizedStatus = status.toLowerCase();
+
+        const badgeClass =
+            normalizedStatus === "resolved"
+                ? "approved"
+                : normalizedStatus === "in progress"
+                    ? "progress"
+                    : "pending";
+
+        let actionButtons = "";
+
+        if (normalizedStatus !== "resolved") {
+            actionButtons = `
+                <div style="display:flex; gap:6px;">
+                    ${
+                        normalizedStatus !== "in progress"
+                            ? `<button onclick="updateComplaintStatus('${escapeHtml(String(complaintId))}', 'In Progress')"
+                                style="font-size:12px; padding:6px 10px;">
+                                Mark In Progress
+                               </button>`
+                            : ""
+                    }
+
+                    <button class="btn-green"
+                        onclick="updateComplaintStatus('${escapeHtml(String(complaintId))}', 'Resolved')"
+                        style="font-size:12px; padding:6px 10px;">
+                        Resolve
+                    </button>
+                </div>
+            `;
+        }
+
+        html += `
+            <div class="list-row">
+                <div class="list-row-content">
+                    <h5>
+                        ${escapeHtml(String(complaintType))}
+                        - <small>Student ID: ${escapeHtml(String(studentId))}</small>
+                    </h5>
+
+                    <p>${escapeHtml(String(description))}</p>
+
+                    <p style="font-size:11px; color:#888;">
+                        Reported: ${escapeHtml(String(complaintDate))}
+                        ${remarks
+                            ? " | Remarks: " + escapeHtml(String(remarks))
+                            : ""}
+                    </p>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <span class="badge ${badgeClass}">
+                        ${escapeHtml(String(status))}
+                    </span>
+                    ${actionButtons}
+                </div>
+            </div>
+        `;
+    });
+
+    list.innerHTML = html;
+}
     function renderInventory(inventory) {
         const list = document.getElementById("inventoryList");
 
@@ -512,29 +539,35 @@
         }
     }
 
-    async function updateComplaintStatus(complaintId, status) {
-        if (complaintId == null || complaintId === "") {
-            alert("Complaint ID is missing. Please check the complaint data returned by the backend.");
-            return;
+async function updateComplaintStatus(complaintId, status) {
+    try {
+        const response = await fetch(`${API_BASE}/warden/update-complaint`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                complaint_id: complaintId,
+                status: status
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || `HTTP ${response.status}`);
         }
 
-        try {
-            const data = await apiRequest("/warden/update-complaint", {
-                method: "POST",
-                body: JSON.stringify({
-                    complaint_id: complaintId,
-                    status: status
-                })
-            });
+        alert("Complaint updated to " + status);
+        await loadWardenDashboard();
 
-            alert(data.message || "Complaint updated to " + status + ".");
-            await loadWardenDashboard();
-        } catch (error) {
-            console.error("Complaint update failed:", error);
-            alert("Could not update complaint: " + error.message);
-        }
+    } catch (error) {
+        console.error("Complaint update failed:", error);
+        alert("Failed to update complaint: " + error.message);
     }
-
+}
     async function addInventoryItem(event) {
         event.preventDefault();
 
