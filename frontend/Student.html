@@ -1471,6 +1471,13 @@ async function loadStudentDashboard() {
         }
 
         const data = await response.json();
+        // Update outstanding fee amount on Overview
+const overviewDueElement = document.getElementById("totalDueAmount");
+
+if (overviewDueElement) {
+    overviewDueElement.textContent =
+        "₹" + Number(data.totalDue || 0).toFixed(2);
+}
         console.log("FULL FEE DATA:", data);
         console.log("PAID FEES:", data.paid);
         console.log("DUE FEES:", data.due);
@@ -1513,23 +1520,18 @@ async function loadStudentDashboard() {
         }
 
         if (cards.length > 1) {
-            const hasDue = (data.fees || []).some(f =>
-                (f.status || "").toLowerCase() === "pending"
-            );
+    const hasDue = Number(data.totalDue || 0) > 0;
 
-            cards[1].innerText = hasDue || !(data.fees || []).length
-                ? "Due" : "Paid";
+    cards[1].innerText = hasDue ? "Due" : "Paid";
 
-            cards[1].style.color =
-                cards[1].innerText === "Due" ? "#b33939" : "#27ae60";
+    cards[1].style.color =
+        hasDue ? "#b33939" : "#27ae60";
 
-            if (subtitles[1]) {
-                subtitles[1].innerText =
-                    cards[1].innerText === "Due"
-                        ? "Hostel Term Fee"
-                        : "No Pending Dues";
-            }
-        }
+    if (subtitles[1]) {
+        subtitles[1].innerText =
+            hasDue ? "Hostel Term Fee" : "No Pending Dues";
+    }
+}
 
         renderOverviewComplaints(
             data.recentComplaints ||
