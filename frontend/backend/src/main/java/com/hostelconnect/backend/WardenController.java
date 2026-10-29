@@ -443,5 +443,265 @@ public class WardenController {
                 "message", "Event created successfully"
             )
         );
+
     }
+    
+    // ---------------- MESS MANAGEMENT ----------------
+
+    // Get meal timings
+    @GetMapping("/mess/timings")
+    public ResponseEntity<?> getMealTimings(HttpSession session) {
+        if (getWardenId(session) == null) return forbidden();
+
+        try {
+            return ResponseEntity.ok(
+                jdbcTemplate.queryForList(
+                    "SELECT timing_id, meal_type, start_time, end_time, updated_at " +
+                    "FROM MealTimings ORDER BY timing_id"
+                )
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not load meal timings")
+            );
+        }
+    }
+
+    // Add or update a meal timing
+    @PostMapping("/mess/timings")
+    public ResponseEntity<?> saveMealTiming(
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+
+        if (getWardenId(session) == null) return forbidden();
+
+        String mealType = body.get("meal_type") == null
+            ? "" : body.get("meal_type").toString().trim().toUpperCase();
+        String startTime = body.get("start_time") == null
+            ? "" : body.get("start_time").toString().trim();
+        String endTime = body.get("end_time") == null
+            ? "" : body.get("end_time").toString().trim();
+
+        if (!List.of("BREAKFAST", "LUNCH", "DINNER", "SNACKS")
+                    .contains(mealType)
+                || startTime.isBlank() || endTime.isBlank()) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error",
+                    "Provide a valid meal_type (BREAKFAST, LUNCH, DINNER, SNACKS), start_time and end_time")
+            );
+        }
+
+        try {
+            java.time.LocalTime start = java.time.LocalTime.parse(startTime);
+            java.time.LocalTime end = java.time.LocalTime.parse(endTime);
+
+            if (!start.isBefore(end)) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("error", "End time must be after start time")
+                );
+            }
+
+            jdbcTemplate.update(
+                "INSERT INTO MealTimings (meal_type, start_time, end_time) " +
+                "VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE " +
+                "start_time = VALUES(start_time), end_time = VALUES(end_time)",
+                mealType, start, end
+            );
+
+            return ResponseEntity.ok(
+                Map.of("success", true, "message", "Meal timing saved")
+            );
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error", "Use 24-hour time format, for example 07:30")
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not save meal timing")
+            );
+        }
+    }
+
+    // Get menu items, optionally filtered by date
+    @GetMapping("/mess/menu")
+    public ResponseEntity<?> getMessMenu(
+            @RequestParam(required = false) String date,
+            HttpSession session) {
+
+        if (getWardenId(session) == null) return forbidden();
+
+        try {
+            if (date == null || date.isBlank()) {
+                return ResponseEntity.ok(
+                    jdbcTemplate.queryForList(
+                        "SELECT menu_id, meal_type, item_name, food_category, " +
+                        "menu_date, available, created_at FROM MessMenu " +
+                        "ORDER BY menu_date DESC, meal_type, menu_id"
+                    )
+                );
+            }
+
+            java.time.LocalDate.parse(date);
+            return ResponseEntity.ok(
+                jdbcTemplate.queryForList(
+                    "SELECT menu_id, meal_type, item_name, food_category, " +
+                    "menu_date, available, created_at FROM MessMenu " +
+                    "WHERE menu_date = ? ORDER BY meal_type, menu_id",
+                    date
+                )
+            );
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error", "Date must use YYYY-MM-DD format")
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not load menu")
+            );
+        }
+    }
+
+    // Add a menu item
+    @PostMapping("/mess/menu")
+    public ResponseEntity<?> addMessMenuItem(
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+
+        if (getWardenId(session) == null) return forbidden();
+
+        String mealType = body.get("meal_type") == null
+            ? "" : body.get("meal_type").toString().trim().toUpperCase();
+        String itemName = body.get("item_name") == null
+            ? "" : body.get("item_name").toString().trim();
+        String category = body.get("food_category") == null
+            ? "" : body.get("food_category").toString().trim().toUpperCase();
+        String menuDate = body.get("menu_date") == null
+            ? "" : body.get("menu_date").toString().trim();
+
+        if (!List.of("BREAKFAST", "LUNCH", "DINNER", "SNACKS")
+                    .contains(mealType)
+                || itemName.isBlank() || itemName.length() > 150
+                || !List.of("VEG", "NON_VEG").contains(category)
+                || menuDate.isBlank()) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error",
+                    "Provide valid meal_type, item_name, food_category (VEG or NON_VEG), and menu_date")
+            );
+        }
+
+        try {
+            java.time.LocalDate.parse(menuDate);
+
+            jdbcTemplate.update(
+                "INSERT INTO MessMenu " +
+                "(meal_type, item_name, food_category, menu_date, available) " +
+                "VALUES (?, ?, ?, ?, TRUE)",
+                mealType, itemName, category, menuDate
+            );
+
+            return ResponseEntity.ok(
+                Map.of("success", true, "message", "Menu item added")
+            );
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error", "menu_date must use YYYY-MM-DD format")
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not add menu item")
+            );
+        }
+    }
+
+    // Update a menu item
+    @PutMapping("/mess/menu/{menuId}")
+    public ResponseEntity<?> updateMessMenuItem(
+            @PathVariable int menuId,
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+
+        if (getWardenId(session) == null) return forbidden();
+
+        String mealType = body.get("meal_type") == null
+            ? "" : body.get("meal_type").toString().trim().toUpperCase();
+        String itemName = body.get("item_name") == null
+            ? "" : body.get("item_name").toString().trim();
+        String category = body.get("food_category") == null
+            ? "" : body.get("food_category").toString().trim().toUpperCase();
+        String menuDate = body.get("menu_date") == null
+            ? "" : body.get("menu_date").toString().trim();
+        Object availableValue = body.get("available");
+
+        if (!List.of("BREAKFAST", "LUNCH", "DINNER", "SNACKS")
+                    .contains(mealType)
+                || itemName.isBlank() || itemName.length() > 150
+                || !List.of("VEG", "NON_VEG").contains(category)
+                || menuDate.isBlank()
+                || !(availableValue instanceof Boolean)) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error",
+                    "Provide valid meal_type, item_name, food_category, menu_date and boolean available")
+            );
+        }
+
+        try {
+            java.time.LocalDate.parse(menuDate);
+
+            int updated = jdbcTemplate.update(
+                "UPDATE MessMenu SET meal_type = ?, item_name = ?, " +
+                "food_category = ?, menu_date = ?, available = ? " +
+                "WHERE menu_id = ?",
+                mealType, itemName, category, menuDate,
+                availableValue, menuId
+            );
+
+            if (updated == 0) {
+                return ResponseEntity.status(404).body(
+                    Map.of("error", "Menu item not found")
+                );
+            }
+
+            return ResponseEntity.ok(
+                Map.of("success", true, "message", "Menu item updated")
+            );
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error", "menu_date must use YYYY-MM-DD format")
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(
+                Map.of("error", "Could not update menu item")
+            );
+        }
+    }
+
+    // Delete a menu item
+    @DeleteMapping("/mess/menu/{menuId}")
+    public ResponseEntity<?> deleteMessMenuItem(
+            @PathVariable int menuId,
+            HttpSession session) {
+
+        if (getWardenId(session) == null) return forbidden();
+
+        int deleted = jdbcTemplate.update(
+            "DELETE FROM MessMenu WHERE menu_id = ?", menuId
+        );
+
+        if (deleted == 0) {
+            return ResponseEntity.status(404).body(
+                Map.of("error", "Menu item not found")
+            );
+        }
+
+        return ResponseEntity.ok(
+            Map.of("success", true, "message", "Menu item deleted")
+        );
+    }
+
+    
 }
