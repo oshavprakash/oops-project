@@ -280,16 +280,23 @@ public class WardenController {
                 ));
         }
 
-        jdbcTemplate.update(
-            "INSERT INTO Inventory " +
-            "(WardenID, itemName, category, quantity, status) " +
-            "VALUES (?, ?, ?, ?, ?)",
-            wardenId,
-            itemName.toString(),
-            category.toString(),
-            quantity,
-            statusValue == null ? "Available" : statusValue.toString()
-        );
+       String itemId = "INV" + java.util.UUID.randomUUID()
+        .toString()
+        .replace("-", "")
+        .substring(0, 7)
+        .toUpperCase();
+
+jdbcTemplate.update(
+    "INSERT INTO Inventory " +
+    "(itemID, wardenID, itemName, category, quantity, status) " +
+    "VALUES (?, ?, ?, ?, ?, ?)",
+    itemId,
+    wardenId,
+    itemName.toString(),
+    category.toString(),
+    quantity,
+    statusValue == null ? "Available" : statusValue.toString()
+);
 
         return ResponseEntity.ok(
             Map.of("success", true, "message", "Inventory item added")
