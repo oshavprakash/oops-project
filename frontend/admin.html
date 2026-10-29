@@ -490,7 +490,9 @@
     }
 
     function loadAdminDashboard() {
-        fetch("api/admin/dashboard")
+        fetch("https://hostelconnect-backend-za3a.onrender.com/api/admin/dashboard", {
+    credentials: "include"
+})
             .then(res => {
                 if (res.status === 401 || res.status === 403) {
                     window.location.href = "login1.html";
