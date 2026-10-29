@@ -859,72 +859,41 @@
     }
 }
 
-/* Temporary fix: make Events cards visible */
-#eventsContainer {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+
+/* Diagnose and correct the Events section layout */
+#events.content-section.active {
+    display: block !important;
     height: auto !important;
-    min-height: 50px;
+    min-height: 200px;
     overflow: visible !important;
 }
 
-#eventsContainer .card-box {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+#events #eventsContainer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
     position: relative !important;
     height: auto !important;
-    min-height: 100px;
-    padding: 16px !important;
-    margin-bottom: 10px;
-    color: #333 !important;
-    background: #fff !important;
-    border: 1px solid #ddd !important;
-    border-radius: 10px;
+    min-height: 100px !important;
+    overflow: visible !important;
 }
 
-#eventsContainer .card-box h4,
-#eventsContainer .card-box p,
-#eventsContainer .card-box span {
+#events #eventsContainer .card-box {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: 100px !important;
+    height: auto !important;
+    position: relative !important;
     visibility: visible !important;
     opacity: 1 !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    padding: 18px !important;
+    margin-bottom: 10px !important;
+    border: 1px solid #ead6e4 !important;
 }
 
-#eventsContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-#eventsContainer .hostel-event-card {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 18px;
-    background: #fff;
-    color: #493D3D;
-    border: 1px solid #ead6e4;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(70, 30, 60, 0.08);
-}
-
-#eventsContainer .hostel-event-card h4 {
-    display: block;
-    margin: 10px 0;
-    color: #3d1738;
-    font-size: 1.1rem;
-}
-
-#eventsContainer .hostel-event-card p {
-    display: block;
-    margin: 6px 0;
-    color: #493D3D;
-    font-size: 0.9rem;
-    overflow-wrap: anywhere;
-}
 
     </style>
 </head>
