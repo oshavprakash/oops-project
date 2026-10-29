@@ -1610,7 +1610,8 @@ async function loadStudentFees() {
             ...(data.due || [])
         ];
 
-        renderFeeSection(fees);
+       console.log("Fees passed to renderer:", fees);
+       renderFeeSection(fees);
 
     } catch (error) {
         console.error("Error loading student fees:", error);
