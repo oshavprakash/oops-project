@@ -930,7 +930,7 @@
                 <h3 id="studentNameDisplay">Namaste, User</h3>
             </div>
             <div class="nav-links">
-                <a class="nav-link active" onclick="switchTab(event, 'overview')">Overview</a>
+                <a class="nav-link active" onclick="(event, 'overview')">Overview</a>
                 <a class="nav-link" onclick="switchTab(event, 'room')">Room &amp; Application</a>
                 <a class="nav-link" onclick="switchTab(event, 'fees')">Fee Payment</a>
                 <a class="nav-link" onclick="switchTab(event, 'complaints')">Complaints</a>
@@ -1826,105 +1826,113 @@ async function submitRoomChangeApp() {
 
 
 
+
 function renderFeeSection(paidFees, dueFees, totalDue) {
     const section = document.getElementById("fees");
     if (!section) return;
 
-    const tables = section.querySelectorAll(
-        "table.custom-table tbody"
-    );
+    const tables = section.querySelectorAll("table.custom-table tbody");
 
-    if (tables.length < 2) {
-        console.error("Fee tables could not be found.");
-        return;
-    }
+    if (tables.length < 2) return;
 
     const paidTable = tables[0];
     const dueTable = tables[1];
 
-    // Render paid fees
+    // PAID FEES
     paidTable.replaceChildren();
 
-    paidFees.forEach(fee => {
+    if (!paidFees.length) {
         const row = paidTable.insertRow();
+        row.insertCell().textContent = "No paid fees found.";
+        row.cells[0].colSpan = 4;
+    } else {
+        paidFees.forEach(fee => {
+            const row = paidTable.insertRow();
 
-        row.insertCell().textContent = fee.feeType || "Fee";
-        row.insertCell().textContent = "₹" + fee.amount;
-        row.insertCell().textContent =
-            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-";
-        row.insertCell().textContent = "Paid";
-    });
+            row.insertCell().textContent = fee.feeType || "Fee";
+            row.insertCell().textContent =
+                "₹" + Number(fee.amount || 0).toFixed(2);
+            row.insertCell().textContent =
+                fee.paymentDate
+                    ? String(fee.paymentDate).slice(0, 10)
+                    : "-";
+            row.insertCell().textContent = "Paid";
+        });
+    }
 
-    // Render pending fees
+    // DUE FEES
     dueTable.replaceChildren();
 
-    dueFees.forEach(fee => {
+    if (!dueFees.length) {
         const row = dueTable.insertRow();
+        row.insertCell().textContent = "No pending fees.";
+        row.cells[0].colSpan = 4;
+    } else {
+        dueFees.forEach(fee => {
+            const row = dueTable.insertRow();
 
-        row.insertCell().textContent = fee.feeType || "Fee";
-        row.insertCell().textContent = "₹" + fee.amount;
-        row.insertCell().textContent =
-            fee.paymentDate ? String(fee.paymentDate).slice(0, 10) : "-";
+            row.insertCell().textContent = fee.feeType || "Fee";
+            row.insertCell().textContent =
+                "₹" + Number(fee.amount || 0).toFixed(2);
+            row.insertCell().textContent =
+                fee.paymentDate
+                    ? String(fee.paymentDate).slice(0, 10)
+                    : "-";
 
-        const statusCell = row.insertCell();
-        const payButton = document.createElement("button");
+            const statusCell = row.insertCell();
+            const payButton = document.createElement("button");
 
-        payButton.type = "button";
-        payButton.textContent = "Pay Fees";
-        payButton.className = "lf-submit";
-        payButton.disabled = false;
+            payButton.type = "button";
+            payButton.textContent = "Pay Fees";
+            payButton.className = "lf-submit";
 
-        payButton.addEventListener("click", async () => {
-            if (!fee.paymentID) {
-                alert("Payment ID is missing for this fee.");
-                return;
-            }
-
-            payButton.disabled = true;
-            payButton.textContent = "Processing...";
-
-            try {
-                const response = await fetch(
-                    `${API_BASE}/student/pay-fee`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            paymentID: fee.paymentID
-                        })
-                    }
-                );
-
-                const result = await response.json();
-
-                if (!response.ok || result.success !== true) {
-                    throw new Error(
-                        result.message || "Payment could not be completed."
-                    );
+            payButton.addEventListener("click", async () => {
+                if (!fee.paymentID) {
+                    alert("Payment ID is missing.");
+                    return;
                 }
 
-                // Refresh the tables using the updated database status.
-                await loadStudentFees();
+                payButton.disabled = true;
+                payButton.textContent = "Processing...";
 
-                alert("Fee marked as Paid successfully!");
+                try {
+                    const response = await fetch(
+                        `${API_BASE}/student/pay-fee`,
+                        {
+                            method: "POST",
+                            credentials: "include",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                paymentID: fee.paymentID
+                            })
+                        }
+                    );
 
-            } catch (error) {
-                console.error("Fee payment error:", error);
+                    const result = await response.json();
 
-                alert(error.message || "Unable to update fee status.");
+                    if (!response.ok || result.success !== true) {
+                        throw new Error(
+                            result.message || "Payment could not be completed."
+                        );
+                    }
 
-                payButton.disabled = false;
-                payButton.textContent = "Pay Fees";
-            }
+                    alert("Fee status updated successfully!");
+                    await loadStudentFees();
+
+                } catch (error) {
+                    console.error("Fee payment error:", error);
+                    alert(error.message);
+                    payButton.disabled = false;
+                    payButton.textContent = "Pay Fees";
+                }
+            });
+
+            statusCell.appendChild(payButton);
         });
+    }
 
-        statusCell.appendChild(payButton);
-    });
-
-    // Update total due
     const totalElement = document.getElementById("totalDueAmount");
 
     if (totalElement) {
@@ -1934,26 +1942,40 @@ function renderFeeSection(paidFees, dueFees, totalDue) {
 }
 
 
-
 async function loadStudentFees() {
+    const tables = document.querySelectorAll(
+        "#fees table.custom-table tbody"
+    );
+
     try {
         const response = await fetch(`${API_BASE}/student/fees`, {
             credentials: "include"
         });
 
-        if (!response.ok) {
-            throw new Error(`Fees request failed: HTTP ${response.status}`);
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "login1.html";
+            return;
         }
 
         const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Unable to load fees.");
+        }
 
         renderFeeSection(
             Array.isArray(data.paid) ? data.paid : [],
             Array.isArray(data.due) ? data.due : [],
             data.totalDue
         );
+
     } catch (error) {
         console.error("Error loading student fees:", error);
+
+        tables.forEach(table => {
+            table.innerHTML =
+                '<tr><td colspan="4">Unable to load fees. Please try again.</td></tr>';
+        });
     }
 }
 
